@@ -16,32 +16,23 @@ import { appConfig } from "@/shared/config/app-config";
 import OnboardingSteps from "@/components/OnboardingSteps.vue";
 import CurrencyInput from "@/components/CurrencyInput.vue";
 import { createAccountOnboardingSchema } from "@/forms";
+import { COLOR_PRESETS } from "@/shared/constants";
+import { useMoney } from "@/composables";
 
 const appStore = useAppStore()
 const ionRouter = useIonRouter()
 const router = useRouter()
 const { t } = useI18n()
 const { handle: handleError } = useErrorHandler()
+const { formatMoney } = useMoney()
 const baseCurrency = computed(() => appStore.baseCurrency)
 
 const { handleSubmit, defineField, errors, isSubmitting } = useForm({
   validationSchema: createAccountOnboardingSchema(),
   initialValues: {
     cardName: '',
-    // `undefined` başlangıç değeri alanı `number` bekleyen CurrencyInput ile
-    // uyumsuzdu (NewAccountPage'de zaten 0 kullanılıyor).
     balance: 0,
   }
-})
-
-const formattedBalance = computed(() => {
-  const format = new Intl.NumberFormat('tr-TR', {
-    currency: appStore.baseCurrency?.code,
-    style: 'currency',
-    currencyDisplay: 'symbol'
-  })
-  if (isNaN(balance.value)) return format.format(0)
-  return format.format(balance.value)
 })
 
 const [cardName] = defineField('cardName')
@@ -49,24 +40,7 @@ const [balance] = defineField('balance')
 const selectedIcon = ref<string>('walletOutline')
 const selectedColor = ref<string>('bg-indigo-600')
 const selectedGradient = ref<string>('from-indigo-500 to-indigo-700')
-const isSaving = ref(false)
 const showSuccess = ref(false)
-const submitError = ref<string | null>(null)
-
-const colorPalette = [
-  { class: 'bg-indigo-600', gradient: 'from-indigo-500 to-indigo-700' },
-  { class: 'bg-violet-600', gradient: 'from-violet-500 to-violet-700' },
-  { class: 'bg-fuchsia-600', gradient: 'from-fuchsia-500 to-fuchsia-700' },
-  { class: 'bg-pink-600',    gradient: 'from-pink-500 to-pink-700' },
-  { class: 'bg-rose-600',    gradient: 'from-rose-500 to-rose-700' },
-  { class: 'bg-orange-600',  gradient: 'from-orange-500 to-orange-700' },
-  { class: 'bg-amber-600',   gradient: 'from-amber-500 to-amber-700' },
-  { class: 'bg-emerald-600', gradient: 'from-emerald-500 to-emerald-700' },
-  { class: 'bg-teal-600',    gradient: 'from-teal-500 to-teal-700' },
-  { class: 'bg-cyan-600',    gradient: 'from-cyan-500 to-cyan-700' },
-  { class: 'bg-sky-600',     gradient: 'from-sky-500 to-sky-700' },
-  { class: 'bg-slate-700',   gradient: 'from-slate-700 to-slate-900' },
-]
 
 const iconOptions = [
   'walletOutline', 'cashOutline', 'cardOutline', 'briefcaseOutline',
@@ -74,7 +48,9 @@ const iconOptions = [
   'barChartOutline', 'trendingUpOutline', 'logoBitcoin', 'diamondOutline',
 ]
 
-const getIconByName = (iconName: string) => getIconByNameOrFallback(iconName)
+const formattedBalance = computed(() =>
+    formatMoney(balance.value, undefined, { mask: false })
+)
 
 const selectColor = (c: { class: string, gradient: string }) => {
   selectedColor.value = c.class
@@ -85,9 +61,6 @@ const completeOnboarding = handleSubmit(async (values) => {
   if (!appStore.hasBaseCurrency) {
     return router.replace('/base-currency-selection')
   }
-
-  isSaving.value = true
-  submitError.value = null
 
   try {
     await appStore.completeOnboarding({
@@ -101,10 +74,8 @@ const completeOnboarding = handleSubmit(async (values) => {
         notes: ''
     })
 
-    // Kısa başarı animasyonu, ardından ana ekrana geç.
-    // Onboarding tamamlandığı için router guard /tabs/home'u sorunsuz geçirir.
     showSuccess.value = true
-    await new Promise(resolve => setTimeout(resolve, 700))
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     ionRouter.navigate('/tabs/home', 'root', 'replace')
   } catch (err) {
@@ -112,20 +83,13 @@ const completeOnboarding = handleSubmit(async (values) => {
       context: 'FirstWallet',
       fallback: t('firstWallet.createFailed'),
     })
-    isSaving.value = false
+
     showSuccess.value = false
   }
 })
 
-// Çift dokunuşta iki cüzdan oluşmasın (bkz. guardSubmit).
 const onSaveClick = guardSubmit(isSubmitting, async () => {
-  // Validation hatalarını görünür yap
-  submitError.value = null
   await completeOnboarding()
-  // Eğer form validation başarısız olduysa errors dolu olur
-  if (Object.keys(errors.value).length > 0 && !isSaving.value) {
-    submitError.value = errors.value.cardName || errors.value.balance || t('firstWallet.checkFields')
-  }
 })
 
 </script>
@@ -144,7 +108,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
     </ion-header>
 
     <ion-content class="wallet-content" :scroll-y="true">
-      <div class="px-5 pb-32">
+      <div class="px-5 pb-5">
 
         <!-- Başlık -->
         <div class="text-center mt-6">
@@ -173,7 +137,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
                   {{ appConfig.name }}
                 </span>
                 <div class="size-10 rounded-2xl bg-surface/20 backdrop-blur flex items-center justify-center">
-                  <ion-icon :icon="getIconByName(selectedIcon)" class="size-5 text-white" />
+                  <ion-icon :icon="getIconByNameOrFallback(selectedIcon)" class="size-5 text-white" />
                 </div>
               </div>
 
@@ -217,7 +181,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
             <p class="text-[11px] text-content-muted mb-3">{{ $t('firstWallet.color') }}</p>
             <div class="flex flex-wrap gap-2">
               <button
-                  v-for="color in colorPalette"
+                  v-for="color in COLOR_PRESETS"
                   :key="color.class"
                   type="button"
                   class="size-9 rounded-full transition active:scale-90"
@@ -242,14 +206,10 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
                       : 'bg-surface-sunken text-content-tertiary active:bg-surface-strong'"
                   @click="selectedIcon = icon"
               >
-                <ion-icon :icon="getIconByName(icon)" class="size-5" />
+                <ion-icon :icon="getIconByNameOrFallback(icon)" class="size-5" />
               </button>
             </div>
           </section>
-
-<!--          <p v-if="submitError" class="text-[12px] text-rose-600 text-center mt-2">
-            {{ submitError }}
-          </p>-->
         </div>
       </div>
     </ion-content>
@@ -257,7 +217,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
     <!-- Yükleniyor / başarı overlay -->
     <transition name="overlay-fade">
       <div
-          v-if="isSaving || showSuccess"
+          v-if="showSuccess"
           class="loading-overlay"
       >
         <div class="bg-surface rounded-3xl px-8 py-7 flex flex-col items-center shadow-2xl">
@@ -283,10 +243,10 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
         <ion-button
             expand="block"
             class="app-button"
-            :disabled="isSubmitting || isSaving"
+            :disabled="isSubmitting"
             @click="onSaveClick"
         >
-          {{ isSaving ? $t('firstWallet.creatingShort') : $t('firstWallet.complete') }}
+          {{ isSubmitting ? $t('firstWallet.creatingShort') : $t('firstWallet.complete') }}
           <ion-icon slot="end" :icon="chevronForwardOutline" class="size-4" />
         </ion-button>
       </ion-toolbar>
@@ -303,28 +263,12 @@ ion-page {
   overflow: hidden;
 }
 
-/* Adım göstergesini start'taki geri butonundan bağımsız, toolbar'da tam
-   ortalar. pointer-events:none → altındaki geri butonu tıklanır kalır. */
-/*ion-toolbar {
-  position: relative;
-}*/
-
 .step-abs {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 20px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
 }
 
 .loading-overlay {
@@ -349,19 +293,4 @@ ion-page {
   opacity: 0;
 }
 
-/* Footer/toolbar arka planını sayfa rengiyle eşitle ve tam genişlik kapla.
-   Yatay boşluk (px) toolbar'ın İÇİNE verilir; aksi halde toolbar arka planı
-   kenarlara ulaşmaz ve sayfa kaydıkça altta içerik kenarlardan sızar. */
-/*.wallet-footer {
-  background: var(--c-page);
-}
-
-.wallet-footer ion-toolbar {
-  --background: var(--c-page);
-  --border-width: 0;
-  --padding-start: 24px;
-  --padding-end: 24px;
-  --padding-top: 8px;
-  --padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
-}*/
 </style>
