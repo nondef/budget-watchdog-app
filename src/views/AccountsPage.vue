@@ -3,7 +3,6 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  IonAlert,
   onIonViewWillEnter,
   IonButtons,
   IonTitle,
@@ -20,24 +19,25 @@ import {
 import { useAccountsStore } from '@/stores/accounts';
 import { useExchangeRateStore } from '@/stores/exchange-rates';
 import { useCurrenciesStore } from '@/stores/currencies';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getIconByName } from "@/shared/utils";
 import { useMoney } from "@/composables/money/useMoney";
 import { AccountDTO } from "@/application";
 import AccountsTotalCard from "@/components/AccountsTotalCard.vue";
+import { useAlert } from "@/composables";
+import { useI18n } from "vue-i18n";
 
 const accountsStore = useAccountsStore();
 const exchangeRateStore = useExchangeRateStore();
 const currenciesStore = useCurrenciesStore();
 const router = useRouter();
+const { t } = useI18n()
 const { formatMoney, formatSumInBase, sumInBase } = useMoney();
+const alert = useAlert()
 
 const currencyCode = (account: AccountDTO) =>
     currenciesStore.currencyById(account.balance.currencyId)?.code ?? '';
-
-const showDeleteAlert = ref(false);
-const accountToDelete = ref<string>('');
 
 const totalSummary = computed(() => {
   const items = accountsStore.activeAccounts.map(a => ({
@@ -51,18 +51,21 @@ const totalSummary = computed(() => {
   }
 })
 
-const confirmDelete = (id: string, event?: Event) => {
+const confirmDelete = async (id: string, event?: Event) => {
   event?.stopPropagation();
-  accountToDelete.value = id;
-  showDeleteAlert.value = true;
-};
 
-const deleteAccount = () => {
-  if (accountToDelete.value) {
-    accountsStore.deleteAccount(accountToDelete.value);
-    accountToDelete.value = '';
-  }
-};
+  const confirmed = await alert.confirm({
+    header: t('accounts.deleteTitle'),
+    message: t('accounts.deleteMessage'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    destructive: true,
+  })
+
+  if (!confirmed) return
+
+  await accountsStore.deleteAccount(id)
+}
 
 onIonViewWillEnter(async () => {
   await Promise.all([
@@ -173,26 +176,6 @@ onIonViewWillEnter(async () => {
       </div>
     </ion-content>
 
-    <!-- Silme onay uyarısı -->
-    <ion-alert
-        :is-open="showDeleteAlert"
-        :header="$t('accounts.deleteTitle')"
-        :message="$t('accounts.deleteMessage')"
-        :buttons="[
-          {
-            text: $t('common.cancel'),
-            role: 'cancel',
-            handler: () => { showDeleteAlert = false; }
-          },
-          {
-            text: $t('common.delete'),
-            role: 'confirm',
-            cssClass: 'alert-danger',
-            handler: () => deleteAccount()
-          }
-        ]"
-        @didDismiss="showDeleteAlert = false"
-    />
   </ion-page>
 </template>
 
