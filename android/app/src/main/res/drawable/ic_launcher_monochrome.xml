@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ themed launcher icon: the system applies the user's palette. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,13 L91,28 L91,53 C91,75 75,94 54,101 C33,94 17,75 17,53 L17,28 Z M54,22 L83,34 L83,53 C83,70 71,85 54,92 C37,85 25,70 25,53 L25,34 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M33,38 C38,32 45,30 54,30 C63,30 70,32 75,38 L79,34 C84,34 87,38 86,44 L82,59 C81,64 76,65 73,60 L70,53 C68,66 63,72 54,72 C45,72 40,66 38,53 L35,60 C32,65 27,64 26,59 L22,44 C21,38 24,34 29,34 Z M43,47 A3,3 0 1,0 43,53 A3,3 0 1,0 43,47 Z M65,47 A3,3 0 1,0 65,53 A3,3 0 1,0 65,47 Z M48,58 C48,54 60,54 60,58 C60,62 57,65 54,65 C51,65 48,62 48,58 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,71 A7,7 0 1,0 54,85 A7,7 0 1,0 54,71 Z M37,79 C37,76 39,74 42,74 H66 C69,74 71,76 71,79 V91 C71,94 69,96 66,96 H42 C39,96 37,94 37,91 Z M64,82 H75 V90 H64 C61,90 60,88 60,86 C60,84 61,82 64,82 Z" />
+</vector>

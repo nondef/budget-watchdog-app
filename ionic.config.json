@@ -1,0 +1,7 @@
+{
+  "name": "Budget Watchdog",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

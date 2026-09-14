@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pencere (decorView) zemini. WebView'ın altında kalan her şey bu renkle
+         boyanır: klavye animasyonu sırasındaki ara kareler, splash → webview
+         geçişi, inset yeniden hesaplanırken oluşan tek karelik boşluklar.
+         Varsayılan Theme.AppCompat.DayNight zemini light'ta beyaz olduğundan
+         bu anlarda sayfa rengiyle uyumsuz bir flaş görünüyordu.
+         Değerler CSS'teki sayfa zemini (c-page) ile aynı tonlar. -->
+    <color name="windowBackground">#f7f7f7</color>
+</resources>
