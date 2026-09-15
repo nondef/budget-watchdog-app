@@ -6,7 +6,6 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  IonAlert,
   IonInput,
   IonTextarea,
   IonToggle,
@@ -50,6 +49,7 @@ import PickerField from "@/components/PickerField.vue";
 import CurrencyInput from "@/components/CurrencyInput.vue";
 import CategoryPickerModal from "@/components/CategoryPickerModal.vue";
 import { BudgetType } from "@/domain";
+import { useAlert } from "@/composables";
 
 const router = useRouter();
 const toast = useToast()
@@ -60,6 +60,7 @@ const categoriesStore = useCategoriesStore();
 const currenciesStore = useCurrenciesStore();
 const appStore = useAppStore();
 const { categoryName } = useCategoryName();
+const alert = useAlert()
 
 const schema = createBudgetSchema()
 
@@ -86,8 +87,6 @@ const [amount] = defineField('amount')
 const [type] = defineField('type')
 const [startDate] = defineField('startDate')
 const [endDate] = defineField('endDate')
-// Kategori alanını da kayıtlı tut: değer model üzerinden güncellenince
-// vee-validate otomatik doğrular ve hata anında temizlenir.
 const [categoryIds] = defineField('category')
 
 const showIconPicker = ref(false)
@@ -98,16 +97,6 @@ const selectedIconName = ref('walletOutline')
 const selectedAccount = ref<AccountDTO | null>(null)
 const selectedCategories = ref<CategoryDTO[]>([])
 const showRemoveCategoryAlert = ref(false)
-const categoryToRemove = ref<CategoryDTO | null>(null)
-const isSaving = ref(false)
-
-// const selectedCategoryIds = computed(() =>
-//     new Set(selectedCategories.value.map(c => c.id))
-// )
-
-// const selectedAccount = computed(() =>
-//     accountsStore.accounts.find(a => a.id === values.account) ?? null
-// )
 
 // Hesap seçilmemişken para birimi boş kalmasın diye base currency'ye düş.
 const currency = computed(() =>
@@ -116,25 +105,19 @@ const currency = computed(() =>
     ?? undefined
 )
 
-const removeCategory = (category: CategoryDTO) => {
-  categoryToRemove.value = category
+const removeCategory = async (category: CategoryDTO) => {
   showRemoveCategoryAlert.value = true
-}
 
-const alertButtons = [
-  { text: t('common.cancel'), role: 'cancel' },
-  {
-    text: t('budgets.remove'),
-    role: 'confirm',
-    handler: () => {
-      if (categoryToRemove.value) {
-        selectedCategories.value = selectedCategories.value.filter(c => c.id !== categoryToRemove.value!.id)
-        categoryIds.value = selectedCategories.value.map(c => c.id)
-        categoryToRemove.value = null
-      }
-    },
-  },
-]
+  const confirmed = await alert.confirm({
+    header: t('budgets.removeCategory'),
+    message: category?.name ? t('budgets.removeCategoryConfirm', { name: categoryName(category.name) }) : ''
+  })
+
+  if (!confirmed) return
+
+  selectedCategories.value = selectedCategories.value.filter(c => c.id !== category.id)
+  categoryIds.value = selectedCategories.value.map(c => c.id)
+}
 
 watch(() => values.type, (newType) => {
   if (newType !== 'once') {
@@ -148,7 +131,6 @@ const adjustWarning = (delta: number) => {
 }
 
 const submitBudget = handleSubmit(async (values) => {
-  isSaving.value = true
   try {
     await budgetStore.addBudget({
       name: values.name,
@@ -170,16 +152,9 @@ const submitBudget = handleSubmit(async (values) => {
     router.push('/budgets')
   } catch (e) {
     toast.error(t('budgets.addError'))
-  } finally {
-    isSaving.value = false
   }
 })
 
-/**
- * `isSaving` yalnızca doğrulama BİTTİKTEN sonra true oluyor; bu pencerede gelen
- * ikinci dokunuş ikinci bir bütçe yaratıyordu. `isSubmitting` tıklama anında
- * senkron olarak kalkar (bkz. guardSubmit).
- */
 const saveBudget = guardSubmit(isSubmitting, submitBudget)
 
 const handleIconPicker = (payload: { iconName: string, color: string }) => {
@@ -189,8 +164,6 @@ const handleIconPicker = (payload: { iconName: string, color: string }) => {
 
 const selectAccount = (account: AccountDTO) => {
   selectedAccount.value = account
-  // vee-validate alanını da güncelle: yoksa "Hesap seçimi zorunludur" hatası
-  // kalkmaz ve kaydederken accountId boş gider.
   setFieldValue('account', account.id)
   showAccountPicker.value = false
 }
@@ -272,9 +245,6 @@ onMounted(async () => {
           <BudgetTypeSegment v-model="type"/>
           <p v-if="errors.type" class="field-error text-[11px] text-rose-600 mt-2">{{ errors.type }}</p>
         </section>
-
-        <!-- Hesap -->
-<!--        <AccountField v-model="account" :accounts="accountsStore.accounts" :error="errors.account"/>-->
 
         <picker-field
             :label="t('common.account')"
@@ -415,10 +385,10 @@ onMounted(async () => {
         <ion-button
             expand="block"
             class="app-button"
-            :disabled="isSubmitting || isSaving"
+            :disabled="isSubmitting"
             @click="saveBudget"
         >
-          {{ isSubmitting || isSaving ? $t('budgets.saving') : $t('budgets.save') }}
+          {{ isSubmitting ? $t('budgets.saving') : $t('budgets.save') }}
         </ion-button>
       </ion-toolbar>
     </ion-footer>
@@ -465,12 +435,6 @@ onMounted(async () => {
               <ion-icon :icon="getIconByName(account.icon.name)" class="size-[18px]"/>
             </span>
             <ion-label class="text-[15px] font-medium">{{ account.name }}</ion-label>
-<!--            <ion-icon
-                v-if="selectedCategoryIds.has(account.id)"
-                slot="end"
-                :icon="checkmarkOutline"
-                class="size-5 text-indigo-600 shrink-0"
-            />-->
           </ion-item>
         </ion-list>
       </ion-content>
@@ -494,14 +458,6 @@ onMounted(async () => {
                          :categories="categoriesStore.expenseCategories"
                          :selected-ids="categoryIds"
                          @select="onCategoriesSelected"
-    />
-
-    <ion-alert
-        :is-open="showRemoveCategoryAlert"
-        :header="$t('budgets.removeCategory')"
-        :message="categoryToRemove?.name ? $t('budgets.removeCategoryConfirm', { name: categoryName(categoryToRemove.name) }) : ''"
-        :buttons="alertButtons"
-        @did-dismiss="showRemoveCategoryAlert = false"
     />
   </ion-page>
 </template>
