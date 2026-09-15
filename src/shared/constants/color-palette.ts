@@ -157,9 +157,10 @@ export const COLOR_PRESETS = [
     { class: 'bg-rose-600', gradient: 'from-rose-500 to-rose-700' },
     { class: 'bg-yellow-600', gradient: 'from-yellow-500 to-yellow-700' },
     { class: 'bg-blue-600', gradient: 'from-blue-500 to-blue-700' },
-    { class: 'bg-stone-600', gradient: 'from-stone-500 to-stone-700' },
-    { class: 'bg-violet-600', gradient: 'from-violet-500 to-violet-700' },
     { class: 'bg-fuchsia-600', gradient: 'from-fuchsia-500 to-fuchsia-700' },
     { class: 'bg-teal-600', gradient: 'from-teal-500 to-teal-700' },
     { class: 'bg-red-600', gradient: 'from-red-500 to-red-700' },
+    { class: 'bg-amber-600',   gradient: 'from-amber-500 to-amber-700' },
+    { class: 'bg-emerald-600', gradient: 'from-emerald-500 to-emerald-700' },
+    { class: 'bg-slate-700',   gradient: 'from-slate-700 to-slate-900' },
 ]
