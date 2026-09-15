@@ -66,9 +66,9 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
             this.installWebPersistListeners()
 
             this.ready = true
-            logger.debug('SQLite veritabanı başlatıldı', { context: CTX })
+            logger.debug('SQLite database initialized', { context: CTX })
         } catch (e) {
-            logger.error('Veritabanı başlatılamadı', { context: CTX, error: e });
+            logger.error('Failed to initialize database', { context: CTX, error: e });
             throw e;
         }
     }
@@ -146,7 +146,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         try {
             await this.sqlite.checkConnectionsConsistency()
         } catch (e) {
-            logger.debug('Web store başlatılıyor', { context: CTX })
+            logger.debug('Initializing web store', { context: CTX })
             await this.sqlite.initWebStore()
         }
     }
@@ -171,7 +171,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         }
 
         this.saveChain = this.saveChain.then(async () => {
-            if (!this.webStoreDirty || !this.inTransaction) {
+            if (!this.webStoreDirty || this.inTransaction) {
                 return
             }
 
@@ -181,7 +181,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
                 await this.sqlite!.saveToStore(this.DB_STORE_NAME)
             } catch (error) {
                 this.webStoreDirty = true
-                logger.error('Web store kaydedilemedi', { context: CTX, error })
+                logger.error('Failed to persist web store', { context: CTX, error })
             }
         })
 
@@ -240,7 +240,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         // Passphrase bundle'da DEĞİL: APK'yı açan biri okuyamaz, yalnızca bu
         // cihazın Keystore'u çözebilir.
         await this.sqlite.setEncryptionSecret(secureRandomHex(32))
-        logger.info('Veritabanı şifreleme anahtarı oluşturuldu', { context: CTX })
+        logger.info('Database encryption key created', { context: CTX })
     }
 
     /**
@@ -275,7 +275,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         const { result: stored } = await this.sqlite.isSecretStored()
 
         if (!stored) {
-            logger.fatal('Şifreli veritabanı var ama şifreleme anahtarı bulunamadı', {
+            logger.fatal('Encrypted database exists but its encryption key is missing', {
                 context: CTX,
             })
             throw new EncryptionKeyLostError()
@@ -293,7 +293,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         const { result: hasConnection } = await this.sqlite.isConnection(this.DB_NAME, false);
 
         if (isConsistent && hasConnection) {
-            logger.debug('Mevcut bağlantı alınıyor', { context: CTX });
+            logger.debug('Retrieving existing database connection', { context: CTX });
             return this.sqlite.retrieveConnection(this.DB_NAME, false);
         }
 
@@ -304,7 +304,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         const mode = await this.resolveOpenMode()
         await this.ensureEncryptionSecret(mode)
 
-        logger.debug('Yeni bağlantı oluşturuluyor', { context: CTX, data: { mode } });
+        logger.debug('Creating database connection', { context: CTX, data: { mode } });
 
         return this.sqlite.createConnection(
             this.DB_NAME,
@@ -330,7 +330,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
             await this.db!.open()
         } catch (error) {
             if (this.useEncryption && looksLikeWrongEncryptionKey(error)) {
-                logger.fatal('Veritabanı saklanan anahtarla açılamadı', { context: CTX, error })
+                logger.fatal('Database could not be opened with the stored encryption key', { context: CTX, error })
                 throw new EncryptionKeyLostError(error)
             }
 
@@ -350,7 +350,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
                 insertId: result.changes?.lastId
             };
         } catch (error) {
-            logger.error('SQL execute hatası', { context: CTX, error, data: { sql } });
+            logger.error('Failed to execute SQL', { context: CTX, error, data: { sql } });
             throw error;
         }
     }
@@ -366,7 +366,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
             await this.db!.executeSet(set, !this.inTransaction);
             this.webStoreDirty = true;
         } catch (error) {
-            logger.error('SQL batch hatası', { context: CTX, error });
+            logger.error('Failed to execute SQL batch', { context: CTX, error });
             throw error;
         }
     }
@@ -381,7 +381,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
                 rowsAffected: result.values?.length || 0
             };
         } catch (error) {
-            logger.error('SQL query hatası', { context: CTX, error, data: { sql } });
+            logger.error('Failed to run SQL statement', { context: CTX, error, data: { sql } });
             throw error;
         }
     }
@@ -397,7 +397,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
                 rowsAffected: result?.changes?.changes || 0
             };
         } catch (error) {
-            logger.error('SQL run hatası', { context: CTX, error, data: { sql } });
+            logger.error('Failed to run SQL statement', { context: CTX, error, data: { sql } });
             throw error;
         }
     }
@@ -484,7 +484,7 @@ export class SqliteDatabaseAdapter implements DatabaseAdapter {
         this.db = null;
         this.ready = false;
 
-        logger.warn('Veritabanı dosyası silindi (kurtarma)', { context: CTX });
+        logger.warn('Database file deleted during recovery', { context: CTX });
     }
 
     isReady(): boolean {
