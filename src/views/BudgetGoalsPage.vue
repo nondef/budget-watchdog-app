@@ -21,19 +21,19 @@ import { useCurrenciesStore } from "@/stores/currencies";
 import { useBudgetSummary } from "@/composables/features/useBudgetSummary";
 import { useBudgetFilters } from "@/composables/features/useBudgetFilters";
 import BudgetCard from "@/components/BudgetCard.vue";
-import { usePopulatedBudgets } from "@/composables/data/usePopulatedBudgets";
-
-const { populatedBudgets } = usePopulatedBudgets()
+import { useEnrichedBudgets } from "@/composables/data/useEnrichedBudgets";
 
 const router = useRouter();
 const { t } = useI18n();
+
 const budgetStore = useBudgetStore();
 const accountStore = useAccountsStore()
 const categoryStore = useCategoriesStore()
 const currencyStore = useCurrenciesStore()
 
-const { totalRemaining, totalSpent, totalBudget, overallProgress } = useBudgetSummary(populatedBudgets)
-const { selectedFilter, filteredBudgets, selectedSort } = useBudgetFilters(populatedBudgets)
+const { enrichedBudgets } = useEnrichedBudgets()
+const { totalRemaining, totalSpent, totalBudget, overallProgress } = useBudgetSummary(enrichedBudgets)
+const { selectedFilter, filteredBudgets, selectedSort } = useBudgetFilters(enrichedBudgets)
 
 const filters = computed(() => [
   { id: 'all', label: t('budgets.filters.all') },

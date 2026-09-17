@@ -3,7 +3,6 @@ import { computed, ComputedRef } from "vue";
 import { EnrichedBudgetDTO } from "@/application";
 
 export function useBudgetSummary(source: ComputedRef<EnrichedBudgetDTO[]>) {
-    // const budgetStore = useBudgetStore()
     const { sumInBase, formatMoney } = useMoney()
 
     const totalBudget = computed(() => {

@@ -4,11 +4,11 @@ import { chevronForwardOutline, alertCircleOutline } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useBudgetStore } from '@/stores/budgets';
 import { useMoney } from '@/composables/money/useMoney';
-import { usePopulatedBudgets } from "@/composables/data/usePopulatedBudgets";
+import { useEnrichedBudgets } from "@/composables";
 
 const budgetStore = useBudgetStore();
 const { formatMoney } = useMoney();
-const { populatedBudgetsById } = usePopulatedBudgets()
+const { enrichedBudgetById } = useEnrichedBudgets()
 
 interface Row {
   id: string
@@ -34,7 +34,7 @@ const rows = computed<Row[]>(() => {
         if (progress >= 100) state = 'exceeded'
         else if (progress >= (b.warningPercentage ?? 80)) state = 'warning'
 
-        const enriched = populatedBudgetsById(b.id)
+        const enriched = enrichedBudgetById(b.id)
         const firstCat = enriched?.categories?.[0]
 
         return {
