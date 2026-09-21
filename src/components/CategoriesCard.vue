@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonIcon } from '@ionic/vue';
 import { swapHorizontalOutline } from 'ionicons/icons';
-import { defineEmits, ref, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Percentage } from "@/domain";
 import { getIconByName } from "@/shared/utils";
