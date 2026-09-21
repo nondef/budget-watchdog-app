@@ -120,15 +120,6 @@ const pickCurrency = (currency: CurrencyDTO) => {
   transition: background 0.18s ease, color 0.18s ease;
 }
 
-/* Dark: mevcut görünüm korunur — satır modal yüzeyinden elevated (strong),
-   avatar satırdan bir tık koyu (surface). */
-.ion-palette-dark .currency-item {
-  --background: var(--c-surface-strong) !important;
-}
-.ion-palette-dark .currency-avatar {
-  background: var(--c-surface);
-}
-
 /* Sağdaki seçim göstergesi — boş halka; seçiliyken yumuşak dolgu + primary
    çerçeve. Eskiden dolgu --c-content idi: dark temada bu #f6f6f6, yani
    koyu satırın üstünde bembeyaz bir disk oluyordu. */
@@ -174,18 +165,6 @@ const pickCurrency = (currency: CurrencyDTO) => {
   --background-activated: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface)) !important;
   --background-focused: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface)) !important;
   --color: var(--c-content) !important;
-  border-radius: 16px;
-  /* Secili kart: IconPicker secili ikon butonu ile ayni 2px primary halka. */
-  box-shadow: inset 0 0 0 2px var(--c-primary);
-}
-
-/* Dark: taban satır surface-strong (#3a3a3a) olduğu için karışım da onun
-   üstüne yapılır; primary dark'ta açık ton olduğundan satır yükselmiş görünür. */
-.ion-palette-dark .currency-item.is-selected {
-  --background: color-mix(in srgb, var(--c-primary) 10%, var(--c-surface-strong)) !important;
-  --background-hover: color-mix(in srgb, var(--c-primary) 16%, var(--c-surface-strong)) !important;
-  --background-activated: color-mix(in srgb, var(--c-primary) 16%, var(--c-surface-strong)) !important;
-  --background-focused: color-mix(in srgb, var(--c-primary) 16%, var(--c-surface-strong)) !important;
 }
 
 /* Seçili satırın avatarı da aynı yönde bir tık kayar ki chip, tonlanmış satır
@@ -193,7 +172,45 @@ const pickCurrency = (currency: CurrencyDTO) => {
 .currency-item.is-selected .currency-avatar {
   background: color-mix(in srgb, var(--c-primary) 12%, var(--c-surface-sunken));
 }
-.ion-palette-dark .currency-item.is-selected .currency-avatar {
-  background: color-mix(in srgb, var(--c-primary) 14%, var(--c-surface));
+</style>
+
+<!-- `ion-palette-dark` html üzerinde olduğu için bu kurallar scoped olamaz. -->
+<style>
+/* Global dark ion-list kuralı liste yüzeyini kartlarla aynı #2a tona
+   boyuyordu. Listeyi şeffaf bırakınca modalın daha koyu zemini görünür. */
+html.ion-palette-dark ion-list.currency-list {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+html.ion-palette-dark .currency-list .currency-item {
+  --background: color-mix(in srgb, var(--c-content) 4%, var(--c-surface)) !important;
+  --background-hover: color-mix(in srgb, var(--c-content) 8%, var(--c-surface)) !important;
+  --background-activated: color-mix(in srgb, var(--c-content) 10%, var(--c-surface)) !important;
+  --background-focused: color-mix(in srgb, var(--c-content) 10%, var(--c-surface)) !important;
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+html.ion-palette-dark .currency-list .currency-avatar {
+  background: var(--c-surface-strong);
+}
+
+/* Seçili satır bir yüzey seviyesi yükselir; kalın/beyaz dış border kullanılmaz. */
+html.ion-palette-dark .currency-list .currency-item.is-selected {
+  --background: color-mix(in srgb, var(--c-content) 5%, var(--c-surface-strong)) !important;
+  --background-hover: color-mix(in srgb, var(--c-content) 9%, var(--c-surface-strong)) !important;
+  --background-activated: color-mix(in srgb, var(--c-content) 12%, var(--c-surface-strong)) !important;
+  --background-focused: color-mix(in srgb, var(--c-content) 12%, var(--c-surface-strong)) !important;
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
+
+html.ion-palette-dark .currency-list .currency-item.is-selected .currency-avatar {
+  background: color-mix(in srgb, var(--c-content) 7%, var(--c-surface-strong));
+}
+
+html.ion-palette-dark .currency-list .currency-check.is-on {
+  border-color: var(--c-primary);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
 }
 </style>

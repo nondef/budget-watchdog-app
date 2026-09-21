@@ -134,31 +134,41 @@ function onDismiss() {
 </template>
 
 <style scoped>
-/* Liste satırları modal yüzeyiyle birleşsin: kendi zemini olmasın (şeffaf),
-   yalnızca dokunma/aktif durumda hafif sunken ton. Global dark `ion-item`
-   kuralı !important ile --background'ı --c-surface'e zorladığından burada da
-   !important ile şeffafa çekiyoruz; light'ta varsayılan beyaz zaten modal
-   yüzeyiyle (surface-lowest) aynı, dark'ta da satır zemini kalkıp modalın
-   --c-surface'i görünür → her iki temada arka planla uyumlu. */
-/* Searchbar stili artık global .app-searchbar'da (variables.css) —
-   TransactionsPage ile paylaşılır; modal varyantı orada tanımlı. */
-
-.block-content {
-  width: 100%;
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.currency-chip {
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-content-tertiary);
+  box-shadow: none;
 }
-/* Sheet modal sits at the bottom of the screen, so it never reaches the status
-   bar. Ionic still adds the status-bar safe-area inset as a real `padding-top`
-   on the toolbar host (not via the `--padding-top` custom prop), which showed up
-   as an empty gap above the title on devices/emulators with a status bar inset
-   — web has no inset, so the gap only appeared there. Zero the host padding and
-   add a small inner padding so the title still clears the drag handle. */
-.picker-toolbar {
-  padding-top: 0;
-  /*--padding-top: 6px;*/
-  /*--min-height: 48px;*/
+
+.currency-chip:active {
+  border-color: var(--c-line-strong);
+  background: var(--c-surface-sunken);
+}
+
+.currency-chip--active {
+  border-color: var(--c-primary);
+  background: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface));
+  color: var(--c-content);
+}
+</style>
+
+<!-- Tema sınıfı html üzerinde olduğu için dark kurallar global tutulur. -->
+<style>
+html.ion-palette-dark .currency-picker-modal .currency-chip {
+  border-color: var(--c-line);
+  background: color-mix(in srgb, var(--c-content) 4%, var(--c-surface));
+  color: var(--c-content-tertiary);
+}
+
+html.ion-palette-dark .currency-picker-modal .currency-chip:active {
+  border-color: var(--c-line-strong);
+  background: color-mix(in srgb, var(--c-content) 10%, var(--c-surface));
+}
+
+html.ion-palette-dark .currency-picker-modal .currency-chip--active {
+  border-color: var(--c-line-strong);
+  background: color-mix(in srgb, var(--c-content) 5%, var(--c-surface-strong));
+  color: var(--c-content);
 }
 </style>

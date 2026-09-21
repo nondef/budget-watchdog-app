@@ -82,12 +82,9 @@ onMounted(async () => {
         <div class="flex-1 flex flex-col items-center justify-center text-center">
           <!-- Hero ikon -->
           <div class="relative mb-8">
-            <div
-                class="absolute -inset-6 rounded-full"
-                style="background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)"
-            />
-            <div class="relative size-24 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-2xl">
-              <ion-icon :icon="globeOutline" class="size-12 text-white" />
+            <div class="currency-hero-glow absolute -inset-6 rounded-full" />
+            <div class="currency-hero-icon relative size-24 rounded-3xl flex items-center justify-center shadow-2xl">
+              <ion-icon :icon="globeOutline" class="size-12" />
             </div>
           </div>
 
@@ -104,11 +101,12 @@ onMounted(async () => {
               :detail="false"
               lines="none"
               class="currency-select-item mt-8 w-full max-w-sm"
+              :class="{ 'currency-select-item--selected': selectedCurrency }"
               @click="openPicker"
           >
             <div
                 slot="start"
-                class="size-11 rounded-2xl flex items-center justify-center shrink-0 bg-gray-500/30 text-black dark:bg-gray-500/20 dark:text-white"
+                class="currency-select-symbol size-11 rounded-2xl flex items-center justify-center shrink-0"
             >
               <span class="text-[16px] font-bold"
               >
@@ -119,12 +117,12 @@ onMounted(async () => {
               <h2 class="text-content-muted">{{ t('baseCurrencySelection.currencyLabel') }}</h2>
               <p
                   class="text-[15px] font-semibold mt-1 truncate"
-                  :class="selectedCurrency ? 'dark:text-gray-200' : 'text-slate-200'"
+                  :class="selectedCurrency ? 'text-content' : 'text-content-muted'"
               >
                 {{ selectedCurrency ? `${selectedCurrency.code} — ${currencyName(selectedCurrency)}` : t('baseCurrencySelection.selectCurrency') }}
               </p>
             </ion-label>
-            <ion-icon slot="end" :icon="chevronForwardOutline" class="size-5 dark:text-slate-100 text-gray-500 shrink-0" />
+            <ion-icon slot="end" :icon="chevronForwardOutline" class="size-5 text-content-muted shrink-0" />
           </ion-item>
 
 
@@ -178,50 +176,51 @@ ion-toolbar {
   pointer-events: none;
 }
 
-/* Footer stilleri artık variables.css'teki global ion-footer kuralında */
-
-.currency-sheet {
-  background: var(--c-page);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding-top: env(safe-area-inset-top);
+.currency-hero-glow {
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-primary) 18%, transparent) 0%, transparent 70%);
 }
 
-.currency-list {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
-}
-
-ion-item {
-  --detail-icon-color: theme(colors.slate.200);
-  --detail-icon-opacity: 1;
+.currency-hero-icon {
+  background: var(--c-inverse-surface);
+  color: var(--c-inverse-on-surface);
 }
 
 .currency-select-item {
   --background: var(--c-surface);
+  --background-hover: var(--c-surface-sunken);
+  --background-activated: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --color: var(--c-content);
   --border-radius: 1rem;
   --padding-start: 1rem;
   --padding-end: 1rem;
   --inner-padding-end: 0;
-  border: 1px solid var(--c-line-strong);
   border-radius: 1rem;
   overflow: hidden;
 }
+
+/* Border Ionic host'una değil gerçek item yüzeyine çizilir; aksi halde host ve
+   native radius'ları farklı köşelerde çift/kare çizgi üretiyordu. */
+.currency-select-item::part(native) {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.currency-select-item--selected {
+  --background: color-mix(in srgb, var(--c-primary) 5%, var(--c-surface));
+  --background-hover: color-mix(in srgb, var(--c-primary) 9%, var(--c-surface));
+  --background-activated: color-mix(in srgb, var(--c-primary) 12%, var(--c-surface));
+}
+
+.currency-select-item--selected::part(native) {
+  box-shadow: inset 0 0 0 1px var(--c-primary);
+}
+
+.currency-select-item--selected .currency-select-symbol {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  box-shadow: none;
+}
 </style>
-
-<!--<style>
-/* Modal Ionic tarafından root'a teleport edildiği için global olmalı */
-ion-modal.currency-modal {
-  &#45;&#45;background: var(&#45;&#45;c-page);
-  &#45;&#45;backdrop-opacity: 0.5;
-  &#45;&#45;border-radius: 0;
-  &#45;&#45;width: 100%;
-  &#45;&#45;height: 100%;
-}
-
-ion-modal.currency-modal::part(content) {
-  background: var(&#45;&#45;c-page);
-}
-</style>-->
