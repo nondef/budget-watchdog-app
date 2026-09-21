@@ -1,38 +1,65 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { IonIcon, IonModal, IonDatetime } from '@ionic/vue'
+import { IonIcon } from '@ionic/vue'
 import { calendarOutline } from 'ionicons/icons'
 import PickerField from '@/components/PickerField.vue'
+import DatePickerModal from '@/components/DatePickerModal.vue'
+import TimePickerModal from '@/components/TimePickerModal.vue'
 
 const date = defineModel<string>('date', { required: true })
 const time = defineModel<string>('time', { required: true })
 
-const modalOpen = ref(false)
+const dateOpen = ref(false)
+const timeOpen = ref(false)
+const openTimeAfterDate = ref(false)
+const draftDate = ref('')
+const draftTime = ref('')
 
 const { t } = useI18n()
 
-const iso = computed(() => {
-  if (!date.value || !time.value) return new Date().toISOString()
+/** Formdaki DD.MM.YYYY / HH:mm değerlerini iki modal tamamlanana kadar taslakta tutar. */
+const openPicker = () => {
   const [day, month, year] = date.value.split('.')
-  const [hour, minute] = time.value.split(':')
-  return new Date(+year, +month - 1, +day, +hour, +minute).toISOString()
-})
+  draftDate.value = year && month && day
+      ? `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      : new Date().toLocaleDateString('sv-SE')
+  draftTime.value = /^\d{2}:\d{2}$/.test(time.value)
+      ? time.value
+      : new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+  dateOpen.value = true
+}
 
-const changed = (event: CustomEvent) => {
-  const d = new Date(event.detail.value as string)
-  date.value = d.toLocaleDateString('tr-TR')
-  time.value = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+const onDateConfirm = (value: string) => {
+  draftDate.value = value
+  openTimeAfterDate.value = true
+}
+
+const onDateCancel = () => {
+  openTimeAfterDate.value = false
+}
+
+/** İlk modalın kapanış animasyonu bitince saat modalını açar. */
+const onDateDismissed = () => {
+  if (!openTimeAfterDate.value) return
+  openTimeAfterDate.value = false
+  timeOpen.value = true
+}
+
+const onTimeConfirm = (value: string) => {
+  draftTime.value = value
+  const [year, month, day] = draftDate.value.split('-')
+  if (year && month && day) date.value = `${day}.${month}.${year}`
+  if (/^\d{2}:\d{2}$/.test(draftTime.value)) time.value = draftTime.value
 }
 </script>
 
 <template>
-  <!-- MD3 filled field görünümlü tarih-saat seçici (PickerField). -->
-  <picker-field :label="t('transactions.dateTime')" @click="modalOpen = true">
+  <picker-field :label="t('transactions.dateTime')" @click="openPicker">
     <template #start>
       <div
           slot="start"
-          class="size-9 rounded-xl flex items-center justify-center shrink-0 bg-surface-sunken"
+          class="size-9 shrink-0 flex items-center justify-center rounded-xl bg-surface-sunken"
       >
         <ion-icon :icon="calendarOutline" class="size-[16px] text-content-muted"/>
       </div>
@@ -40,35 +67,17 @@ const changed = (event: CustomEvent) => {
     {{ date }} · {{ time }}
   </picker-field>
 
-  <ion-modal :is-open="modalOpen" class="picker-modal" @did-dismiss="modalOpen = false">
-    <ion-datetime
-        presentation="date-time"
-        :value="iso"
-        :first-day-of-week="1"
-        @ion-change="changed"
-    />
-  </ion-modal>
-</template>
+  <DatePickerModal
+      v-model="draftDate"
+      v-model:open="dateOpen"
+      @confirm="onDateConfirm"
+      @cancel="onDateCancel"
+      @dismissed="onDateDismissed"
+  />
 
-<!-- Modal teleport edildiği için global: light/dark uyumu --c-* tokenlarıyla. -->
-<style>
-/* MD3 date-time picker dialog: yüzey surface-container-high, köşe 28dp. */
-ion-modal.picker-modal {
-  --width: fit-content;
-  --min-width: 300px;
-  --height: fit-content;
-  --border-radius: 28px;
-  --box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
-  --background: var(--md-surface-container-high);
-}
-ion-modal.picker-modal::part(content) {
-  background: var(--md-surface-container-high);
-}
-ion-modal.picker-modal ion-datetime {
-  --background: var(--md-surface-container-high);
-  --title-color: var(--md-on-surface);
-  color: var(--md-on-surface);
-  margin: 0 auto;
-  border-radius: 28px;
-}
-</style>
+  <TimePickerModal
+      v-model="draftTime"
+      v-model:open="timeOpen"
+      @confirm="onTimeConfirm"
+  />
+</template>

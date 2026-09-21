@@ -321,6 +321,7 @@
     "selectCategory": "Select category",
     "selectTargetAccount": "Select target account",
     "dateTime": "Date & Time",
+    "setTime": "Set time",
     "save": "Save Transaction",
     "defaultTitle": "New Transaction",
     "savedSuccess": "Transaction saved",

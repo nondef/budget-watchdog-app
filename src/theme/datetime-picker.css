@@ -1,0 +1,95 @@
+/* Tarih ve saat seçicilerin ortak modal kabuğu. */
+ion-modal.datetime-picker-modal {
+  --width: min(calc(100% - 16px), 420px);
+  --border-radius: 28px;
+  --background: var(--md-surface-container-high);
+  --box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  /* Ionic host yatay flex satırıdır: align-items dikeyde alta,
+     justify-content yatayda ortaya yerleştirir. */
+  align-items: flex-end;
+  justify-content: center;
+}
+
+ion-modal.datetime-picker-modal--date {
+  --height: min(452px, calc(100% - 56px));
+}
+
+ion-modal.datetime-picker-modal--time {
+  --height: min(352px, calc(100% - 56px));
+}
+
+ion-modal.datetime-picker-modal::part(content) {
+  margin-bottom: max(28px, calc(env(safe-area-inset-bottom) + 8px));
+  background: var(--md-surface-container-high);
+}
+
+ion-modal.datetime-picker-modal .datetime-picker-card {
+  background: var(--md-surface-container-high);
+  padding-bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px));
+}
+
+ion-modal.datetime-picker-modal ion-datetime {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  border-radius: 28px;
+  --background: transparent;
+  --wheel-highlight-background: transparent;
+}
+
+ion-modal.datetime-picker-modal--date ion-datetime {
+  padding: 0;
+}
+
+ion-modal.datetime-picker-modal--time ion-datetime {
+  max-width: 250px;
+}
+
+ion-modal.datetime-picker-modal .datetime-picker-time-separator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -52%);
+  color: var(--c-content);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+ion-modal.datetime-picker-modal ion-datetime::part(month-year-button) {
+  font-weight: 650;
+}
+
+ion-modal.datetime-picker-modal ion-datetime::part(calendar-days-of-week) {
+  font-weight: 600;
+}
+
+ion-modal.datetime-picker-modal ion-datetime::part(calendar-day) {
+  font-weight: 600;
+}
+
+ion-modal.datetime-picker-modal ion-datetime::part(calendar-day active),
+ion-modal.datetime-picker-modal ion-datetime::part(wheel-item active) {
+  font-weight: 700;
+}
+
+ion-modal.datetime-picker-modal ion-datetime::part(wheel-item) {
+  font-weight: 550;
+}
+
+ion-modal.datetime-picker-modal .datetime-picker-action {
+  min-height: 52px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  --color: var(--c-content);
+  --border-radius: 16px;
+  --ripple-color: var(--c-content-muted);
+}
+
+ion-modal.datetime-picker-modal .datetime-picker-action + .datetime-picker-action {
+  border-left: 1px solid var(--c-line);
+}

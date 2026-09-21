@@ -43,6 +43,7 @@ import '@ionic/vue/css/core.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import './theme/datetime-picker.css';
 import { repositoryManager } from "@/infrastructure/database/repositories/repository-manager";
 import { useThemeStore } from "@/stores/theme";
 import { DatabaseFactory } from "@/infrastructure/database/database-factory";
