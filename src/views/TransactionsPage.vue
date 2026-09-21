@@ -17,6 +17,7 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   type InfiniteScrollCustomEvent,
+  onIonViewWillEnter,
 } from '@ionic/vue';
 import {
   addOutline,
@@ -128,12 +129,11 @@ const categoryName = (id: string) => {
   return name ? translateCategoryName(name) : id
 }
 
-onMounted(async () => {
-  await Promise.all([
-    transactionStore.loadTransactions(),
-    categoriesStore.loadCategories()
-  ])
-})
+// Kategoriler sık değişmediği için sayfa ilk oluşturulduğunda bir kez yüklenir.
+onMounted(async () => categoriesStore.loadCategories())
+
+// Ionic sayfaları cache'lediğinden işlem listesi sayfaya her girişte yenilenir.
+onIonViewWillEnter(() => transactionStore.loadTransactions())
 </script>
 
 <template>
