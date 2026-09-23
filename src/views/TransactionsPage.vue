@@ -141,16 +141,16 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
     <!-- Üst bar -->
     <ion-header class="ion-no-border">
       <ion-toolbar class="toolbar-plain">
-        <ion-title class="text-xl font-semibold pb-5">
+        <ion-title class="text-xl font-semibold">
           {{ $t('transactions.title') }}
         </ion-title>
 
         <ion-buttons slot="end">
-          <ion-button @click="showFilters = !showFilters" :aria-label="$t('transactions.filter')">
+          <ion-button class="filter-trigger" @click="showFilters = !showFilters" :aria-label="$t('transactions.filter')">
             <ion-icon :icon="filterOutline" class="size-[20px]" />
             <span
                 v-if="activeFilterCount"
-                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center"
+                class="filter-count absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
             >
               {{ activeFilterCount }}
             </span>
@@ -160,7 +160,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
     </ion-header>
 
     <ion-content class="tx-content" :scroll-y="true">
-      <div class="px-4">
+      <main class="mx-auto w-full max-w-xl px-4 pb-24 pt-3">
         <!-- Arama -->
         <ion-searchbar
             v-model="searchText"
@@ -179,21 +179,22 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
 
         <!-- Filtre paneli -->
         <transition name="filter">
-          <div v-if="showFilters" class="mt-3 bg-surface rounded-2xl px-4 py-3">
+          <section v-if="showFilters" class="tx-card filter-card mt-3 p-4">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-[13px] font-semibold text-content">{{ $t('transactions.filters') }}</h3>
-              <button
+              <ion-button
                   v-if="activeFilterCount"
-                  class="text-[12px] font-medium text-indigo-600 active:text-indigo-800"
+                  fill="clear"
+                  class="clear-filter"
                   @click="clearFilters"
               >
                 {{ $t('transactions.clear') }}
-              </button>
+              </ion-button>
             </div>
 
             <div class="space-y-2">
               <!-- Tip -->
-              <div class="flex items-center justify-between gap-2 rounded-xl bg-surface-sunken px-3 h-11">
+              <div class="filter-field flex h-12 items-center justify-between gap-2 rounded-xl px-3">
                 <span class="text-[12px] text-content-muted">{{ $t('transactions.type') }}</span>
                 <ion-select
                     v-model="selectedType"
@@ -207,7 +208,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
               </div>
 
               <!-- Kategori -->
-              <div class="flex items-center justify-between gap-2 rounded-xl bg-surface-sunken px-3 h-11">
+              <div class="filter-field flex h-12 items-center justify-between gap-2 rounded-xl px-3">
                 <span class="text-[12px] text-content-muted">{{ $t('transactions.category') }}</span>
                 <ion-select
                     v-model="selectedCategory"
@@ -223,7 +224,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
 
               <!-- Tarih -->
               <button
-                  class="w-full flex items-center justify-between gap-2 rounded-xl bg-surface-sunken px-3 h-11 active:bg-surface-strong transition"
+                  class="filter-field flex h-12 w-full items-center justify-between gap-2 rounded-xl px-3 transition"
                   @click="showDateModal = true"
               >
                 <span class="text-[12px] text-content-muted">{{ $t('transactions.date') }}</span>
@@ -233,11 +234,11 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
                 </span>
               </button>
             </div>
-          </div>
+          </section>
         </transition>
 
         <!-- Özet -->
-        <div v-if="summary.count > 0" class="mt-3 bg-surface rounded-2xl px-4 py-3">
+        <section v-if="summary.count > 0" class="tx-card summary-card mt-3 p-4">
           <div class="flex items-center justify-between">
             <span class="text-[11px] text-content-muted">{{ $t('transactions.countLabel', { count: summary.count }) }}</span>
             <div class="flex items-center gap-3 text-[12px]">
@@ -251,7 +252,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
               </span>
             </div>
           </div>
-          <div class="mt-2 pt-2 border-t border-line flex items-center justify-between">
+          <div class="mt-3 flex items-center justify-between border-t border-line pt-3">
             <span class="text-[12px] font-medium text-content-muted">{{ $t('common.net') }}</span>
             <span
                 class="text-[15px] font-bold tabular-nums"
@@ -260,11 +261,10 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
               {{ summary.net >= 0 ? '+' : '' }}{{ summary.total }}
             </span>
           </div>
-        </div>
-      </div>
+        </section>
 
       <!-- Liste -->
-      <div class="mt-3 px-4 pb-24">
+      <div class="transaction-list mt-4">
         <TransactionEmptyState v-if="filteredTransactions.length === 0" />
 
         <TransactionDateGroup
@@ -272,6 +272,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
             :key="i"
             :title="group.title"
             :items="group.items"
+            class="transaction-group"
             @select-transaction="openDetail"
         />
       </div>
@@ -283,6 +284,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
       >
         <ion-infinite-scroll-content />
       </ion-infinite-scroll>
+      </main>
 
       <!-- FAB -->
       <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="custom-fab">
@@ -294,15 +296,16 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
 
     <!-- Tarih modal -->
     <ion-modal :is-open="showDateModal" @did-dismiss="showDateModal = false" class="date-modal">
-      <div class="date-modal-sheet p-4">
+      <div class="date-modal-sheet h-full overflow-y-auto p-4">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-[15px] font-semibold text-content">{{ $t('transactions.dateRange') }}</h3>
-          <button
-              class="size-8 rounded-full flex items-center justify-center text-content-muted active:bg-surface-strong"
+          <ion-button
+              fill="clear"
+              class="date-modal-close"
               @click="showDateModal = false"
           >
-            <ion-icon :icon="closeOutline" class="size-5" />
-          </button>
+            <ion-icon slot="icon-only" :icon="closeOutline" />
+          </ion-button>
         </div>
         <div class="space-y-3">
           <div>
@@ -321,7 +324,9 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
                 :show-default-buttons="false"
             />
           </div>
-          <ion-button expand="block" @click="showDateModal = false">{{ $t('transactions.apply') }}</ion-button>
+          <ion-button expand="block" class="apply-date-button" @click="showDateModal = false">
+            {{ $t('transactions.apply') }}
+          </ion-button>
         </div>
       </div>
     </ion-modal>
@@ -333,17 +338,29 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
    surface-container-high). Modal teleport edildiği için bu blok global;
    içerideki sheet ve ion-datetime aynı yüzeye oturur. */
 ion-modal.date-modal {
+  --width: min(calc(100% - 16px), 440px);
+  --height: min(760px, calc(100% - 48px));
+  --border-radius: 28px;
   --background: var(--md-surface-container-high);
+  --box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  align-items: flex-end;
+  justify-content: center;
 }
 ion-modal.date-modal::part(content) {
+  margin-bottom: max(20px, calc(env(safe-area-inset-bottom) + 6px));
   background: var(--md-surface-container-high);
 }
 ion-modal.date-modal .date-modal-sheet {
   background: var(--md-surface-container-high);
+  padding-bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px));
 }
 ion-modal.date-modal ion-datetime {
-  --background: var(--md-surface-container-high);
+  width: 100%;
+  max-width: none;
+  --background: var(--c-surface-sunken);
   margin: 0 auto;
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
 }
 </style>
 
@@ -352,12 +369,50 @@ ion-modal.date-modal ion-datetime {
   --background: var(--c-page);
 }
 
-.menu-btn {
-  --color: #475569;
-}
-
 ion-page {
   overflow: hidden;
+}
+
+ion-button.filter-trigger {
+  position: relative;
+  --border-radius: 12px;
+  --color: var(--c-content);
+}
+
+.filter-count {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.tx-card,
+.transaction-group {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+ion-button.clear-filter {
+  min-height: 32px;
+  margin: -7px -8px -7px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  --color: var(--c-content);
+  --border-radius: 10px;
+}
+
+.filter-field {
+  background: var(--c-surface-sunken);
+  border: 1px solid var(--c-line);
+}
+
+button.filter-field:active {
+  background: var(--c-surface-strong);
+}
+
+.summary-card {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
 }
 
 ion-select {
@@ -377,7 +432,30 @@ ion-select {
   --background-activated: var(--c-primary-strong);
   --background-hover: var(--c-primary-strong);
   --color: var(--c-on-primary);
-  --box-shadow: 0 6px 18px rgba(0, 147, 122, 0.35);
+  --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+ion-button.date-modal-close {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  --border-radius: 12px;
+  --color: var(--c-content-muted);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button.apply-date-button {
+  min-height: 48px;
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 750;
+  text-transform: none;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --border-radius: 14px;
+  --box-shadow: none;
+  --color: var(--c-on-primary);
 }
 
 /* Filtre animasyonu */

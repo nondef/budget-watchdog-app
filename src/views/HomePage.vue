@@ -7,6 +7,7 @@ import {
   IonTitle,
   IonHeader,
   IonToolbar,
+  IonButton,
 } from '@ionic/vue';
 import {
   addOutline,
@@ -229,10 +230,10 @@ const onCashFlowRangeChange = (range: TimeRange) => cashFlowRange.value = range
 const onCategoryRangeChange = (range: TimeRange) => categoryRange.value = range
 
 const quickActions = computed(() => [
-  { label: t('home.quickActions.income'), icon: addOutline, tint: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400', link: '/transaction/new?type=income' },
-  { label: t('home.quickActions.expense'), icon: removeOutline, tint: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400', link: '/transaction/new?type=expense' },
-  { label: t('home.quickActions.transfer'), icon: swapHorizontalOutline, tint: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400', link: '/transaction/new?type=transfer' },
-  { label: t('home.quickActions.goal'), icon: flagOutline, tint: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400', link: '/savings/new' },
+  { label: t('home.quickActions.income'), icon: addOutline, tone: 'income', link: '/transaction/new?type=income' },
+  { label: t('home.quickActions.expense'), icon: removeOutline, tone: 'expense', link: '/transaction/new?type=expense' },
+  { label: t('home.quickActions.transfer'), icon: swapHorizontalOutline, tone: 'transfer', link: '/transaction/new?type=transfer' },
+  { label: t('home.quickActions.goal'), icon: flagOutline, tone: 'goal', link: '/savings/new' },
 ])
 
 onIonViewWillEnter(async () => {
@@ -254,7 +255,7 @@ onIonViewWillEnter(async () => {
     <!-- Üst bar -->
     <ion-header class="ion-no-border">
       <ion-toolbar class="toolbar-plain">
-        <ion-title class="font-semibold pb-5">
+        <ion-title class="font-semibold">
           <div class="flex items-center gap-3">
             <div class="brand-mark">
               <img :src="logoSrc" :alt="$t('home.logoAlt')" class="brand-logo"/>
@@ -274,19 +275,20 @@ onIonViewWillEnter(async () => {
       </ion-toolbar>
     </ion-header>
 
-    <ion-content style="--background: var(--c-page);" :scroll-y="true">
-      <div class="px-4">
+    <ion-content class="home-content" :scroll-y="true">
+      <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
         <!-- Bakiye + Hızlı işlemler tek kart -->
-        <section class="bg-surface mt-6 rounded-2xl px-5 py-5">
+        <section class="balance-card overflow-hidden rounded-[22px] px-5 py-5">
           <div class="flex items-center gap-2 font-semibold text-content">
             <p class="text-[12px]">{{ $t('home.totalBalance') }}</p>
-            <button
-                class="text-slate-400 active:text-slate-700 transition"
+            <ion-button
+                fill="clear"
+                class="balance-visibility"
                 @click="balanceHidden = !balanceHidden"
                 :aria-label="$t('home.hideBalance')"
             >
-              <ion-icon :icon="balanceHidden ? eyeOffOutline : eyeOutline" class="size-[14px]" />
-            </button>
+              <ion-icon slot="icon-only" :icon="balanceHidden ? eyeOffOutline : eyeOutline" />
+            </ion-button>
           </div>
           <h2 class="mt-2 text-[38px] leading-none font-extrabold text-content tabular-nums tracking-tight">
             {{ balanceHidden ? maskText : totals.totalBalance }}
@@ -310,33 +312,37 @@ onIonViewWillEnter(async () => {
             </span>
           </button>
 
-          <div class="mt-4 flex items-center gap-5 text-[13px]">
-            <div class="flex items-center gap-2">
+          <div class="mt-4 grid grid-cols-2 gap-2 text-[12px]">
+            <div class="balance-stat flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5">
               <span class="size-1.5 rounded-full bg-emerald-500" />
-              <span class="text-content-muted">{{ $t('home.income') }}</span>
-              <span class="font-medium text-content tabular-nums">
+              <div class="min-w-0">
+                <span class="block text-[10px] text-content-muted">{{ $t('home.income') }}</span>
+                <span class="block truncate font-bold text-content tabular-nums">
                 {{ balanceHidden ? maskText : totals.income }}
-              </span>
+                </span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="balance-stat flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5">
               <span class="size-1.5 rounded-full bg-rose-500" />
-              <span class="text-content-muted">{{ $t('home.expense') }}</span>
-              <span class="font-medium text-content tabular-nums">
+              <div class="min-w-0">
+                <span class="block text-[10px] text-content-muted">{{ $t('home.expense') }}</span>
+                <span class="block truncate font-bold text-content tabular-nums">
                 {{ balanceHidden ? maskText : totals.expense }}
-              </span>
+                </span>
+              </div>
             </div>
           </div>
 
-          <div class="mt-5 pt-5 border-t dark:border-t-gray-300/30 border-line grid grid-cols-4 gap-2">
+          <div class="mt-5 grid grid-cols-4 gap-2 border-t border-line pt-5">
             <router-link
                 v-for="action in quickActions"
                 :key="action.label"
                 :to="action.link"
-                class="flex flex-col items-center gap-1.5 py-2 rounded-xl active:bg-surface-sunken transition"
+                class="quick-action flex min-w-0 flex-col items-center gap-1.5 rounded-xl py-2 transition"
             >
               <div
-                  class="size-11 rounded-full flex items-center justify-center"
-                  :class="action.tint"
+                  class="quick-action-icon flex size-11 items-center justify-center rounded-2xl"
+                  :class="`quick-action-icon--${action.tone}`"
               >
                 <ion-icon :icon="action.icon" class="size-[20px]" />
               </div>
@@ -344,28 +350,27 @@ onIonViewWillEnter(async () => {
             </router-link>
           </div>
         </section>
-      </div>
-
-      <!-- Bölümler -->
-      <div class="space-y-3 mt-3 px-4 pb-10">
+        <div class="home-sections mt-4 space-y-4">
         <!-- Kartların en üstünde: bakiyeden hemen sonra görülür ama hiçbir
              şeyin üstünü örtmez ve kaydırınca gider. -->
-        <BackupReminderCard />
+        <BackupReminderCard class="dashboard-section" />
 
-        <BudgetsCard v-if="budgetsStore.activeBudgets" />
+        <BudgetsCard v-if="budgetsStore.activeBudgets" class="dashboard-section" />
 
         <TransactionsCard
             :transactions="transactionsStore.sortedByDateDesc"
             :title="$t('home.recentTransactions')"
+            class="dashboard-section"
         />
 
-        <AccountsCard :accounts="accountsStore.accounts"/>
+        <AccountsCard :accounts="accountsStore.accounts" class="dashboard-section"/>
 
         <CashFlowCard
             :income="totals.income"
             :expense="totals.expense"
             :total="totals.cashFlow"
             :dateText="cashFlowDateText"
+            class="dashboard-section"
             @timeRangeChange="onCashFlowRangeChange"
         />
 
@@ -373,12 +378,14 @@ onIonViewWillEnter(async () => {
             :categories="categoryRows"
             :mode="categoryMode"
             :dateText="categoryDateText"
+            class="dashboard-section"
             @toggleMode="toggleCategoryMode"
             @timeRangeChange="onCategoryRangeChange"
         />
 
-        <ExchangeRatesCard />
-      </div>
+        <ExchangeRatesCard class="dashboard-section" />
+        </div>
+      </main>
     </ion-content>
   </ion-page>
 </template>
@@ -392,6 +399,72 @@ onIonViewWillEnter(async () => {
 
 ion-page {
   overflow: hidden;
+}
+
+.home-content {
+  --background: var(--c-page);
+}
+
+.balance-card {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
+}
+
+ion-button.balance-visibility {
+  width: 30px;
+  height: 30px;
+  margin: -7px 0;
+  --border-radius: 10px;
+  --color: var(--c-content-muted);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button.balance-visibility ion-icon {
+  font-size: 15px;
+}
+
+.balance-stat {
+  background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+  border: 1px solid var(--c-line);
+}
+
+.quick-action:active {
+  background: var(--c-surface-strong);
+}
+
+.quick-action-icon {
+  border: 1px solid transparent;
+}
+
+.quick-action-icon--income {
+  background: color-mix(in srgb, #16a34a 12%, var(--c-surface));
+  border-color: color-mix(in srgb, #16a34a 24%, var(--c-line));
+  color: #15803d;
+}
+
+.quick-action-icon--expense {
+  background: color-mix(in srgb, var(--c-error) 10%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--c-error) 22%, var(--c-line));
+  color: var(--c-error);
+}
+
+.quick-action-icon--transfer {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.quick-action-icon--goal {
+  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface));
+  border-color: color-mix(in srgb, #f59e0b 26%, var(--c-line));
+  color: #b45309;
+}
+
+.dashboard-section {
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
 }
 
 .brand-mark {

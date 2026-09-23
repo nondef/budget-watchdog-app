@@ -53,8 +53,8 @@ const selectTimeRange = (rangeId: TimeRange) => {
             type="button"
             class="px-3 h-8 rounded-full text-[12px] font-semibold transition shrink-0"
             :class="activeRange === r.id
-                ? 'bg-gray-800 dark:bg-gray-100/10 text-white'
-                : 'bg-surface-sunken text-content-tertiary active:bg-slate-100 dark:active:bg-gray-100/10'"
+                ? 'bg-inverse-surface text-inverse-on-surface'
+                : 'bg-surface-sunken text-content-tertiary active:bg-surface-strong'"
             @click="selectTimeRange(r.id)"
         >
           {{ r.label }}

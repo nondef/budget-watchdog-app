@@ -15,10 +15,10 @@ defineEmits<{ retry: [] }>();
 const { locale } = useI18n();
 const { formatMoney } = useMoney();
 const CONTRIBUTION_META = {
-  initial:    { icon: sparklesOutline,          tone: 'text-indigo-600 dark:text-indigo-400',   bg: 'bg-indigo-50 dark:bg-indigo-500/15',   sign: '+' },
-  deposit:    { icon: arrowDownCircleOutline,   tone: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/15', sign: '+' },
-  withdrawal: { icon: arrowUpCircleOutline,     tone: 'text-rose-600 dark:text-rose-400',       bg: 'bg-rose-50 dark:bg-rose-500/15',       sign: '−' },
-  refund:     { icon: returnDownBackOutline,    tone: 'text-amber-600 dark:text-amber-400',     bg: 'bg-amber-50 dark:bg-amber-500/15',     sign: '−' },
+  initial:    { icon: sparklesOutline,        tone: 'initial',    sign: '+' },
+  deposit:    { icon: arrowDownCircleOutline, tone: 'deposit',    sign: '+' },
+  withdrawal: { icon: arrowUpCircleOutline,   tone: 'withdrawal', sign: '−' },
+  refund:     { icon: returnDownBackOutline,  tone: 'refund',     sign: '−' },
 } as const;
 
 const contributionMeta = (type: SavingGoalContributionDTO['type']) =>
@@ -31,40 +31,39 @@ const contributionTime = (date: Date) =>
 
 <template>
         <!-- Hareket geçmişi -->
-        <section class="bg-surface rounded-2xl">
-          <div class="flex items-center gap-1.5 px-4 pt-3 pb-1">
-            <ion-icon :icon="timeOutline" class="size-[12px] text-content-faint"/>
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted">
+        <section class="history-card">
+          <div class="history-header">
+            <span class="history-header__icon"><ion-icon :icon="timeOutline" /></span>
+            <p class="text-[12px] font-extrabold uppercase tracking-wider text-content-muted">
               {{ $t('savingGoals.history.title') }}
             </p>
           </div>
 
-          <div v-if="historyLoading" class="p-4" role="status">{{ $t('common.loading') }}</div>
-          <div v-else-if="historyFailed" class="p-4" role="alert">
+          <div v-if="historyLoading" class="history-state" role="status">{{ $t('common.loading') }}</div>
+          <div v-else-if="historyFailed" class="history-state history-state--error" role="alert">
             <p>{{ $t('savingGoals.history.loadError') }}</p>
-            <ion-button fill="clear" @click="$emit('retry')">{{ $t('common.retry') }}</ion-button>
+            <ion-button class="retry-button" fill="clear" @click="$emit('retry')">{{ $t('common.retry') }}</ion-button>
           </div>
-          <div v-else-if="contributions.length === 0" class="px-4 pb-5 pt-2 text-center">
+          <div v-else-if="contributions.length === 0" class="history-empty text-center">
             <p class="text-[13px] font-medium text-content-secondary">{{ $t('savingGoals.history.empty') }}</p>
             <p class="mt-1 text-[11px] text-content-muted leading-snug">
               {{ $t('savingGoals.history.emptyDesc') }}
             </p>
           </div>
 
-          <div v-else class="px-4 pb-3">
+          <div v-else class="history-list">
             <div
                 v-for="entry in contributions"
                 :key="entry.id"
-                class="flex items-start gap-3 py-3 border-t border-line"
+                class="history-entry"
             >
               <div
-                  class="size-9 rounded-xl flex items-center justify-center shrink-0"
-                  :class="contributionMeta(entry.type).bg"
+                  class="history-entry__icon"
+                  :class="`history-entry__icon--${contributionMeta(entry.type).tone}`"
               >
                 <ion-icon
                     :icon="contributionMeta(entry.type).icon"
-                    class="size-[16px]"
-                    :class="contributionMeta(entry.type).tone"
+                    class="size-[17px]"
                 />
               </div>
 
@@ -82,8 +81,8 @@ const contributionTime = (date: Date) =>
 
               <div class="text-right shrink-0">
                 <p
-                    class="text-[14px] font-bold tabular-nums"
-                    :class="contributionMeta(entry.type).tone"
+                    class="history-amount text-[14px] font-extrabold tabular-nums"
+                    :class="`history-amount--${contributionMeta(entry.type).tone}`"
                 >
                   {{ contributionMeta(entry.type).sign }}{{ formatMoney(entry.amount.amount, entry.amount.currencyId) }}
                 </p>
@@ -95,3 +94,112 @@ const contributionTime = (date: Date) =>
           </div>
         </section>
 </template>
+
+<style scoped>
+.history-card {
+  overflow: hidden;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: var(--c-surface);
+  box-shadow: 0 7px 22px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 16px 10px;
+}
+
+.history-header__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--c-surface-sunken);
+  color: var(--c-content-muted);
+  font-size: 14px;
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+  padding: 4px 12px 12px;
+}
+
+.history-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--c-line);
+  border-radius: 15px;
+  background: var(--c-surface-sunken);
+}
+
+.history-entry__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 12px;
+}
+
+.history-entry__icon--initial {
+  background: color-mix(in srgb, var(--c-primary) 13%, var(--c-surface));
+  color: var(--c-primary-strong);
+}
+
+.history-entry__icon--deposit {
+  background: color-mix(in srgb, #16a34a 13%, var(--c-surface));
+  color: #15803d;
+}
+
+.history-entry__icon--withdrawal {
+  background: color-mix(in srgb, #dc2626 12%, var(--c-surface));
+  color: #b91c1c;
+}
+
+.history-entry__icon--refund {
+  background: color-mix(in srgb, #d97706 13%, var(--c-surface));
+  color: #b45309;
+}
+
+.history-amount--initial { color: var(--c-primary-strong); }
+.history-amount--deposit { color: #15803d; }
+.history-amount--withdrawal { color: #b91c1c; }
+.history-amount--refund { color: #b45309; }
+
+.history-state,
+.history-empty {
+  margin: 4px 12px 12px;
+  padding: 22px 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 15px;
+  background: var(--c-surface-sunken);
+  color: var(--c-content-muted);
+  font-size: 13px;
+}
+
+.history-state--error {
+  color: var(--c-error);
+  text-align: center;
+}
+
+.retry-button {
+  --color: var(--c-primary-strong);
+  margin-bottom: -8px;
+  font-weight: 700;
+}
+
+:global(.ion-palette-dark) .history-entry__icon--deposit,
+:global(.ion-palette-dark) .history-amount--deposit { color: #4ade80; }
+
+:global(.ion-palette-dark) .history-entry__icon--withdrawal,
+:global(.ion-palette-dark) .history-amount--withdrawal { color: #f87171; }
+
+:global(.ion-palette-dark) .history-entry__icon--refund,
+:global(.ion-palette-dark) .history-amount--refund { color: #fbbf24; }
+</style>
