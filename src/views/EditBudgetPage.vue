@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
   IonPage, IonContent, IonIcon, IonAlert, IonInput, IonTextarea,
@@ -31,8 +31,9 @@ import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCategoryName } from "@/composables/features/useCategoryName";
 import { getIconByName } from "@/shared/utils";
 import AmountCard from "@/components/AmountCard.vue";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 
-const router = useRouter();
+const { ionRouter, goBackOrFallback } = useAppNavigation()
 const route = useRoute()
 const { t } = useI18n()
 const toast = useToast()
@@ -88,6 +89,9 @@ const selectedAccount = computed(() =>
 
 const currencyCode = computed(() =>
     currenciesStore.currencyById(selectedAccount.value?.balance.currencyId)?.code ?? ''
+)
+const currencyMinorUnit = computed(() =>
+    currenciesStore.currencyById(selectedAccount.value?.balance.currencyId)?.minorUnit
 )
 
 const handleCategorySelection = (category: CategoryDTO) => {
@@ -150,7 +154,7 @@ const submitBudget = handleSubmit(async (values) => {
       note: values.note,
     })
 
-    router.push('/budgets')
+    goBackOrFallback('/settings/budget-goals')
   } catch (e) {
     toast.error(t('budgets.updateError'))
   } finally {
@@ -179,7 +183,8 @@ onMounted(async () => {
     const result = await budgetStore.getBudgetById(budgetId)
     if (!result) {
       toast.error(t('budgets.notFound'))
-      router.push('/budgets')
+      // Geçersiz id: sayfa geçmişte iz bırakmasın, geri tuşu buraya dönmesin.
+      ionRouter.navigate('/settings/budget-goals', 'back', 'replace')
       return
     }
 
@@ -213,14 +218,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <ion-content class="form-content" :scroll-y="true">
       <div class="px-4 pt-[max(env(safe-area-inset-top),1rem)]">
         <!-- Üst bar -->
         <header class="flex items-center justify-between pt-2 px-1">
           <button
               class="size-9 rounded-full flex items-center justify-center text-content-secondary active:bg-surface-strong transition"
-              @click="router.back()"
+              @click="goBackOrFallback('/settings/budget-goals')"
               :aria-label="$t('common.back')"
           >
             <ion-icon :icon="chevronBackOutline" class="size-[20px]" />
@@ -285,6 +290,7 @@ onMounted(async () => {
             :label="$t('budgets.amountLabel')"
             v-model="values.amount"
             :currency-code="currencyCode || 'TRY'"
+            :minor-unit="currencyMinorUnit"
             :error="errors.amount"
         />
 

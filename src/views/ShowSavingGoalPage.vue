@@ -20,6 +20,7 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useSavingGoalsStore } from "@/stores/saving-goals";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import { useCurrenciesStore } from "@/stores/currencies";
 import { useMoney } from "@/composables/money/useMoney";
 import { useToast } from "@/composables/ui/useToast";
@@ -41,6 +42,7 @@ import {
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const { goBackOrFallback } = useAppNavigation();
 const savingGoalStore = useSavingGoalsStore();
 const currencyStore = useCurrenciesStore();
 const { formatMoney } = useMoney();
@@ -199,7 +201,7 @@ const deleteGoal = async () => {
           try {
             await savingGoalStore.deleteGoal(deletingId);
             toast.success(t('savingGoals.deletedSuccess'));
-            router.replace('/settings/savings');
+            goBackOrFallback('/settings/savings');
           } catch (err) {
             handle(err, { context: 'ShowSavingGoal', fallback: t('savingGoals.errors.delete') });
           } finally {
@@ -538,7 +540,9 @@ watch(goalId, () => {
           <p class="text-[11px] text-content-muted mb-1">{{ $t('savingGoals.amountToAdd') }}</p>
           <CurrencyInput
               v-model="addAmount"
+              :label="$t('savingGoals.amountToAdd')"
               :currency-code="currency?.code || 'TRY'"
+              :minor-unit="currency?.minorUnit"
           />
           <p class="text-[11px] text-content-muted mt-4 mb-1">{{ $t('savingGoals.history.noteLabel') }}</p>
           <input
@@ -578,7 +582,10 @@ watch(goalId, () => {
           <p class="text-[11px] text-content-muted mb-1">{{ $t('savingGoals.amountToWithdraw') }}</p>
           <CurrencyInput
               v-model="removeAmount"
+              :label="$t('savingGoals.amountToWithdraw')"
               :currency-code="currency?.code || 'TRY'"
+              :minor-unit="currency?.minorUnit"
+              :max="goal?.savedAmount.amount"
           />
           <p class="text-[11px] text-content-muted mt-2">
             {{ $t('savingGoals.max') }} <span class="font-semibold text-content-secondary">{{

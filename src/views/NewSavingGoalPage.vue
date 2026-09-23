@@ -1,14 +1,18 @@
 <script lang="ts" setup>
 import {
-  IonPage, IonContent, IonIcon, IonInput, IonTextarea, IonToolbar, IonHeader, IonBackButton, IonTitle,
-  IonButtons, IonFooter, IonButton
+  IonPage,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonTextarea,
+  IonToolbar,
+  IonFooter,
+  IonButton
 } from '@ionic/vue';
-import {
-  chevronBackOutline,
-} from 'ionicons/icons';
+ 'ionicons/icons';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import { useForm } from 'vee-validate';
 import { createSavingGoalSchema } from "@/forms";
 import { useSavingGoalsStore } from "@/stores/saving-goals";
@@ -22,9 +26,10 @@ import DateField from "@/components/DateField.vue";
 import AmountCard from "@/components/AmountCard.vue";
 import AccountCarousel from "@/components/AccountCarousel.vue";
 import ErrorChip from "@/components/ErrorChip.vue";
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const { t } = useI18n();
-const router = useRouter();
+const { goBackOrFallback } = useAppNavigation();
 const savingGoalStore = useSavingGoalsStore();
 const currencyStore = useCurrenciesStore();
 const accountStore = useAccountsStore();
@@ -100,7 +105,7 @@ const submitGoal = handleSubmit(async (values) => {
       initialAmount: values.initialAmount,
     });
 
-    router.push('/settings/savings');
+    goBackOrFallback('/settings/savings');
 
   } catch (err: unknown) {
     logger.error('Goal save error', { context: 'NewSavingGoal', error: err });
@@ -130,17 +135,7 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/settings/saving-goal" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('savingGoals.new') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('savingGoals.new')" default-href="/settings/savings"/>
 
     <ion-content class="form-content" :scroll-y="true">
       <div class="px-4">
@@ -193,6 +188,7 @@ onMounted(async () => {
             :label="$t('savingGoals.initialAmount')"
             v-model="initialAmount"
             :currency-code="selectedCurrency?.code || 'TRY'"
+            :minor-unit="selectedCurrency?.minorUnit"
             :error="errors.initialAmount"
         />
 
@@ -200,6 +196,7 @@ onMounted(async () => {
             :label="$t('savingGoals.targetAmount')"
             v-model="targetAmount"
             :currency-code="selectedCurrency?.code || 'TRY'"
+            :minor-unit="selectedCurrency?.minorUnit"
             :error="errors.targetAmount"
         />
 

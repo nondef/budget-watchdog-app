@@ -11,7 +11,7 @@ import {
   IonInput,
   IonTextarea,
   IonSelect,
-  IonSelectOption,
+  IonSelectOption, IonFooter, IonButton,
 } from '@ionic/vue';
 import {
   lockClosedOutline,
@@ -22,7 +22,7 @@ import {
   serverOutline,
 } from 'ionicons/icons';
 import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAccountsStore } from '@/stores/accounts';
 import IconPickerModal from "@/components/IconPickerModal.vue";
 import { useCurrenciesStore } from "@/stores/currencies";
@@ -36,10 +36,11 @@ import { useToast } from "@/composables/ui/useToast";
 import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import { useI18n } from "vue-i18n";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 
 const { t } = useI18n();
 const { currencyName } = useCurrencyDisplay();
-const router = useRouter();
+const { ionRouter, goBackOrFallback } = useAppNavigation()
 const route = useRoute();
 const accountsStore = useAccountsStore();
 const currencyStore = useCurrenciesStore();
@@ -109,7 +110,7 @@ const submitAccount = handleSubmit(async (values) => {
       type: values.type as AccountType,
     });
 
-    router.back();
+    goBackOrFallback('/settings/accounts')
   } catch (e) {
     // Borçlu bir kredi hesabının tipi değiştirilemez; generic "güncellenemedi"
     // mesajı kullanıcıya nedenini söylemiyordu.
@@ -137,7 +138,7 @@ onMounted(async () => {
 
     if (!account) {
       toast.error(t('accounts.notFound'));
-      router.push('/accounts');
+      ionRouter.navigate('/settings/accounts', 'back', 'replace')
       return;
     }
 
@@ -159,7 +160,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-buttons slot="start">
@@ -213,22 +214,6 @@ onMounted(async () => {
         />
 
         <!-- Hesap tipi -->
-<!--        <section class="bg-surface rounded-2xl px-4 py-3">
-          <p class="text-[11px] text-content-muted mb-2">{{ $t('accounts.accountType') }}</p>
-          <ion-segment :value="type" class="account-type-segment flex gap-1.5" @ionChange="accountTypeChanged">
-            <ion-segment-button
-                v-for="accType in accountTypes"
-                :key="accType.value"
-                :value="accType.value"
-                class="md3-seg-btn flex-1 py-2 rounded-xl transition"
-                :class="{ 'md3-seg-btn&#45;&#45;selected': type === accType.value }"
-            >
-              <ion-icon :icon="accType.icon" class="size-[18px]" />
-              <span class="text-[10px] font-medium leading-none">{{ $t(`accountTypes.${accType.value}`) }}</span>
-            </ion-segment-button>
-          </ion-segment>
-          <p v-if="errors.type" class="field-error text-[11px] text-rose-600 mt-2">{{ errors.type }}</p>
-        </section>-->
         <ion-select :interface-options="{ header: $t('accounts.typeSelectHeader'), subHeader: $t('accounts.typeSelectSubHeader') }"
                     @ion-input="typeAttr.onInput"
                     @ion-blur="typeAttr.onBlur"
@@ -243,7 +228,7 @@ onMounted(async () => {
           <ion-select-option v-for="accType in accountTypes"
                              :key="accType.value"
                              :value="accType.value">
-            {{ accType.value.charAt(0).toUpperCase() + accType.value.slice(1) }}
+            {{ $t(`accountTypes.${accType.value}`) }}
           </ion-select-option>
         </ion-select>
 
@@ -270,6 +255,7 @@ onMounted(async () => {
             :label="$t('accounts.currentBalance')"
             :currency-code="selectedCurrency?.code || 'TRY'"
             :symbol="selectedCurrency?.symbol"
+            :minor-unit="selectedCurrency?.minorUnit"
         />
 
         <!-- Not — MD3 filled textarea -->
@@ -285,18 +271,20 @@ onMounted(async () => {
             :placeholder="$t('accounts.notePlaceholder')"
         />
       </div>
+    </ion-content>
 
-      <div class="save-bar">
-        <button
-            type="button"
-            class="w-full h-12 rounded-2xl bg-indigo-600 text-white text-[15px] font-semibold active:bg-indigo-700 disabled:bg-slate-300 transition"
+    <ion-footer class="ion-no-border">
+      <ion-toolbar>
+        <ion-button
+            expand="block"
+            class="app-button"
             :disabled="isSubmitting"
             @click="saveAccount"
         >
           {{ isSubmitting ? $t('accounts.saving') : $t('accounts.save') }}
-        </button>
-      </div>
-    </ion-content>
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
 
     <!-- İkon picker -->
     <IconPickerModal

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
   IonPage,
@@ -14,17 +13,15 @@ import {
   IonProgressBar,
   IonToolbar,
   IonHeader,
-  IonBackButton,
   IonTitle,
   IonButtons,
   IonFooter,
   IonModal,
   IonList,
   IonItem,
-  IonLabel,
+  IonLabel
 } from "@ionic/vue";
 import {
-  chevronBackOutline,
   closeOutline,
   notificationsOutline,
   addOutline,
@@ -50,8 +47,10 @@ import CurrencyInput from "@/components/CurrencyInput.vue";
 import CategoryPickerModal from "@/components/CategoryPickerModal.vue";
 import { BudgetType } from "@/domain";
 import { useAlert } from "@/composables";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
-const router = useRouter();
+const { goBackOrFallback } = useAppNavigation()
 const toast = useToast()
 const { t } = useI18n()
 const budgetStore = useBudgetStore();
@@ -149,7 +148,7 @@ const submitBudget = handleSubmit(async (values) => {
 
     resetForm()
 
-    router.push('/budgets')
+    goBackOrFallback('/settings/budget-goals')
   } catch (e) {
     toast.error(t('budgets.addError'))
   }
@@ -185,19 +184,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/settings/budgets" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('budgets.new') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('budgets.new')" default-href="/settings/budget-goals"/>
 
     <ion-content class="form-content" :scroll-y="true">
       <div class="px-4">
@@ -236,6 +225,7 @@ onMounted(async () => {
             :label="$t('budgets.amountLabel')"
             :currency-code="currency?.code || 'TRY'"
             :symbol="currency?.symbol"
+            :minor-unit="currency?.minorUnit"
             :error-text="errors.amount"
         />
 
@@ -420,7 +410,7 @@ onMounted(async () => {
           <ion-item
               v-for="account in accountsStore.accounts"
               :key="account.id"
-              class="category-item"
+              class="picker-row"
               button
               :detail="false"
               lines="none"
@@ -485,43 +475,6 @@ ion-modal.account-picker-modal ion-list.category-list {
   background: transparent;
 }
 
-/* Liste satırı: modal zemininden ayrılan kart + hairline halka. Light'ta kağıt
-   tonu, dark'ta elevated (eski --c-surface dark modda modal zemini ile aynı
-   tondu ve satırlar kayboluyordu). */
-ion-modal.account-picker-modal .category-item {
-  --background: var(--md-surface-container-lowest) !important;
-  --background-hover: var(--md-surface-container-highest) !important;
-  --background-activated: var(--md-surface-container-highest) !important;
-  --background-focused: var(--md-surface-container-highest) !important;
-  --color: var(--c-content) !important;
-  --border-radius: 16px;
-  --padding-top: 5px;
-  --padding-bottom: 5px;
-  --padding-start: 14px;
-  --inner-padding-end: 14px;
-  --min-height: 60px;
-  margin-bottom: 10px;
-  border-radius: 16px;
-  box-shadow: inset 0 0 0 1px var(--c-line);
-  overflow: hidden;
-  transition: box-shadow 0.18s ease;
-}
-html.ion-palette-dark ion-modal.account-picker-modal .category-item {
-  --background: var(--md-surface-container-highest) !important;
-  --background-hover: var(--md-surface-container) !important;
-  --background-activated: var(--md-surface-container) !important;
-  --background-focused: var(--md-surface-container) !important;
-}
-
-/* Seçili hesap: diğer picker'lardaki gibi 2px primary halka. */
-ion-modal.account-picker-modal .category-item.is-selected,
-html.ion-palette-dark ion-modal.account-picker-modal .category-item.is-selected {
-  --background: var(--md-surface-container) !important;
-  --background-hover: var(--md-surface-container) !important;
-  --background-activated: var(--md-surface-container) !important;
-  --background-focused: var(--md-surface-container) !important;
-  box-shadow: inset 0 0 0 2px var(--c-primary);
-}
 </style>
 
 <style scoped>

@@ -12,7 +12,7 @@ import {
   IonTextarea,
   IonSelect,
   IonSelectOption,
-  useIonRouter,
+  IonFooter, IonButton,
 } from '@ionic/vue';
 import {
   cashOutline,
@@ -37,11 +37,12 @@ import { useI18n } from "vue-i18n";
 import PickerField from "@/components/PickerField.vue";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import { CurrencyDTO } from "@/application";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 
 const { t } = useI18n();
 const { currencyName } = useCurrencyDisplay();
 
-const ionRouter = useIonRouter();
+const { goBackOrFallback } = useAppNavigation();
 const accountsStore = useAccountsStore();
 const currencyStore = useCurrenciesStore()
 
@@ -140,7 +141,7 @@ const submitAccount = handleSubmit(async (values) => {
 
     resetForm()
 
-    ionRouter.navigate('/settings/accounts', 'back', 'pop')
+    goBackOrFallback('/settings/accounts')
   } catch (e) {
     if (e instanceof AccountLimitExceededException) {
       toast.error(t('accounts.limitReached'))
@@ -218,32 +219,6 @@ onMounted(async () => {
         />
 
         <!-- Hesap tipi — MD3 segmented buttons -->
-        <!--        <section class="bg-surface rounded-2xl px-4 py-3">
-                  <label class="text-[11px] text-content-muted mb-2">{{ $t('accounts.accountType') }}</label>
-        &lt;!&ndash;          <ion-segment :value="type" class="account-type-segment flex gap-1.5" @ionChange="accountTypeChanged">
-                    <ion-segment-button
-                        v-for="accType in accountTypes"
-                        :key="accType.value"
-                        :value="accType.value"
-                        class="md3-seg-btn flex-1 py-2 rounded-xl transition"
-                        :class="{ 'md3-seg-btn&#45;&#45;selected': type === accType.value }"
-                    >
-                      <ion-icon :icon="accType.icon" class="size-[18px]" />
-                      <span class="text-[10px] font-medium leading-none">{{ $t(`accountTypes.${accType.value}`) }}</span>
-                    </ion-segment-button>
-                  </ion-segment>&ndash;&gt;
-                  <ion-item>
-                    <ion-select fill="solid" label-placement="floating" interface="action-sheet" :placeholder="$t('accounts.accountType')">
-
-                      <ion-select-option v-for="accType in accountTypes"
-                                         :key="accType.value"
-                                         :value="accType.value">
-                        {{ accType.value }}
-                      </ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                  <p v-if="errors.type" class="field-error text-[11px] text-rose-600 mt-2">{{ errors.type }}</p>
-                </section>-->
         <ion-select :interface-options="{ header: $t('accounts.typeSelectHeader'), subHeader: $t('accounts.typeSelectSubHeader') }"
                     @ion-input="typeAttr.onInput"
                     @ion-blur="typeAttr.onBlur"
@@ -258,7 +233,7 @@ onMounted(async () => {
           <ion-select-option v-for="accType in accountTypes"
                              :key="accType.value"
                              :value="accType.value">
-            {{ accType.value.charAt(0).toUpperCase() + accType.value.slice(1) }}
+            {{ $t(`accountTypes.${accType.value}`) }}
           </ion-select-option>
         </ion-select>
 
@@ -294,6 +269,7 @@ onMounted(async () => {
             :label="balanceLabel"
             :currency-code="selectedCurrency?.code as string"
             :symbol="selectedCurrency?.symbol"
+            :minor-unit="selectedCurrency?.minorUnit"
             :error-text="errors.balance"
             :helper-text="isCreditAccount ? $t('accounts.currentDebtHelper') : ''"
         />
@@ -315,18 +291,20 @@ onMounted(async () => {
             @ion-input="detailsAttr.onInput"
         />
       </div>
+    </ion-content>
 
-      <div class="save-bar">
-        <button
-            type="button"
-            class="w-full h-12 rounded-2xl bg-indigo-600 text-white text-[15px] font-semibold active:bg-indigo-700 disabled:bg-slate-300 transition"
+    <ion-footer class="ion-no-border">
+      <ion-toolbar>
+        <ion-button
+            expand="block"
+            class="app-button"
             :disabled="isSubmitting"
             @click="saveAccount"
         >
           {{ isSubmitting ? $t('accounts.saving') : $t('accounts.save') }}
-        </button>
-      </div>
-    </ion-content>
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
 
     <!-- İkon picker -->
     <IconPickerModal

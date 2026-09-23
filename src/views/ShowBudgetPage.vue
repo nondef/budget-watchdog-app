@@ -41,9 +41,11 @@ import { useMoney } from "@/composables/money/useMoney";
 import { useCategoryName } from "@/composables/features/useCategoryName";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import { formatDateLocalized } from "@/i18n/format";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 
 const route = useRoute()
 const router = useRouter()
+const { goBackOrFallback } = useAppNavigation()
 const { t } = useI18n()
 const budgetStore = useBudgetStore()
 
@@ -181,7 +183,7 @@ const resetBudget = async () => {
 const deleteBudget = () => {
     budgetStore.deleteBudget(budgetId)
     showToast(t('budgets.deleted'))
-    router.push('/budgets')
+    goBackOrFallback('/settings/budget-goals')
 }
 
 const showToast = (message: string) => {
@@ -205,7 +207,7 @@ onMounted(async () => {
         <ion-header class="ion-no-border">
             <ion-toolbar class="detail-toolbar">
                 <ion-buttons slot="start">
-                    <ion-back-button default-href="/budgets" />
+                    <ion-back-button default-href="/settings/budget-goals" />
                 </ion-buttons>
                 <ion-title>{{ $t('pageTitles.budgetDetail') }}</ion-title>
                 <ion-buttons slot="end">

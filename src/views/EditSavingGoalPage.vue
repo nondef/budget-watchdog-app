@@ -7,7 +7,8 @@ import {
   lockClosedOutline,
 } from 'ionicons/icons';
 import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import { useI18n } from 'vue-i18n';
 import { useForm } from 'vee-validate';
 import { updateSavingGoalSchema } from "@/forms";
@@ -23,7 +24,7 @@ import PickerField from "@/components/PickerField.vue";
 import AmountCard from "@/components/AmountCard.vue";
 
 const { t } = useI18n();
-const router = useRouter();
+const { ionRouter, goBackOrFallback } = useAppNavigation();
 const route = useRoute();
 const savingGoalStore = useSavingGoalsStore();
 const currencyStore = useCurrenciesStore();
@@ -80,7 +81,7 @@ const submitGoal = handleSubmit(async (values) => {
     });
 
     toast.success(t('savingGoals.updatedSuccess'));
-    router.back();
+    goBackOrFallback('/settings/savings');
   } catch (err: unknown) {
     logger.error('Goal update error', { context: 'EditSavingGoal', error: err });
     submitError.value = err instanceof Error
@@ -100,7 +101,8 @@ onMounted(async () => {
   const goal = await savingGoalStore.getGoalById(goalId);
   if (!goal) {
     toast.error(t('savingGoals.notFound'));
-    router.replace('/settings/savings');
+    // Geçersiz id: sayfa geçmişte iz bırakmasın, geri tuşu buraya dönmesin.
+    ionRouter.navigate('/settings/savings', 'back', 'replace');
     return;
   }
 
@@ -128,7 +130,7 @@ onMounted(async () => {
         <header class="flex items-center justify-between pt-2 px-1">
           <button
               class="size-9 rounded-full flex items-center justify-center text-content-secondary active:bg-surface-strong transition"
-              @click="router.back()"
+              @click="goBackOrFallback('/settings/savings')"
               :aria-label="$t('common.back')"
           >
             <ion-icon :icon="chevronBackOutline" class="size-[20px]" />
@@ -188,6 +190,7 @@ onMounted(async () => {
             :label="$t('savingGoals.targetAmount')"
             v-model="targetAmount"
             :currency-code="goalCurrency?.code || 'TRY'"
+            :minor-unit="goalCurrency?.minorUnit"
             :error="errors.targetAmount"
         />
 

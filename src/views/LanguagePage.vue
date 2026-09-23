@@ -3,25 +3,21 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  IonToolbar,
-  IonHeader,
-  IonBackButton,
-  IonTitle,
-  IonButtons,
   IonList,
   IonItem,
   IonLabel,
   IonRadio,
   IonRadioGroup,
-  IonNote,
+  IonNote
 } from '@ionic/vue';
-import { chevronBackOutline, informationCircleOutline } from 'ionicons/icons';
+import { informationCircleOutline } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAppStore } from '@/stores/app';
 import { logger } from '@/infrastructure/logging';
 import { Language, type LanguageCode } from '@/domain/value-objects/language';
 import { SUPPORTED_LOCALES } from '@/i18n';
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const { t } = useI18n();
 const appStore = useAppStore();
@@ -53,36 +49,30 @@ const selectedLanguage = computed<string>({
 </script>
 
 <template>
-  <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('language.title') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <ion-page class="design-page">
+    <sub-page-header :title="$t('language.title')"/>
 
     <ion-content class="lang-content" :scroll-y="true">
-      <div class="px-4 pb-10">
+      <div class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
 
         <!-- Açıklama -->
-        <div class="mt-5 px-1">
-          <h2 class="lang-heading">{{ $t('language.heading') }}</h2>
-          <ion-note class="lang-subtitle">{{ $t('language.subtitle') }}</ion-note>
+        <div class="lang-intro">
+          <span class="lang-intro__icon"><ion-icon :icon="informationCircleOutline" /></span>
+          <div>
+            <h2 class="lang-heading">{{ $t('language.heading') }}</h2>
+            <ion-note class="lang-subtitle">{{ $t('language.subtitle') }}</ion-note>
+          </div>
         </div>
 
         <!-- Liste -->
-        <div class="lang-card mt-4">
+        <div class="lang-card mt-3">
           <ion-radio-group v-model="selectedLanguage">
             <ion-list :inset="false" lines="full">
               <ion-item
                   v-for="(lang, idx) in languages"
                   :key="lang.code"
                   class="plain-item"
+                  :class="{ 'plain-item--active': selectedLanguage === lang.code }"
                   :lines="idx === languages.length - 1 ? 'none' : 'full'"
                   :button="false"
               >
@@ -94,7 +84,7 @@ const selectedLanguage = computed<string>({
                     class="lang-radio"
                 >
                   <span class="lang-row">
-                    <span class="lang-flag">{{ lang.flag }}</span>
+                    <span class="lang-flag" :class="{ 'lang-flag--active': selectedLanguage === lang.code }">{{ lang.flag }}</span>
                     <ion-label>
                       <h3 class="lang-title">{{ lang.nativeName }}</h3>
                       <p class="lang-sub">{{ lang.name }}</p>
@@ -142,8 +132,14 @@ ion-page {
 /* Kart: ion-list'i saran yüzey — köşeler kartta, satırlar şeffaf. */
 .lang-card {
   background: var(--c-surface);
-  border-radius: 1rem;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
   overflow: hidden;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 6%, transparent);
+}
+
+.lang-card ion-item.plain-item--active {
+  --background: color-mix(in srgb, var(--c-primary) 8%, var(--c-surface));
 }
 
 .lang-card ion-list {
@@ -188,8 +184,14 @@ ion-page {
   margin-inline-end: 12px;
   flex-shrink: 0;
   background: var(--c-surface-sunken);
+  border: 1px solid var(--c-line);
   font-size: 20px;
   line-height: 1;
+}
+
+.lang-flag--active {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-primary) 15%, transparent);
 }
 
 .lang-title {
@@ -213,7 +215,30 @@ ion-page {
   padding: 12px 14px;
   border-radius: 1rem;
   background: var(--c-surface);
+  border: 1px solid var(--c-line);
   color: var(--c-content-muted);
+}
+
+.lang-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
+}
+
+.lang-intro__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-size: 21px;
 }
 
 .lang-note__text {

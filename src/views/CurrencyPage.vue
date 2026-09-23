@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, IonIcon,
-  alertController, loadingController, IonToolbar, IonHeader, IonBackButton, IonTitle, IonButtons,
+  IonPage,
+  IonContent,
+  IonIcon,
+  alertController,
+  loadingController,
+  IonSearchbar
 } from '@ionic/vue';
 import {
-  chevronBackOutline,
-  searchOutline,
-  closeOutline,
   cashOutline
 } from 'ionicons/icons';
 import { ref, computed, onMounted } from 'vue';
@@ -16,6 +17,7 @@ import { CurrencyDTO } from "@/application";
 import { useToast } from "@/composables/ui/useToast";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import CurrencyList from "@/components/CurrencyList.vue";
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const selectedCurrency = ref<CurrencyDTO | null>(null);
 const searchText = ref('');
@@ -81,69 +83,57 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('nav.currency') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('nav.currency')"/>
 
     <ion-content class="currency-content" :scroll-y="true">
-      <div class="px-4">
+      <div class="mx-auto w-full max-w-xl px-4">
         <!-- Açıklama -->
-        <div class="mt-3 px-1">
+        <div class="currency-intro mt-4">
           <p class="text-[12px] text-content-muted mt-1 leading-snug">
             {{ $t('settings.currencyHint') }}
           </p>
         </div>
 
         <!-- Mevcut seçim -->
-        <div v-if="selectedCurrency" class="mt-4 bg-surface rounded-2xl px-4 py-3 flex items-center gap-3">
-          <div class="size-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
-            <ion-icon :icon="cashOutline" class="size-5 text-indigo-600" />
+        <div v-if="selectedCurrency" class="active-currency mt-4 flex items-center gap-3 px-4 py-3">
+          <div class="active-currency__icon">
+            <ion-icon :icon="cashOutline" class="size-5" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[11px] text-content-muted">Aktif</p>
+            <p class="text-[11px] text-content-muted">{{ $t('settings.currencyActive') }}</p>
             <p class="text-[14px] font-semibold text-content mt-0.5">
               {{ currencyName(selectedCurrency) }}
               <span class="text-content-muted font-normal ml-1">({{ selectedCurrency.symbol }})</span>
             </p>
           </div>
-          <span class="text-[12px] font-bold text-indigo-600 tabular-nums">
+          <span class="active-currency__code text-[12px] font-extrabold tabular-nums">
             {{ selectedCurrency.code }}
           </span>
         </div>
 
         <!-- Arama -->
-        <div class="mt-4 bg-surface rounded-2xl px-3 py-2 flex items-center gap-2">
-          <ion-icon :icon="searchOutline" class="size-[18px] text-slate-400 shrink-0" />
-          <input
+        <ion-searchbar
               v-model="searchText"
-              type="text"
+              class="currency-search mt-4"
               :placeholder="$t('forms.searchCurrency')"
-              class="flex-1 bg-transparent outline-none text-[14px] text-content placeholder:text-slate-400 py-1"
-          />
-          <button
-              v-if="searchText"
-              class="size-7 rounded-full flex items-center justify-center text-content-muted active:bg-surface-strong"
-              @click="searchText = ''"
-          >
-            <ion-icon :icon="closeOutline" class="size-[14px]" />
-          </button>
-        </div>
+              :debounce="0"
+              show-clear-button="focus"
+        />
       </div>
 
-      <div class="mt-3 pb-10">
-        <CurrencyList v-if="filteredCurrencies.length" :currencies="filteredCurrencies" :selected-currency="selectedCurrency" :search="searchText" @select="handleSelect"/>
+      <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-10">
+        <CurrencyList
+            v-if="filteredCurrencies.length"
+            class="currency-page-list"
+            :currencies="filteredCurrencies"
+            :selected-currency="selectedCurrency"
+            :search="searchText"
+            @select="handleSelect"
+        />
 
-        <div v-else class="bg-surface rounded-2xl px-4 py-10 text-center">
+        <div v-else class="currency-empty px-4 py-10 text-center">
           <p class="text-[13px] text-content-muted">{{ $t('settings.currencyNoMatch') }}</p>
         </div>
       </div>
@@ -158,5 +148,60 @@ onMounted(async () => {
 
 ion-page {
   overflow: hidden;
+}
+
+.currency-intro {
+  padding: 14px 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 1rem;
+  background: var(--c-surface-sunken);
+}
+
+.active-currency,
+.currency-empty {
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.active-currency__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.active-currency__code {
+  color: var(--c-primary-strong);
+}
+
+.currency-search {
+  --background: var(--c-surface);
+  --color: var(--c-content);
+  --placeholder-color: var(--c-content-muted);
+  --icon-color: var(--c-content-muted);
+  --clear-button-color: var(--c-content-muted);
+  --border-radius: 1rem;
+  padding: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.currency-search::part(container) {
+  min-height: 48px;
+  box-shadow: none;
+}
+
+/* CurrencyList modal içinde inset kalabilir; bu sayfada arama alanının
+   sağ ve sol kenarlarıyla birebir hizalanması için yalnız sayfa örneğini aç. */
+:deep(.currency-page-list.currency-list) {
+  width: 100%;
+  margin-inline: 0;
 }
 </style>

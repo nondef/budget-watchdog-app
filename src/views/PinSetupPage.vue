@@ -3,14 +3,14 @@ import {
   IonBackButton, IonButtons, IonContent, IonHeader, IonPage, IonTitle, IonToolbar,
 } from '@ionic/vue';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAppNavigation } from '@/composables/navigation/useAppNavigation';
 import { Haptics, NotificationType } from '@capacitor/haptics';
 import { useSecurityStore } from '@/stores/security';
 import { useToast } from '@/composables/ui/useToast';
 import PinKeypad from '@/components/PinKeypad.vue';
 
-const router = useRouter();
+const { goBackOrFallback } = useAppNavigation();
 const security = useSecurityStore();
 const toast = useToast();
 const { t } = useI18n();
@@ -95,7 +95,7 @@ const handleComplete = async () => {
     await security.setPin(newPin.value);
     void Haptics.notification({ type: NotificationType.Success }).catch(() => {});
     toast.success(t('security.pinSetup.updated'));
-    router.back();
+    goBackOrFallback('/settings/security');
   } catch (e) {
     fail(e instanceof Error ? e.message : t('security.pinSetup.saveFailed'));
   } finally {

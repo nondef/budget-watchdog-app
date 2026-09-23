@@ -9,7 +9,7 @@ import {
   IonBackButton,
   IonContent,
   IonFooter,
-  IonIcon,
+  IonIcon, onIonViewWillEnter,
 } from "@ionic/vue";
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -23,6 +23,7 @@ import { useToast } from "@/composables/ui/useToast";
 import { useAlert } from "@/composables/ui/useAlert";
 import { useErrorHandler } from "@/composables/ui/useErrorHandler";
 import { getIconByName } from "@/shared/utils";
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import {
   arrowDownOutline,
   arrowUpOutline,
@@ -38,6 +39,7 @@ import {
 
 const route = useRoute();
 const router = useRouter();
+const { goBackOrFallback } = useAppNavigation();
 const { t, locale } = useI18n();
 
 const transactionStore = useTransactionsStore();
@@ -50,7 +52,7 @@ const { handle } = useErrorHandler();
 
 const transactionId = route.params.id as string;
 const transaction = ref<TransactionDTO | null>(null);
-const isLoading = ref(true);
+const isLoading = ref(false);
 
 const isBase = computed(
     () => transaction.value?.amount.currencyId === baseCurrency.value?.id
@@ -146,7 +148,7 @@ const deleteTransaction = async () => {
   try {
     await transactionStore.deleteTransaction(transaction.value.id);
     toast.success(t("transactions.deletedSuccess"));
-    router.back();
+    goBackOrFallback("/tabs/transactions");
   } catch (err) {
     handle(err, {
       context: "TransactionDetailPage",
@@ -155,21 +157,22 @@ const deleteTransaction = async () => {
   }
 };
 
-onMounted(async () => {
-  await categoryStore.loadCategories();
+onMounted(async () => await categoryStore.loadCategories())
 
+onIonViewWillEnter(async () => {
   try {
+    isLoading.value = true
     transaction.value = await transactionStore.findTransactionById(transactionId);
   } catch {
     transaction.value = null;
   } finally {
     isLoading.value = false;
   }
-});
+})
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <ion-header class="ion-no-border">
       <ion-toolbar class="detail-toolbar">
         <ion-buttons slot="start">
@@ -202,7 +205,7 @@ onMounted(async () => {
         <p class="text-[13px] text-content-muted mb-6">
           {{ $t("transactionDetail.notFoundDesc") }}
         </p>
-        <ion-button fill="outline" @click="router.back()">
+        <ion-button fill="outline" @click="goBackOrFallback('/tabs/transactions')">
           {{ $t("common.back") }}
         </ion-button>
       </div>

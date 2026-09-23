@@ -31,7 +31,7 @@ const openExternalLink = openExternalUrl;
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button text="" default-href="/settings"></ion-back-button>
+          <ion-back-button text="" default-href="/tabs/settings"></ion-back-button>
         </ion-buttons>
         <ion-title class="font-medium text-xl">{{ $t('pageTitles.help') }}</ion-title>
       </ion-toolbar>

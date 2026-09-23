@@ -4,17 +4,15 @@ import {
   IonContent,
   IonIcon,
   onIonViewWillEnter,
-  IonButtons,
-  IonTitle,
-  IonToolbar,
-  IonHeader, IonButton,
-    IonBackButton
+  IonButton,
+  IonItem,
+  IonLabel,
+  IonList
 } from '@ionic/vue';
 import {
   addOutline,
   trashOutline,
-  chevronBackOutline,
-  walletOutline,
+  walletOutline
 } from 'ionicons/icons';
 import { useAccountsStore } from '@/stores/accounts';
 import { useExchangeRateStore } from '@/stores/exchange-rates';
@@ -27,6 +25,7 @@ import { AccountDTO } from "@/application";
 import AccountsTotalCard from "@/components/AccountsTotalCard.vue";
 import { useAlert } from "@/composables";
 import { useI18n } from "vue-i18n";
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const accountsStore = useAccountsStore();
 const exchangeRateStore = useExchangeRateStore();
@@ -76,28 +75,19 @@ onIonViewWillEnter(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('nav.accounts') }}
-        </ion-title>
-
-        <ion-buttons slot="end">
-          <ion-button router-link="/accounts/new" class="size-9 rounded-full bg-inverse-surface text-inverse-on-surface">
-            <ion-icon :icon="addOutline" class="size-[20px]"/>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('nav.accounts')">
+      <template #end>
+        <ion-button router-link="/accounts/new" class="add-account-button">
+          <ion-icon :icon="addOutline" class="size-[20px]"/>
+        </ion-button>
+      </template>
+    </sub-page-header>
 
     <ion-content class="accounts-content" :scroll-y="true">
-      <div class="px-4">
+      <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
+      <div>
         <!-- Toplam bakiye özet kartı -->
         <AccountsTotalCard v-if="accountsStore.accounts.length"
                            :total="totalSummary.text"
@@ -106,12 +96,12 @@ onIonViewWillEnter(async () => {
       </div>
 
       <!-- Liste -->
-      <div class="mt-3 px-4 pb-10">
+      <div class="mt-4">
 
         <!-- Empty state -->
         <div
             v-if="accountsStore.accounts.length === 0"
-            class="bg-surface rounded-2xl px-4 py-10 text-center"
+            class="accounts-card px-4 py-10 text-center"
         >
           <div class="size-14 rounded-2xl bg-surface-sunken flex items-center justify-center mx-auto">
             <ion-icon :icon="walletOutline" class="size-6 text-slate-400" />
@@ -120,60 +110,65 @@ onIonViewWillEnter(async () => {
           <p class="mt-1 text-[12px] text-content-muted leading-snug">
             {{ $t('accounts.emptyDesc') }}
           </p>
-          <button
-              class="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-indigo-600 text-white text-[12px] font-semibold active:bg-indigo-700 transition"
+          <ion-button
+              class="empty-action mt-4"
               @click="router.push('/accounts/new')"
           >
-            <ion-icon :icon="addOutline" class="size-4" />
+            <ion-icon slot="start" :icon="addOutline" />
             {{ $t('accounts.new') }}
-          </button>
+          </ion-button>
         </div>
 
         <!-- Account listesi -->
-        <section v-else class="bg-surface rounded-2xl px-4">
-          <div
+        <section v-else class="accounts-card overflow-hidden">
+          <ion-list :inset="false" lines="full">
+          <ion-item
               v-for="(account, idx) in accountsStore.accounts"
               :key="account.id"
-              class="flex items-center gap-3 py-3.5"
-              :class="{ 'border-t border-line': idx !== 0 }"
+              class="account-row"
+              :lines="idx === accountsStore.accounts.length - 1 ? 'none' : 'full'"
+              :router-link="`/accounts/${account.id}/show`"
+              button
+              :detail="false"
           >
             <!-- İkon -->
             <div
-                class="size-11 rounded-2xl flex items-center justify-center text-white shrink-0"
+                slot="start"
+                class="account-icon flex size-11 shrink-0 items-center justify-center rounded-2xl text-white"
                 :class="account.icon.color"
             >
               <ion-icon :icon="getIconByName(account.icon.name)" class="size-5" />
             </div>
 
             <!-- Bilgi (tıklanırsa detay; düzenleme detay sayfasının başlığında) -->
-            <router-link
-                :to="`/accounts/${account.id}/show`"
-                class="flex-1 min-w-0 active:opacity-70 transition"
-            >
-              <p class="text-[14px] font-semibold text-content truncate">
+            <ion-label>
+              <p class="account-name truncate">
                 {{ account.name }}
               </p>
-              <p class="text-[11px] text-content-muted mt-0.5">
+              <p class="account-currency mt-0.5">
                 {{ currencyCode(account) }}
               </p>
-            </router-link>
+            </ion-label>
 
             <!-- Tutar + sil -->
-            <div class="flex items-center gap-1 shrink-0">
-              <p class="text-[14px] font-semibold text-content tabular-nums">
+            <div slot="end" class="flex shrink-0 items-center gap-1">
+              <p class="account-balance tabular-nums">
                 {{ formatMoney(account.balance.amount, account.balance.currencyId) }}
               </p>
-              <button
-                  class="size-8 rounded-full flex items-center justify-center text-slate-400 active:bg-rose-50 active:text-rose-600 transition"
+              <ion-button
+                  fill="clear"
+                  class="delete-account-button"
                   @click="confirmDelete(account.id, $event)"
                   :aria-label="$t('common.delete')"
               >
-                <ion-icon :icon="trashOutline" class="size-[16px]" />
-              </button>
+                <ion-icon slot="icon-only" :icon="trashOutline" />
+              </ion-button>
             </div>
-          </div>
+          </ion-item>
+          </ion-list>
         </section>
       </div>
+      </main>
     </ion-content>
 
   </ion-page>
@@ -186,5 +181,107 @@ onIonViewWillEnter(async () => {
 
 ion-page {
   overflow: hidden;
+}
+
+ion-button.add-account-button {
+  width: 38px;
+  height: 38px;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --border-radius: 12px;
+  --box-shadow: none;
+  --color: var(--c-on-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button.add-account-button ion-icon {
+  color: var(--c-on-primary);
+}
+
+/* Toolbar'ın genel dark-mode kuralı tüm sağ butonları açık metne zorluyor.
+   Bu butonun zemini dark modda zaten açık primary olduğu için ikonu kendi
+   on-primary rengine (koyu) geri al. */
+:global(html.ion-palette-dark) ion-button.add-account-button {
+  --color: var(--c-on-primary) !important;
+  color: var(--c-on-primary) !important;
+}
+
+.accounts-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.accounts-card ion-list {
+  padding: 0;
+  background: transparent;
+}
+
+.account-row {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-hover: transparent;
+  --border-color: var(--c-line);
+  --min-height: 70px;
+  --padding-start: 14px;
+  --inner-padding-end: 8px;
+}
+
+.account-icon {
+  margin-inline-end: 12px;
+}
+
+.account-name,
+.account-balance {
+  color: var(--c-content);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.account-currency {
+  color: var(--c-content-secondary);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+:global(.ion-palette-dark) .account-name,
+:global(.ion-palette-dark) .account-balance {
+  color: #ffffff;
+}
+
+:global(.ion-palette-dark) .account-currency {
+  color: #d6d6d6;
+}
+
+ion-button.delete-account-button {
+  width: 36px;
+  height: 36px;
+  margin: 0 -5px 0 2px;
+  --border-radius: 12px;
+  --color: var(--c-content-muted);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button.delete-account-button:active {
+  --background: color-mix(in srgb, var(--c-error) 10%, transparent);
+  --color: var(--c-error);
+}
+
+ion-button.empty-action {
+  min-height: 42px;
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --border-radius: 13px;
+  --box-shadow: none;
+  --color: var(--c-on-primary);
 }
 </style>

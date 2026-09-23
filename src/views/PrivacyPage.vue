@@ -3,21 +3,16 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  toastController,
-  IonToolbar,
-  IonHeader,
-  IonBackButton,
-  IonTitle, IonButtons
+  toastController
 } from '@ionic/vue'
 import {
   shieldCheckmarkOutline,
   cloudDownloadOutline,
   trashOutline,
-  chevronBackOutline,
   chevronForwardOutline,
   chevronDownOutline,
   lockClosedOutline,
-  documentTextOutline,
+  documentTextOutline
 } from 'ionicons/icons'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -25,6 +20,7 @@ import { useBackup } from '@/composables/features/useBackup'
 import { useBackupReminder } from '@/composables/features/useBackupReminder'
 import { useNotifier } from '@/composables/features/useNotifier'
 
+import SubPageHeader from '@/components/SubPageHeader.vue';
 const { t } = useI18n()
 const {
   isExporting,
@@ -102,17 +98,7 @@ async function handleDelete() {
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('privacy.title') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('privacy.title')"/>
 
     <ion-content class="priv-content" :scroll-y="true">
       <div class="px-4">

@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import {
-  IonPage, IonContent, IonIcon, IonToolbar, IonHeader, IonBackButton, IonTitle, IonButton, IonButtons,
+  IonPage,
+  IonContent,
+  IonIcon,
+  IonButton,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel
 } from '@ionic/vue';
 import {
   addOutline,
-  chevronBackOutline,
-  flagOutline,
+  flagOutline
 } from 'ionicons/icons';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -16,6 +21,7 @@ import { useMoney } from "@/composables/money/useMoney";
 import { getIconByName } from "@/shared/utils";
 import { formatDateLocalized } from "@/i18n/format";
 import { SavingGoalDTO } from "@/application";
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -72,59 +78,43 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('nav.savings') }}
-        </ion-title>
-
-        <ion-buttons slot="end">
-          <ion-button router-link="/savings/new" class="size-9 rounded-full bg-inverse-surface text-inverse-on-surface">
-            <ion-icon :icon="addOutline" class="size-[20px]"/>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('nav.savings')">
+      <template #end>
+        <ion-button router-link="/savings/new" class="header-action" aria-label="Yeni birikim hedefi">
+          <ion-icon :icon="addOutline" class="size-[20px]"/>
+        </ion-button>
+      </template>
+    </sub-page-header>
 
     <ion-content class="goals-content" :scroll-y="true">
-      <div class="px-4">
+      <div class="mx-auto w-full max-w-xl px-4">
         <!-- Tab segment -->
-        <div class="mt-5 bg-surface rounded-2xl p-1 flex">
-          <button
+        <ion-segment v-model="currentTab" class="goal-segment mt-5">
+          <ion-segment-button
               v-for="tab in tabs"
               :key="tab.id"
-              type="button"
-              class="flex-1 h-10 rounded-xl text-[12px] font-semibold transition flex items-center justify-center gap-1.5"
-              :class="currentTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-content-tertiary active:bg-surface-sunken'"
-              @click="currentTab = tab.id"
+              :value="tab.id"
+              class="goal-segment__button"
+              :class="{ 'goal-segment__button--active': currentTab === tab.id }"
           >
-            {{ tab.label }}
-            <span
-                class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold"
-                :class="currentTab === tab.id ? 'bg-white/25 text-white' : 'bg-surface-sunken text-content-tertiary'"
-            >
-              {{ goalCounts[tab.id] }}
-            </span>
-          </button>
-        </div>
+            <ion-label class="goal-segment__label">
+              <span>{{ tab.label }}</span>
+              <span class="goal-count">{{ goalCounts[tab.id] }}</span>
+            </ion-label>
+          </ion-segment-button>
+        </ion-segment>
       </div>
 
       <!-- Liste -->
-      <div class="mt-3 px-4 pb-10 space-y-3">
+      <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-10 space-y-3">
         <template v-if="filteredGoals.length">
           <router-link
               v-for="goal in filteredGoals"
               :key="goal.id"
               :to="`/savings/${goal.id}/show`"
-              class="block bg-surface rounded-2xl px-4 py-4 active:bg-surface-sunken transition"
+              class="goal-card block px-4 py-4 transition"
           >
             <!-- Üst kısım: ikon + ad + hedef tarihi -->
             <div class="flex items-center gap-3 mb-3">
@@ -141,7 +131,7 @@ onMounted(async () => {
                 </p>
               </div>
               <div class="text-right shrink-0">
-                <p class="text-[16px] font-bold text-indigo-700 dark:text-indigo-300 tabular-nums">
+                <p class="goal-progress text-[16px] font-bold tabular-nums">
                   %{{ Math.round(calculateProgress(goal)) }}
                 </p>
               </div>
@@ -151,7 +141,7 @@ onMounted(async () => {
             <div class="h-1.5 bg-surface-sunken rounded-full overflow-hidden mb-3">
               <div
                   class="h-full rounded-full transition-all"
-                  :class="goal.status === 'completed' ? 'bg-emerald-500' : 'bg-indigo-600'"
+                  :class="goal.status === 'completed' ? 'bg-emerald-500' : 'goal-progress-bar'"
                   :style="{ width: `${calculateProgress(goal)}%` }"
               />
             </div>
@@ -175,7 +165,7 @@ onMounted(async () => {
         </template>
 
         <!-- Empty -->
-        <div v-else class="bg-surface rounded-2xl px-4 py-10 text-center">
+        <div v-else class="empty-card px-4 py-10 text-center">
           <div class="size-14 rounded-2xl bg-surface-sunken flex items-center justify-center mx-auto">
             <ion-icon :icon="flagOutline" class="size-6 text-content-faint" />
           </div>
@@ -185,15 +175,14 @@ onMounted(async () => {
           <p class="mt-1 text-[12px] text-content-muted leading-snug">
             {{ $t('savingGoals.emptyDesc') }}
           </p>
-          <button
+          <ion-button
               v-if="currentTab === 'active'"
-              type="button"
-              class="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-indigo-600 text-white text-[12px] font-semibold active:bg-indigo-700 transition"
+              class="empty-action mt-4"
               @click="navigateToNewGoal"
           >
             <ion-icon :icon="addOutline" class="size-4" />
             {{ $t('savingGoals.new') }}
-          </button>
+          </ion-button>
         </div>
       </div>
     </ion-content>
@@ -207,5 +196,103 @@ onMounted(async () => {
 
 ion-page {
   overflow: hidden;
+}
+
+.header-action {
+  --background: var(--c-primary);
+  --color: var(--c-on-primary);
+  --border-radius: 999px;
+  --box-shadow: none;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+
+.goal-segment {
+  --background: var(--c-surface);
+  min-height: 50px;
+  padding: 5px;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.goal-segment__button {
+  --color: var(--c-content-muted);
+  --color-checked: var(--c-on-primary);
+  --indicator-color: transparent;
+  --indicator-box-shadow: none;
+  min-width: 0;
+  min-height: 40px;
+  text-transform: none;
+}
+
+.goal-segment__button::part(native) {
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: 160ms ease;
+}
+
+.goal-segment__button--active::part(native) {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--c-primary) 24%, transparent);
+}
+
+.goal-segment__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+}
+
+.goal-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding-inline: 4px;
+  border-radius: 999px;
+  background: var(--c-surface-sunken);
+  color: var(--c-content-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.goal-segment__button--active .goal-count {
+  background: color-mix(in srgb, var(--c-on-primary) 22%, transparent);
+  color: var(--c-on-primary);
+}
+
+.goal-card,
+.empty-card {
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: var(--c-surface);
+  box-shadow: 0 7px 22px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.goal-card:active {
+  background: var(--c-surface-sunken);
+}
+
+.goal-progress {
+  color: var(--c-primary-strong);
+}
+
+.goal-progress-bar {
+  background: var(--c-primary);
+}
+
+.empty-action {
+  --background: var(--c-primary);
+  --color: var(--c-on-primary);
+  --border-radius: 999px;
+  --box-shadow: none;
+  min-height: 38px;
+  font-size: 12px;
+  font-weight: 700;
 }
 </style>

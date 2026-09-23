@@ -9,13 +9,13 @@ import {
   IonTextarea, IonButtons, IonTitle, IonHeader, IonBackButton, IonToolbar, IonFooter, IonButton
 } from '@ionic/vue'
 import {
-  chevronBackOutline,
-  arrowForwardOutline, pricetagOutline
+  chevronBackOutline, pricetagOutline
 } from "ionicons/icons";
 import { useAccountsStore } from "@/stores/accounts";
 import { useTransactionsStore } from "@/stores/transactions";
 import { useCategoriesStore } from '@/stores/categories';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import { useForm } from "vee-validate";
 import { createTransactionSchema } from "@/forms";
 import { useCurrenciesStore } from "@/stores/currencies";
@@ -28,7 +28,7 @@ import CurrencyInput from "@/components/CurrencyInput.vue";
 import TransactionTypeSegment from "@/components/TransactionTypeSegment.vue";
 import AccountCarousel from "@/components/AccountCarousel.vue";
 import DateTimeField from "@/components/DateTimeField.vue";
-import TargetAccountField from "@/components/TargetAccountField.vue";
+import TransferAccountFlow from "@/components/TransferAccountFlow.vue";
 import ErrorChip from "@/components/ErrorChip.vue";
 import { getIconByName } from "@/shared/utils";
 import PickerField from "@/components/PickerField.vue";
@@ -41,7 +41,7 @@ const transactionStore = useTransactionsStore()
 const categoriesStore = useCategoriesStore()
 const currencyStore = useCurrenciesStore()
 const exchangeRateStore = useExchangeRateStore()
-const router = useRouter()
+const { goBackOrFallback } = useAppNavigation()
 const route = useRoute()
 
 const { t } = useI18n()
@@ -103,6 +103,9 @@ const selectedCategory = computed(() =>
 const selectedCurrencyCode = computed(() =>
     currencyCode(selectedAccount.value?.balance.currencyId) || 'TRY'
 )
+const selectedCurrencyMinorUnit = computed(() =>
+    currencyStore.currencyById(selectedAccount.value?.balance.currencyId)?.minorUnit
+)
 
 const availableTargetAccounts = computed(() =>
     accountStore.accounts.filter(a => a.id !== values.accountId)
@@ -123,6 +126,9 @@ const isCrossCurrencyTransfer = computed(() =>
 
 const targetCurrencyCode = computed(() =>
     currencyCode(selectedTargetAccount.value?.balance.currencyId) || ''
+)
+const targetCurrencyMinorUnit = computed(() =>
+    currencyStore.currencyById(selectedTargetAccount.value?.balance.currencyId)?.minorUnit
 )
 
 const targetAmountError = ref('')
@@ -306,7 +312,7 @@ const submitTransaction = handleSubmit(async (values) => {
 
     resetForm()
 
-    router.push('/tabs/transactions')
+    goBackOrFallback('/tabs/transactions')
   } catch (err) {
     handle(err,{
       context: 'NewTransactionPage',
@@ -347,11 +353,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button default-href="/settings/transactions" :icon="chevronBackOutline" />
+          <ion-back-button default-href="/tabs/transactions" :icon="chevronBackOutline" />
         </ion-buttons>
         <ion-title class="font-semibold">{{ $t('transactions.new') }}</ion-title>
       </ion-toolbar>
@@ -377,15 +383,14 @@ onMounted(async () => {
             <CurrencyInput
                 v-model="amount"
                 variant="plain"
+                hide-currency
+                :label="$t('transactions.amount')"
                 :currency-code="selectedCurrencyCode"
-                placeholder="0,00"
+                :minor-unit="selectedCurrencyMinorUnit"
+                :error-text="errors.amount"
                 class="tx-amount-input w-full"
             />
-
-            <!-- Para birimi (sağda sabit) -->
-            <span class="absolute top-1/2 right-3 -translate-y-1/2 pl-3 border-l border-line text-[15px] font-bold text-content">
-              {{ selectedCurrencyCode }}
-            </span>
+            <span class="amount-currency-code">{{ selectedCurrencyCode }}</span>
           </div>
 
           <!-- Hızlı ekleme -->
@@ -409,54 +414,32 @@ onMounted(async () => {
 
       <!-- Form alanları -->
       <div class="mt-6 px-4 pb-32 space-y-3">
-        <!-- Hesap -->
-        <AccountCarousel
-            :accounts="accountStore.accounts"
-            :label="values.type === 'transfer' ? $t('transactions.exitAccount') : $t('transactions.account')"
-            v-model="accountId"
+        <TransferAccountFlow
+            v-if="values.type === 'transfer'"
+            v-model:source-account-id="accountId"
+            v-model:target-account-id="targetAccountId"
+            v-model:target-amount="targetAmount"
+            :source-accounts="accountStore.accounts"
+            :target-accounts="availableTargetAccounts"
+            :source-error="errors.accountId"
+            :target-error="errors.targetAccountId"
+            :cross-currency="isCrossCurrencyTransfer"
+            :source-currency-code="selectedCurrencyCode"
+            :target-currency-code="targetCurrencyCode"
+            :target-currency-minor-unit="targetCurrencyMinorUnit"
+            :target-amount-error="targetAmountError"
         />
 
-        <div v-if="errors.accountId" class="mt-1 px-1">
-          <ErrorChip :message="errors.accountId"/>
-        </div>
-
-        <!-- Transfer hedef hesap (ayrı kart) -->
-        <section v-if="values.type === 'transfer' && values.accountId"
-                 class="bg-surface rounded-2xl px-4 py-3">
-          <div
-              class="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-content-muted">
-            <ion-icon :icon="arrowForwardOutline" class="size-3.5"/>
-            <span>{{ $t('transactions.targetAccount') }}</span>
-          </div>
-          <TargetAccountField
-              v-model="targetAccountId"
-              :accounts="availableTargetAccounts"
-              :error="errors.targetAccountId"
+        <template v-else>
+          <AccountCarousel
+              v-model="accountId"
+              :accounts="accountStore.accounts"
+              :label="$t('transactions.account')"
           />
-
-          <!-- Kur dönüşümlü transfer: hedef hesaba yatacak tutar (hedef para
-               biriminde). Kurdan önerilir; kullanıcı düzeltebilir. -->
-          <div v-if="isCrossCurrencyTransfer" class="mt-3">
-            <div class="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-wider text-content-muted">
-              <span>{{ $t('transactions.targetAmount') }}</span>
-            </div>
-            <div class="amount-card relative flex items-center justify-center rounded-2xl border border-line bg-surface px-3">
-              <CurrencyInput
-                  v-model="targetAmount"
-                  variant="plain"
-                  :currency-code="targetCurrencyCode"
-                  placeholder="0,00"
-                  class="tx-amount-input w-full"
-              />
-              <span class="absolute top-1/2 right-3 -translate-y-1/2 pl-3 border-l border-line text-[15px] font-bold text-content">
-                {{ targetCurrencyCode }}
-              </span>
-            </div>
-            <div v-if="targetAmountError" class="mt-2 flex justify-center">
-              <ErrorChip :message="targetAmountError"/>
-            </div>
+          <div v-if="errors.accountId" class="mt-1 px-1">
+            <ErrorChip :message="errors.accountId"/>
           </div>
-        </section>
+        </template>
 
         <!-- İşlem adı — MD3 filled text field -->
         <ion-input
@@ -547,41 +530,37 @@ onMounted(async () => {
   resize: none;
 }
 
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, var(--c-page) 30%);
-  z-index: 10;
-}
-
 ion-page {
   overflow: hidden;
 }
 
-/* CurrencyInput sade görünüm — kart içinde ortalanmış büyük tutar */
-.tx-amount-input :deep(ion-input) {
+/* Rakam ve üst etiketi gerçek kart merkezinde kalır; para birimi sağdaki eşit
+   boşluk alanında sabitlenir. Simetrik padding kodun rakama binmesini önler. */
+.tx-amount-input {
   --background: transparent;
   --color: inherit;
-  --padding-start: 0;
-  --padding-end: 0;
-  font-size: 30px;
+  --padding-start: 48px;
+  --padding-end: 48px;
+  font-size: clamp(26px, 8vw, 32px);
   font-weight: 800;
-  text-align: center;
 }
 
 .tx-amount-input :deep(input) {
-  font-size: 30px;
-  font-weight: 800;
+  font: inherit;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
-/* Para birimi kart içinde ayrı gösterildiği için CurrencyInput'un kendi
-   sembol/kod eki gizlenir. */
-.tx-amount-input :deep(.currency-suffix) {
-  display: none;
+.amount-currency-code {
+  position: absolute;
+  inset-inline-end: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding-inline-start: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* Tutar kartı validation hatası: border hafifçe hata rengine döner,

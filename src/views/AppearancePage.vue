@@ -3,16 +3,23 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  IonToolbar,
-  IonHeader,
-  IonBackButton,
-  IonTitle,
-  IonButtons
+  IonButton,
+  IonItem,
+  IonLabel,
+  IonModal,
+  IonSegment,
+  IonSegmentButton,
+  IonToggle
 } from '@ionic/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import {
-  sunnyOutline, moonOutline, phonePortraitOutline,
-  chevronBackOutline, eyeOffOutline,
+  sunnyOutline,
+  moonOutline,
+  phonePortraitOutline,
+  eyeOffOutline,
+  calendarOutline,
+  chevronForwardOutline,
+  checkmarkCircle
 } from 'ionicons/icons';
 import { useAppStore } from '@/stores/app';
 import { useThemeStore } from '@/stores/theme';
@@ -20,6 +27,7 @@ import { CurrencyFormat, type CurrencyPosition, type DecimalPlaces } from '@/dom
 import { WeekDay } from '@/domain/value-objects/week-day';
 import { PrivacySettings } from '@/domain/value-objects/privacy-settings';
 import type { ThemeMode } from '@/domain/value-objects/theme';
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const app = useAppStore();
 const themeStore = useThemeStore();
@@ -72,6 +80,13 @@ const weekStartDay = computed<string>({
 });
 
 const weekDays = WeekDay.all();
+const weekDayMenuOpen = ref(false);
+const selectedWeekDayLabel = computed(() => `weekDays.${weekStartDay.value}`);
+
+const selectWeekDay = (value: string) => {
+  weekStartDay.value = value;
+  weekDayMenuOpen.value = false;
+};
 
 // Önizleme
 const PREVIEW_AMOUNT = 12345.67;
@@ -91,193 +106,170 @@ const previewTx = computed(() => {
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('appearance.title') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('appearance.title')"/>
 
     <ion-content class="app-content" :scroll-y="true">
-      <div class="px-4">
-        <!-- Önizleme -->
-        <section class="mt-5 relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white px-4 py-4">
-          <p class="text-[10px] uppercase tracking-wider opacity-70">{{ $t('appearance.preview') }}</p>
-          <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums tracking-tight">
-            {{ previewBalance }}
-          </p>
-          <div class="mt-3 pt-3 border-t border-white/20 flex items-center justify-between text-[12px]">
-            <span class="opacity-80">{{ $t('appearance.lastTransaction') }}</span>
-            <span class="font-semibold tabular-nums">{{ previewTx }}</span>
+      <main class="mx-auto w-full max-w-xl space-y-6 px-4 pb-12 pt-5">
+        <section class="appearance-preview overflow-hidden rounded-[22px] p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-content-muted">
+                {{ $t('appearance.preview') }}
+              </p>
+              <p class="mt-2 text-[30px] font-extrabold leading-none tracking-tight text-content tabular-nums">
+                {{ previewBalance }}
+              </p>
+            </div>
+            <div class="preview-mark flex size-11 items-center justify-center rounded-2xl">
+              <span class="text-lg font-extrabold">{{ currencySymbol }}</span>
+            </div>
           </div>
-        </section>
-      </div>
-
-      <div class="mt-5 px-4 pb-10 space-y-5">
-
-        <!-- Tema -->
-        <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-2 px-1">
-            {{ $t('appearance.themeSection') }}
-          </p>
-          <div class="bg-surface rounded-2xl p-1 flex">
-            <button
-                v-for="opt in themeOptions"
-                :key="opt.value"
-                type="button"
-                class="flex-1 h-12 rounded-xl flex flex-col items-center justify-center gap-0.5 transition"
-                :class="themeMode === opt.value
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-content-muted active:bg-surface-sunken'"
-                @click="themeMode = opt.value"
-            >
-              <ion-icon :icon="opt.icon" class="size-[18px]" />
-              <span class="text-[11px] font-semibold">{{ $t(opt.labelKey) }}</span>
-            </button>
+          <div class="mt-5 flex items-center justify-between border-t border-line pt-4 text-[12px]">
+            <span class="font-medium text-content-muted">{{ $t('appearance.lastTransaction') }}</span>
+            <span class="font-bold text-content tabular-nums">{{ previewTx }}</span>
           </div>
         </section>
 
-        <!-- Gizlilik -->
         <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-2 px-1">
-            {{ $t('appearance.privacySection') }}
-          </p>
-          <div class="bg-surface rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div class="size-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-              <ion-icon :icon="eyeOffOutline" class="size-[16px] text-violet-600" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[14px] font-medium text-content">{{ $t('appearance.hideAmounts') }}</p>
-              <p class="text-[11px] text-content-muted mt-0.5">{{ $t('appearance.hideAmountsDesc') }}</p>
-            </div>
-            <button
-                type="button"
-                class="relative w-11 h-6 rounded-full transition shrink-0"
-                :class="hideAmounts ? 'bg-indigo-600' : 'bg-surface-strong'"
-                @click="hideAmounts = !hideAmounts"
-                role="switch"
-                :aria-checked="hideAmounts"
-            >
-              <span
-                  class="absolute top-0.5 size-5 rounded-full bg-surface shadow transition-all"
-                  :class="hideAmounts ? 'left-[22px]' : 'left-0.5'"
-              />
-            </button>
-          </div>
-        </section>
-
-        <!-- Para Birimi Formatı -->
-        <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-2 px-1">
-            {{ $t('appearance.currencyFormat') }}
-          </p>
-          <div class="bg-surface rounded-2xl">
-            <!-- Konum -->
-            <div class="px-4 py-3 border-b border-line">
-              <p class="text-[14px] font-medium text-content mb-2">{{ $t('appearance.symbolPosition') }}</p>
-              <div class="bg-surface-sunken rounded-xl p-1 flex">
-                <button
-                    type="button"
-                    class="flex-1 h-9 rounded-lg text-[12px] font-semibold transition"
-                    :class="currencyPosition === 'start' ? 'bg-surface text-content shadow-sm' : 'text-content-muted'"
-                    @click="currencyPosition = 'start'"
-                >
-                  {{ currencySymbol }} 100
-                </button>
-                <button
-                    type="button"
-                    class="flex-1 h-9 rounded-lg text-[12px] font-semibold transition"
-                    :class="currencyPosition === 'end' ? 'bg-surface text-content shadow-sm' : 'text-content-muted'"
-                    @click="currencyPosition = 'end'"
-                >
-                  100 {{ currencySymbol }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Rakam gruplandırma -->
-            <div class="px-4 py-3 border-b border-line flex items-center gap-3">
-              <div class="flex-1 min-w-0">
-                <p class="text-[14px] font-medium text-content">{{ $t('appearance.digitGrouping') }}</p>
-                <p class="text-[11px] text-content-muted mt-0.5">{{ $t('appearance.digitGroupingDesc') }}</p>
-              </div>
-              <button
-                  type="button"
-                  class="relative w-11 h-6 rounded-full transition shrink-0"
-                  :class="useDigitGrouping ? 'bg-indigo-600' : 'bg-surface-strong'"
-                  @click="useDigitGrouping = !useDigitGrouping"
+          <h2 class="section-label">{{ $t('appearance.themeSection') }}</h2>
+          <div class="appearance-card p-2">
+            <ion-segment v-model="themeMode" class="appearance-segment theme-segment">
+              <ion-segment-button
+                  v-for="opt in themeOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  :class="{ 'segment-option--active': themeMode === opt.value }"
               >
-                <span
-                    class="absolute top-0.5 size-5 rounded-full bg-surface shadow transition-all"
-                    :class="useDigitGrouping ? 'left-[22px]' : 'left-0.5'"
-                />
-              </button>
-            </div>
+                <ion-icon :icon="opt.icon" />
+                <ion-label>{{ $t(opt.labelKey) }}</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+        </section>
 
-            <!-- Ondalık göster -->
-            <div
-                class="px-4 py-3 flex items-center gap-3"
-                :class="{ 'border-b border-line': showDecimalPlaces }"
-            >
-              <div class="flex-1 min-w-0">
-                <p class="text-[14px] font-medium text-content">{{ $t('appearance.showDecimals') }}</p>
+        <section>
+          <h2 class="section-label">{{ $t('appearance.privacySection') }}</h2>
+          <div class="appearance-card overflow-hidden">
+            <ion-item class="settings-row" lines="none" :button="false">
+              <div slot="start" class="settings-icon">
+                <ion-icon :icon="eyeOffOutline" />
               </div>
-              <button
-                  type="button"
-                  class="relative w-11 h-6 rounded-full transition shrink-0"
-                  :class="showDecimalPlaces ? 'bg-indigo-600' : 'bg-surface-strong'"
-                  @click="showDecimalPlaces = !showDecimalPlaces"
-              >
-                <span
-                    class="absolute top-0.5 size-5 rounded-full bg-surface shadow transition-all"
-                    :class="showDecimalPlaces ? 'left-[22px]' : 'left-0.5'"
-                />
-              </button>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ $t('appearance.hideAmounts') }}</h3>
+                <p>{{ $t('appearance.hideAmountsDesc') }}</p>
+              </ion-label>
+              <ion-toggle v-model="hideAmounts" slot="end" :aria-label="$t('appearance.hideAmounts')" />
+            </ion-item>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-label">{{ $t('appearance.currencyFormat') }}</h2>
+          <div class="appearance-card overflow-hidden">
+            <div class="settings-block border-b border-line">
+              <p class="settings-title mb-3">{{ $t('appearance.symbolPosition') }}</p>
+              <ion-segment v-model="currencyPosition" class="appearance-segment compact-segment">
+                <ion-segment-button
+                    value="start"
+                    :class="{ 'segment-option--active': currencyPosition === 'start' }"
+                >
+                  <ion-label>{{ currencySymbol }} 100</ion-label>
+                </ion-segment-button>
+                <ion-segment-button
+                    value="end"
+                    :class="{ 'segment-option--active': currencyPosition === 'end' }"
+                >
+                  <ion-label>100 {{ currencySymbol }}</ion-label>
+                </ion-segment-button>
+              </ion-segment>
             </div>
 
-            <!-- Basamak sayısı -->
-            <div v-if="showDecimalPlaces" class="px-4 py-3">
-              <p class="text-[14px] font-medium text-content mb-2">{{ $t('appearance.decimalCount') }}</p>
-              <div class="bg-surface-sunken rounded-xl p-1 flex">
-                <button
+            <ion-item class="settings-row" lines="full" :button="false">
+              <ion-label class="ion-text-wrap">
+                <h3>{{ $t('appearance.digitGrouping') }}</h3>
+                <p>{{ $t('appearance.digitGroupingDesc') }}</p>
+              </ion-label>
+              <ion-toggle v-model="useDigitGrouping" slot="end" :aria-label="$t('appearance.digitGrouping')" />
+            </ion-item>
+
+            <ion-item class="settings-row" :lines="showDecimalPlaces ? 'full' : 'none'" :button="false">
+              <ion-label><h3>{{ $t('appearance.showDecimals') }}</h3></ion-label>
+              <ion-toggle v-model="showDecimalPlaces" slot="end" :aria-label="$t('appearance.showDecimals')" />
+            </ion-item>
+
+            <div v-if="showDecimalPlaces" class="settings-block">
+              <p class="settings-title mb-3">{{ $t('appearance.decimalCount') }}</p>
+              <div class="choice-grid grid grid-cols-3 gap-1 rounded-xl p-1">
+                <ion-button
                     v-for="n in [0, 1, 2]"
                     :key="n"
-                    type="button"
-                    class="flex-1 h-9 rounded-lg text-[12px] font-semibold transition tabular-nums"
-                    :class="decimalPlaces === n ? 'bg-surface text-content shadow-sm' : 'text-content-muted'"
+                    fill="clear"
+                    class="choice-button m-0 tabular-nums"
+                    :class="{ 'choice-button--active': decimalPlaces === n }"
                     @click="decimalPlaces = n as DecimalPlaces"
                 >
                   {{ n }}
-                </button>
+                </ion-button>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Takvim -->
         <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-2 px-1">
-            {{ $t('appearance.calendar') }}
-          </p>
-          <div class="bg-surface rounded-2xl px-4 py-3">
-            <p class="text-[14px] font-medium text-content mb-1">{{ $t('appearance.weekStart') }}</p>
-            <select
-                v-model="weekStartDay"
-                class="w-full text-[14px] text-content bg-transparent outline-none appearance-none py-1"
-            >
-              <option v-for="day in weekDays" :key="day.value" :value="day.value">
-                {{ $t('weekDays.' + day.value) }}
-              </option>
-            </select>
+          <h2 class="section-label">{{ $t('appearance.calendar') }}</h2>
+          <div class="appearance-card overflow-hidden">
+            <ion-item class="settings-row week-trigger" lines="none" button :detail="false" @click="weekDayMenuOpen = true">
+              <div slot="start" class="settings-icon">
+                <ion-icon :icon="calendarOutline" />
+              </div>
+              <ion-label>
+                <h3>{{ $t('appearance.weekStart') }}</h3>
+                <p>{{ $t(selectedWeekDayLabel) }}</p>
+              </ion-label>
+              <div slot="end" class="flex items-center gap-2">
+                <span class="selected-day-chip">{{ $t(selectedWeekDayLabel) }}</span>
+                <ion-icon :icon="chevronForwardOutline" class="text-content-muted" />
+              </div>
+            </ion-item>
           </div>
         </section>
-      </div>
+      </main>
     </ion-content>
+
+    <ion-modal
+        :is-open="weekDayMenuOpen"
+        class="week-day-modal"
+        :backdrop-dismiss="true"
+        @did-dismiss="weekDayMenuOpen = false"
+    >
+      <div class="week-day-sheet flex h-full flex-col px-3 pt-5">
+        <div class="px-2 pb-3">
+          <div class="sheet-handle mx-auto mb-4 h-1 w-10 rounded-full" />
+          <h2 class="text-lg font-bold text-content">{{ $t('appearance.weekStart') }}</h2>
+        </div>
+
+        <div class="min-h-0 flex-1 overflow-y-auto">
+          <ion-item
+              v-for="day in weekDays"
+              :key="day.value"
+              class="week-day-option"
+              :class="{ 'week-day-option--active': weekStartDay === day.value }"
+              lines="none"
+              button
+              :detail="false"
+              @click="selectWeekDay(day.value)"
+          >
+            <ion-label>{{ $t('weekDays.' + day.value) }}</ion-label>
+            <ion-icon
+                v-if="weekStartDay === day.value"
+                slot="end"
+                :icon="checkmarkCircle"
+                class="text-xl"
+            />
+          </ion-item>
+        </div>
+      </div>
+    </ion-modal>
   </ion-page>
 </template>
 
@@ -288,5 +280,214 @@ const previewTx = computed(() => {
 
 ion-page {
   overflow: hidden;
+}
+
+.appearance-preview {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
+}
+
+.preview-mark,
+.settings-icon {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.appearance-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.section-label {
+  margin: 0 4px 9px;
+  color: var(--c-content-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.appearance-segment {
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--c-surface-sunken);
+  --background: var(--c-surface-sunken);
+}
+
+.appearance-segment ion-segment-button {
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 11px;
+  color: var(--c-content-muted);
+  --color: var(--c-content-muted);
+  --color-checked: var(--c-on-primary);
+  --indicator-color: transparent;
+  --indicator-box-shadow: none;
+  --indicator-height: 100%;
+}
+
+.appearance-segment ion-segment-button::part(native) {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.appearance-segment ion-segment-button.segment-option--active {
+  color: var(--c-on-primary);
+  --color: var(--c-on-primary);
+  --color-checked: var(--c-on-primary);
+}
+
+.appearance-segment ion-segment-button.segment-option--active::part(native) {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-on-primary);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--c-content) 18%, transparent);
+}
+
+.appearance-segment ion-segment-button::part(indicator-background) {
+  border-radius: 10px;
+}
+
+.theme-segment ion-segment-button {
+  height: 58px;
+  text-transform: none;
+}
+
+.theme-segment ion-icon {
+  margin-bottom: 4px;
+  font-size: 18px;
+}
+
+.theme-segment ion-label,
+.compact-segment ion-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.settings-row {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-hover: transparent;
+  --border-color: var(--c-line);
+  --min-height: 68px;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+}
+
+.settings-row h3,
+.settings-title {
+  color: var(--c-content);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.settings-row p {
+  margin-top: 3px;
+  color: var(--c-content-muted);
+  font-size: 11px;
+}
+
+.settings-icon {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  margin-inline-end: 12px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+}
+
+.settings-icon ion-icon {
+  font-size: 18px;
+}
+
+.settings-block {
+  padding: 14px;
+}
+
+.choice-grid {
+  background: var(--c-surface-sunken);
+}
+
+ion-button.choice-button {
+  min-height: 38px;
+  font-size: 13px;
+  font-weight: 700;
+  --border-radius: 9px;
+  --color: var(--c-content-muted);
+  --background: transparent;
+  --box-shadow: none;
+}
+
+ion-button.choice-button--active {
+  --background: var(--c-primary);
+  --color: var(--c-on-primary);
+}
+
+.selected-day-chip {
+  max-width: 110px;
+  overflow: hidden;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: var(--c-surface-sunken);
+  color: var(--c-content);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+ion-modal.week-day-modal {
+  --width: min(calc(100% - 16px), 420px);
+  --height: min(500px, calc(100% - 56px));
+  --border-radius: 28px;
+  --background: var(--md-surface-container-high);
+  --box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  align-items: flex-end;
+  justify-content: center;
+}
+
+ion-modal.week-day-modal::part(content) {
+  margin-bottom: max(28px, calc(env(safe-area-inset-bottom) + 8px));
+  background: var(--md-surface-container-high);
+}
+
+.week-day-sheet {
+  padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
+  background: var(--md-surface-container-high);
+}
+
+.sheet-handle {
+  background: var(--c-content-faint);
+}
+
+.week-day-option {
+  margin-bottom: 4px;
+  border-radius: 14px;
+  overflow: hidden;
+  --min-height: 48px;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  --background: transparent;
+  --background-activated: var(--c-surface-strong);
+  --color: var(--c-content-secondary);
+}
+
+.week-day-option ion-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week-day-option--active {
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --color: var(--c-on-primary);
 }
 </style>

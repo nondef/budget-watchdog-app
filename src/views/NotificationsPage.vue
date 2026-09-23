@@ -1,23 +1,34 @@
 <script setup lang="ts">
 import {
-  IonPage, IonContent, IonIcon, IonDatetime, IonDatetimeButton, IonModal,
-  IonToolbar, IonHeader, IonBackButton, IonTitle, IonButtons, IonLabel, IonToggle, IonItem, IonList, IonNote
+  IonPage,
+  IonContent,
+  IonIcon,
+  IonButton,
+  IonLabel,
+  IonToggle,
+  IonItem,
+  IonList,
+  IonNote
 } from '@ionic/vue';
 import {
   notificationsOutline,
   timeOutline,
-  chevronBackOutline,
   walletOutline,
   pieChartOutline,
-  trophyOutline, informationCircleOutline, shieldCheckmarkOutline,
+  trophyOutline,
+  informationCircleOutline,
+  shieldCheckmarkOutline,
+  alarmOutline
 } from 'ionicons/icons';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useNotificationsStore } from '@/stores/notifications';
 import { useNotifier } from '@/composables/features/useNotifier';
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { ALERT_ROLE, useAlert } from "@/composables/ui/useAlert";
+import TimePickerModal from '@/components/TimePickerModal.vue';
+import SubPageHeader from '@/components/SubPageHeader.vue';
 
 const { t } = useI18n();
 const alert = useAlert()
@@ -25,8 +36,10 @@ const alert = useAlert()
 const notificationStore = useNotificationsStore()
 const { prefs } = storeToRefs(notificationStore);
 const notifier = useNotifier();
+const { exactAlarmGranted } = notifier;
 
 const pushDisabled = computed(() => !prefs.value.pushEnabled);
+const reminderTimeOpen = ref(false);
 
 const haptic = () => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
 
@@ -98,14 +111,6 @@ watch(
     },
 );
 
-const reminderIso = computed(() => `2000-01-01T${prefs.value.walletReminder.time}:00`);
-
-const onReminderTimeChange = (event: CustomEvent) => {
-  const match = (event.detail.value as string)?.match(/T(\d{2}:\d{2})/);
-  if (match) prefs.value.walletReminder.time = match[1];
-};
-
-
 onMounted(async () => {
   await notificationStore.initiliaze()
 
@@ -119,28 +124,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('notifications.title') }}
-        </ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <ion-page class="design-page">
+    <sub-page-header :title="$t('notifications.title')"/>
 
     <ion-content :fullscreen="true" class="notif-content" :scroll-y="true">
-      <div class="px-4 pb-10">
+      <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
 
         <!-- Ana anahtar -->
-        <div class="notif-card mt-5">
+        <div class="notif-card notif-card--master">
           <ion-list :inset="false" lines="none">
             <ion-item class="plain-item" :button="false">
-              <div slot="start" class="notif-tint bg-indigo-50">
-                <ion-icon :icon="notificationsOutline" class="size-[18px] text-indigo-600" />
+              <div slot="start" class="notif-tint notif-tint--primary">
+                <ion-icon :icon="notificationsOutline" class="size-[18px]" />
               </div>
               <ion-label>
                 <h3 class="notif-title">{{ $t('notifications.enable') }}</h3>
@@ -164,8 +159,8 @@ onMounted(async () => {
           <div class="notif-card">
             <ion-list :inset="false" lines="full">
               <ion-item class="plain-item" :button="false">
-                <div slot="start" class="notif-tint bg-sky-50">
-                  <ion-icon :icon="walletOutline" class="size-[18px] text-sky-600" />
+                <div slot="start" class="notif-tint notif-tint--info">
+                  <ion-icon :icon="walletOutline" class="size-[18px]" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.walletReminder') }}</h3>
@@ -181,26 +176,61 @@ onMounted(async () => {
               </ion-item>
 
               <ion-item v-if="prefs.walletReminder.enabled" class="plain-item" lines="none" :button="false">
-                <div slot="start" class="notif-tint bg-surface-sunken">
+                <div slot="start" class="notif-tint notif-tint--neutral">
                   <ion-icon :icon="timeOutline" class="size-[18px] text-content-secondary" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.reminderTime') }}</h3>
                   <p class="notif-sub">{{ $t('notifications.reminderTimeDesc') }}</p>
                 </ion-label>
-                <ion-datetime-button slot="end" datetime="wallet-reminder-time" />
+                <ion-button
+                    slot="end"
+                    fill="clear"
+                    class="reminder-time-trigger"
+                    :aria-label="$t('notifications.reminderTime')"
+                    @click="reminderTimeOpen = true"
+                >
+                  {{ prefs.walletReminder.time }}
+                </ion-button>
               </ion-item>
             </ion-list>
           </div>
 
-          <!-- Uyarılar -->
+          <!--
+            Kesin alarm izni uyarısı. Android 14'ten (targetSdk 34+) beri
+            SCHEDULE_EXACT_ALARM varsayılan olarak VERİLMİYOR; izin yokken
+            plugin setAndAllowWhileIdle kullanıyor ve OS hatırlatıcıyı kendi
+            uyanma penceresine yuvarlıyor — 17:15 için kurulan bildirim 17:40'ta
+            düşebiliyor. Satır yalnızca hatırlatıcı açıkken ve izin gerçekten
+            reddedilmişken görünür (null = Android değil ya da okunamadı).
+          -->
+          <div v-if="prefs.walletReminder.enabled && exactAlarmGranted === false" class="notif-card">
+            <ion-list :inset="false" lines="full">
+              <ion-item
+                  class="plain-item"
+                  lines="none"
+                  :button="true"
+                  :detail="true"
+                  @click="notifier.openExactAlarmSettings()"
+              >
+                <div slot="start" class="notif-tint notif-tint--warning">
+                  <ion-icon :icon="alarmOutline" class="size-[18px]" />
+                </div>
+                <ion-label class="ion-text-wrap">
+                  <h3 class="notif-title">{{ $t('notifications.exactAlarmTitle') }}</h3>
+                  <p class="notif-sub">{{ $t('notifications.exactAlarmDesc') }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
+
           <h2 class="notif-section">{{ $t('notifications.alerts') }}</h2>
 
           <div class="notif-card">
             <ion-list :inset="false" lines="full">
               <ion-item class="plain-item" :button="false">
-                <div slot="start" class="notif-tint bg-amber-50">
-                  <ion-icon :icon="pieChartOutline" class="size-[18px] text-amber-600" />
+                <div slot="start" class="notif-tint notif-tint--warning">
+                  <ion-icon :icon="pieChartOutline" class="size-[18px]" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.budget') }}</h3>
@@ -215,9 +245,9 @@ onMounted(async () => {
                 />
               </ion-item>
 
-              <ion-item class="plain-item" lines="none" :button="false">
-                <div slot="start" class="notif-tint bg-violet-50">
-                  <ion-icon :icon="trophyOutline" class="size-[18px] text-violet-600" />
+              <ion-item class="plain-item" lines="full" :button="false">
+                <div slot="start" class="notif-tint notif-tint--violet">
+                  <ion-icon :icon="trophyOutline" class="size-[18px]" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.goal') }}</h3>
@@ -234,9 +264,9 @@ onMounted(async () => {
 
               <!-- Diğerlerinden farklı olarak bu bir kolaylık değil veri kaybı
                    önlemi: cihaz yedeği kapalı, telefon kaybı = kalıcı kayıp. -->
-              <ion-item class="plain-item" lines="none" :button="false">
-                <div slot="start" class="notif-tint bg-sky-50">
-                  <ion-icon :icon="shieldCheckmarkOutline" class="size-[18px] text-sky-600" />
+              <ion-item class="plain-item" lines="full" :button="false">
+                <div slot="start" class="notif-tint notif-tint--info">
+                  <ion-icon :icon="shieldCheckmarkOutline" class="size-[18px]" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.backupReminder') }}</h3>
@@ -255,8 +285,8 @@ onMounted(async () => {
                    kullanıcı, kendi ertelediği hatırlatmanın geri geldiğini yine
                    de duymak isteyebilir — ve tersi. -->
               <ion-item class="plain-item" lines="none" :button="false">
-                <div slot="start" class="notif-tint bg-sky-50">
-                  <ion-icon :icon="timeOutline" class="size-[18px] text-sky-600" />
+                <div slot="start" class="notif-tint notif-tint--info">
+                  <ion-icon :icon="timeOutline" class="size-[18px]" />
                 </div>
                 <ion-label>
                   <h3 class="notif-title">{{ $t('notifications.backupSnoozeEnd') }}</h3>
@@ -279,18 +309,15 @@ onMounted(async () => {
           <ion-icon :icon="informationCircleOutline" class="size-[16px] shrink-0 mt-0.5" />
           <ion-note class="notif-note__text">{{ $t('notifications.footnote') }}</ion-note>
         </div>
-      </div>
+      </main>
 
-      <!-- Saat seçici: keep-contents-mounted, datetime-button ile eşleşsin diye -->
-      <ion-modal :keep-contents-mounted="true">
-        <ion-datetime
-            id="wallet-reminder-time"
-            presentation="time"
-            :value="reminderIso"
-            @ion-change="onReminderTimeChange"
-        />
-      </ion-modal>
     </ion-content>
+
+    <TimePickerModal
+        v-model="prefs.walletReminder.time"
+        v-model:open="reminderTimeOpen"
+        :title="$t('notifications.reminderTime')"
+    />
   </ion-page>
 </template>
 
@@ -307,8 +334,19 @@ ion-page {
    Renkler tokenlardan geldiği için light/dark otomatik uyumlu. */
 .notif-card {
   background: var(--c-surface);
-  border-radius: 1rem;
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.notif-card--master {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
+}
+
+.notif-card + .notif-card {
+  margin-top: 12px;
 }
 
 .notif-card ion-list {
@@ -328,7 +366,7 @@ ion-page {
   --min-height: 66px;
 }
 
-/* İkon tint kutusu — pastel sınıflar variables.css'te yarı şeffaf
+/* İkon tint kutusu — pastel sınıflar src/theme/overrides/tailwind-tints.css'te yarı şeffaf
    hue tint'e bağlı olduğu için dark modda da doğru görünür. */
 .notif-tint {
   width: 2.25rem;
@@ -339,28 +377,58 @@ ion-page {
   justify-content: center;
   margin-inline-end: 12px;
   flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.notif-tint--primary {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.notif-tint--neutral {
+  background: var(--c-surface-sunken);
+  border-color: var(--c-line);
+  color: var(--c-content-secondary);
+}
+
+.notif-tint--info {
+  background: color-mix(in srgb, #0284c7 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #0284c7 23%, var(--c-line));
+  color: #0369a1;
+}
+
+.notif-tint--warning {
+  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #f59e0b 25%, var(--c-line));
+  color: #b45309;
+}
+
+.notif-tint--violet {
+  background: color-mix(in srgb, #7c3aed 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #7c3aed 23%, var(--c-line));
+  color: #7c3aed;
 }
 
 .notif-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--c-content);
 }
 
 .notif-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--c-content-muted);
   margin-top: 2px;
   white-space: normal;
 }
 
 .notif-section {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-content-tertiary);
-  margin: 24px 4px 8px;
+  letter-spacing: 0.09em;
+  color: var(--c-content-muted);
+  margin: 26px 4px 9px;
 }
 
 /* Ana anahtar kapalıyken alt bölümler pasif görünür ve tıklanamaz. */
@@ -377,7 +445,9 @@ ion-page {
   padding: 12px 14px;
   border-radius: 1rem;
   background: var(--c-surface);
+  border: 1px solid var(--c-line);
   color: var(--c-content-muted);
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 4%, transparent);
 }
 
 .notif-note__text {
@@ -386,12 +456,34 @@ ion-page {
   color: var(--c-content-tertiary);
 }
 
-/* Saat butonu kart diliyle aynı yüzeyde dursun */
-ion-datetime-button::part(native) {
-  background: var(--c-surface-sunken);
-  color: var(--c-content);
-  border-radius: 10px;
+/* ion-datetime-button yalnızca ion-datetime açabildiğinden, özel modalı
+   tetikleyen ion-button aynı kompakt görünümü burada taşır. */
+ion-button.reminder-time-trigger {
+  min-height: 36px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: none;
+  --background: var(--c-surface-sunken);
+  --background-hover: var(--c-surface-strong);
+  --background-activated: var(--c-surface-strong);
+  --color: var(--c-content);
+  --border-radius: 10px;
+  --box-shadow: none;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+:global(.ion-palette-dark) .notif-tint--info {
+  color: #7dd3fc;
+}
+
+:global(.ion-palette-dark) .notif-tint--warning {
+  color: #fcd34d;
+}
+
+:global(.ion-palette-dark) .notif-tint--violet {
+  color: #c4b5fd;
 }
 </style>

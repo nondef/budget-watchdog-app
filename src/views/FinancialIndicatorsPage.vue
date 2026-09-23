@@ -7,12 +7,7 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonSkeletonText,
-  IonToolbar,
-  IonHeader,
-  IonBackButton,
-  IonTitle,
   IonButton,
-  IonButtons,
   IonSegment,
   IonSegmentButton,
   IonList,
@@ -22,7 +17,7 @@ import {
   IonCard,
   IonCardContent,
   IonSpinner,
-  type RefresherCustomEvent,
+  type RefresherCustomEvent
 } from '@ionic/vue'
 import {
   refreshOutline,
@@ -31,12 +26,12 @@ import {
   starOutline,
   star,
   alertCircleOutline,
-  swapVerticalOutline,
-  chevronBackOutline
+  swapVerticalOutline
 } from 'ionicons/icons'
 import { useI18n } from 'vue-i18n'
 import { useMarketStore, type MarketSegment, type ChangeMode } from '@/stores/market'
 
+import SubPageHeader from '@/components/SubPageHeader.vue';
 const marketStore = useMarketStore()
 const { locale } = useI18n()
 
@@ -94,37 +89,29 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain">
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/tabs/settings" :icon="chevronBackOutline"/>
-        </ion-buttons>
-
-        <ion-title class="text-xl font-semibold">
-          {{ $t('nav.market') }}
-        </ion-title>
-
-        <ion-buttons slot="end">
-          <ion-button
-              :disabled="!marketStore.canRefresh || marketStore.isLoading"
-              :aria-label="$t('market.refresh')"
-              @click="handleRefresh()"
-          >
-            <ion-spinner v-if="marketStore.isLoading" name="crescent" class="size-[18px]" />
-            <ion-icon v-else :icon="refreshOutline" class="size-[18px]" />
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <sub-page-header :title="$t('nav.market')">
+      <template #end>
+        <ion-button
+          class="refresh-action"
+          :disabled="!marketStore.canRefresh || marketStore.isLoading"
+          :aria-label="$t('market.refresh')"
+          @click="handleRefresh()"
+        >
+          <ion-spinner v-if="marketStore.isLoading" name="crescent" class="size-[18px]" />
+          <ion-icon v-else :icon="refreshOutline" class="size-[18px]" />
+        </ion-button>
+      </template>
+    </sub-page-header>
 
     <ion-content class="market-content" :scroll-y="true">
       <ion-refresher slot="fixed" @ion-refresh="handleRefresh">
         <ion-refresher-content />
       </ion-refresher>
 
-      <div class="px-4">
+      <div class="mx-auto w-full max-w-2xl px-4">
+        <section class="market-controls">
         <!-- Son güncelleme -->
         <div class="market-status">
           <span class="market-status__left">
@@ -198,11 +185,12 @@ onBeforeUnmount(() => {
             </ion-button>
           </div>
         </div>
+        </section>
       </div>
 
       <!-- Favoriler -->
-      <div v-if="marketStore.segment === 'fiat' && marketStore.favoriteCurrencies.length > 0" class="mt-5">
-        <p class="market-section px-5">{{ $t('market.favorites') }}</p>
+      <div v-if="marketStore.segment === 'fiat' && marketStore.favoriteCurrencies.length > 0" class="mx-auto mt-5 w-full max-w-2xl">
+        <p class="market-section px-4">{{ $t('market.favorites') }}</p>
 
         <div class="overflow-x-auto no-scrollbar">
           <div class="flex gap-2 px-4 pb-1">
@@ -234,7 +222,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Liste -->
-      <div class="mt-5 px-4 pb-10">
+      <div class="mx-auto mt-5 w-full max-w-2xl px-4 pb-10">
         <div class="market-card">
           <ion-list :inset="false" lines="full">
             <!-- Tablo başlığı (sadece fiat) -->
@@ -336,14 +324,31 @@ ion-page {
   overflow: hidden;
 }
 
+.refresh-action {
+  --color: var(--c-content);
+  --background-hover: var(--c-surface-sunken);
+  --border-radius: 999px;
+  width: 38px;
+  height: 38px;
+}
+
+.market-controls {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
 /* ── Durum çubuğu ─────────────────────────────────────────────────── */
 .market-status {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 12px;
-  padding-inline: 4px;
+  margin-top: 0;
+  padding-inline: 2px;
 }
 
 .market-status__left {
@@ -375,6 +380,7 @@ ion-page {
   margin-top: 16px;
   border-radius: 1rem;
   padding: 4px;
+  border: 1px solid var(--c-line);
 }
 
 /* Seçili ZEMİN yalnız `--active` sınıfından gelir (`--background-checked` de
@@ -385,7 +391,8 @@ ion-page {
 .market-segment__button {
   --border-radius: 0.75rem;
   --color: var(--c-content-tertiary);
-  --color-checked: var(--c-inverse-on-surface);
+  --color-checked: var(--c-on-primary);
+  --indicator-color: transparent;
   min-height: 36px;
   font-size: 12px;
   font-weight: 600;
@@ -396,9 +403,10 @@ ion-page {
    Stencil'in yazma kuyruğundan geçer; seçili zemini/metnini doğrudan seçili
    değere bağlayarak her koşulda doğru butonda tutuyoruz. */
 .market-segment__button--active {
-  --color: var(--c-inverse-on-surface);
-  background: var(--c-inverse-surface);
+  --color: var(--c-on-primary);
+  background: var(--c-primary);
   border-radius: 0.75rem;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--c-primary) 24%, transparent);
 }
 
 /* MD'de indicator butonun ALTINDA 2px'lik bir çizgi olarak çizilir; seçili
@@ -414,7 +422,8 @@ ion-page {
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  padding-inline: 4px;
+  padding: 8px 2px 0;
+  border-top: 1px solid var(--c-line);
 }
 
 .market-mode__label {
@@ -428,6 +437,7 @@ ion-page {
   border-radius: 9999px;
   padding: 2px;
   width: auto;
+  border: 1px solid var(--c-line);
 }
 
 .market-mode__button {
@@ -446,6 +456,7 @@ ion-page {
   --color: var(--c-content);
   background: var(--c-surface);
   border-radius: 9999px;
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--c-content) 8%, transparent);
 }
 
 /* ── Uyarı / hata kutuları ────────────────────────────────────────── */
@@ -456,15 +467,18 @@ ion-page {
   margin-top: 12px;
   padding: 10px 12px;
   border-radius: 1rem;
+  border: 1px solid transparent;
 }
 
 /* Yarı şeffaf hue tint: light'ta pastel, dark'ta koyu zemine karışır. */
 .market-alert--warning {
   background: rgb(245 158 11 / 0.14);
+  border-color: rgb(245 158 11 / 0.24);
 }
 
 .market-alert--danger {
   background: rgb(244 63 94 / 0.12);
+  border-color: rgb(244 63 94 / 0.22);
 }
 
 .market-alert__icon {
@@ -517,6 +531,7 @@ html.ion-palette-dark .market-alert--danger .market-alert__icon { color: #fb7185
      beyaz kart olarak patlıyordu. */
   --background: var(--c-surface);
   box-shadow: none;
+  border: 1px solid var(--c-line);
 }
 
 .favorite-chip__content {
@@ -547,8 +562,10 @@ html.ion-palette-dark .market-alert--danger .market-alert__icon { color: #fb7185
 /* ── Liste ────────────────────────────────────────────────────────── */
 .market-card {
   background: var(--c-surface);
-  border-radius: 1rem;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
   overflow: hidden;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 5%, transparent);
 }
 
 .market-card ion-list {
