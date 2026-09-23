@@ -48,4 +48,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unreachable components, services and exception classes left over from the
   removed account flow, along with their locale entries.
 
-[1.1.0]: https://github.com/<kullanıcı>/<repo>/releases/tag/v1.1.0
+[1.1.0]: https://github.com/nondef/budget-watchdog-app/releases/tag/v1.1.0
