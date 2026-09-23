@@ -11,6 +11,7 @@ import CurrencyInput from '@/components/CurrencyInput.vue'
 defineProps<{
   label: string
   currencyCode: string
+  minorUnit?: number
   error?: string
 }>()
 
@@ -30,8 +31,10 @@ const model = defineModel<number>({ required: true })
       <CurrencyInput
           v-model="model"
           variant="plain"
+          :label="label"
           :currency-code="currencyCode"
-          placeholder="0,00"
+          :minor-unit="minorUnit"
+          :error-text="error"
           class="amt-input w-full"
       />
 

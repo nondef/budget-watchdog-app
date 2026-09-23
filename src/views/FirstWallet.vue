@@ -173,6 +173,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
               :label="$t('accounts.initialBalance')"
               :currency-code="baseCurrency?.code as string"
               :symbol="baseCurrency?.symbol"
+              :minor-unit="baseCurrency?.minorUnit"
               :error-text="errors.balance"
           />
 
