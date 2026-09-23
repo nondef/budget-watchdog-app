@@ -52,7 +52,7 @@ const backupBadgeVisible = computed(
 
 interface MenuItem {
   icon: string
-  tint: string
+  tone: 'primary' | 'violet' | 'success' | 'warning' | 'info' | 'danger' | 'neutral'
   key: string
   href: string
 }
@@ -60,37 +60,37 @@ interface MenuItem {
 const financialManagementMenus: MenuItem[] = [
   {
     icon: walletOutline,
-    tint: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
+    tone: 'primary',
     key: 'accounts',
     href: '/settings/accounts'
   },
   {
     icon: appsOutline,
-    tint: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+    tone: 'violet',
     key: 'categories',
     href: '/settings/categories'
   },
   {
     icon: cashOutline,
-    tint: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+    tone: 'success',
     key: 'budgetGoals',
     href: '/settings/budget-goals'
   },
   {
     icon: walletOutline,
-    tint: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
+    tone: 'warning',
     key: 'savingsGoals',
     href: '/settings/savings'
   },
   {
     icon: cashOutline,
-    tint: 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400',
+    tone: 'info',
     key: 'currencies',
     href: '/settings/currency'
   },
   {
     icon: analyticsOutline,
-    tint: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
+    tone: 'danger',
     key: 'market',
     href: '/settings/financial-indicators'
   },
@@ -99,31 +99,31 @@ const financialManagementMenus: MenuItem[] = [
 const applicationMenus: MenuItem[] = [
   {
     icon: moonOutline,
-    tint: 'bg-surface-sunken text-content-secondary dark:bg-red-gray-500/10 dark:text-neutral-400',
+    tone: 'neutral',
     key: 'theme',
     href: '/settings/theme'
   },
   {
     icon: languageOutline,
-    tint: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
+    tone: 'primary',
     key: 'language',
     href: '/settings/language'
   },
   {
     icon: shareOutline,
-    tint: 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400',
+    tone: 'info',
     key: 'backup',
     href: '/settings/backup'
   },
   {
     icon: eyeOffOutline,
-    tint: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+    tone: 'violet',
     key: 'appearance',
     href: '/settings/appearance'
   },
   {
     icon: notificationsOutline,
-    tint: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
+    tone: 'warning',
     key: 'notifications',
     href: '/settings/notifications'
   },
@@ -132,25 +132,25 @@ const applicationMenus: MenuItem[] = [
 const accountSupportMenus: MenuItem[] = [
   {
     icon: shieldHalfOutline,
-    tint: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+    tone: 'success',
     key: 'security',
     href: '/settings/security'
   },
   {
     icon: lockClosedOutline,
-    tint: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
+    tone: 'danger',
     key: 'privacy',
     href: '/settings/privacy'
   },
   {
     icon: chatbubblesOutline,
-    tint: 'bg-surface-sunken text-content-secondary dark:bg-indigo-500/10 dark:text-gray-400',
+    tone: 'neutral',
     key: 'feedback',
     href: '/settings/feedback'
   },
   {
     icon: informationCircleOutline,
-    tint: 'bg-surface-sunken text-content-secondary dark:bg-indigo-500/10 dark:text-gray-400',
+    tone: 'neutral',
     key: 'about',
     href: '/settings/about'
   },
@@ -165,10 +165,10 @@ const sections = computed(() => [
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <!-- Üst bar -->
     <ion-header class="ion-no-border">
-      <ion-toolbar class="toolbar-plain pb-3">
+      <ion-toolbar class="toolbar-plain">
         <ion-title class="text-xl font-semibold">
           {{ $t('nav.settings') }}
         </ion-title>
@@ -176,23 +176,26 @@ const sections = computed(() => [
     </ion-header>
 
     <ion-content class="settings-content" :scroll-y="true">
-      <div class="mt-4 px-4 pb-10 space-y-5">
-        <ion-item-group v-for="section in sections" :key="section.title">
-          <ion-item-divider>
-            <ion-label class="text-[11px] font-semibold uppercase tracking-wider text-content">
+      <main class="mx-auto w-full max-w-xl space-y-6 px-4 pb-12 pt-5">
+        <ion-item-group v-for="section in sections" :key="section.title" class="settings-group">
+          <ion-item-divider class="settings-section">
+            <ion-label>
               {{ $t(`settings.sections.${section.title}`) }}</ion-label>
           </ion-item-divider>
 
-          <ion-list class="settings-list bg-surface rounded-2xl">
+          <ion-list class="settings-list settings-card">
             <ion-item
                 v-for="(item, index) in section.items"
                 :lines="index === section.items.length - 1 ? 'none' : 'full'"
                 :key="item.href"
                 :router-link="item.href"
                 button
+                detail
                 class="settings-item"
             >
-              <ion-icon slot="start" :class="item.tint" class="p-2.5 size-6 me-4 rounded-xl" :icon="item.icon"/>
+              <div slot="start" class="settings-icon" :class="`settings-icon--${item.tone}`">
+                <ion-icon :icon="item.icon"/>
+              </div>
               <ion-label>
                 <h3>{{ $t(`settings.items.${item.key}.label`) }}</h3>
                 <p>{{ $t(`settings.items.${item.key}.description`) }}</p>
@@ -211,10 +214,10 @@ const sections = computed(() => [
         </ion-item-group>
 
         <!-- Versiyon -->
-        <p class="text-center text-[11px] text-slate-400 pt-2">
+        <p class="pt-1 text-center text-[11px] font-medium text-content-faint">
           {{ appConfig.name }} · v{{ appConfig.version }}
         </p>
-      </div>
+      </main>
     </ion-content>
   </ion-page>
 </template>
@@ -225,21 +228,24 @@ const sections = computed(() => [
 .settings-badge {
   width: 8px;
   height: 8px;
+  margin-inline-end: 10px;
   border-radius: 999px;
   background: rgb(245 158 11); /* amber-500 */
+  box-shadow: 0 0 0 4px color-mix(in srgb, rgb(245 158 11) 18%, transparent);
   flex-shrink: 0;
 }
 
 ion-label > h3 {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--c-content);
 }
 
 ion-label > p {
-  font-size: 13px;
+  margin-top: 3px;
+  font-size: 11px;
   font-weight: 400;
- color: var(--c-content-secondary);
+  color: var(--c-content-muted);
 }
 
 /*ion-item-divider {
@@ -261,18 +267,120 @@ ion-label > p {
   padding: 0;
 }
 
+.settings-card {
+  overflow: hidden;
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.settings-section {
+  min-height: 0;
+  margin: 0 0 9px;
+  padding: 0 4px;
+  --background: transparent;
+  --color: var(--c-content-muted);
+  --inner-padding-end: 0;
+}
+
+.settings-section ion-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
 /* ion-item'i orijinal router-link satırıyla birebir aynı yap:
    tüm padding/min-height/zemin değerlerini iç div'e bırak. */
 .settings-item {
   --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --background-hover: transparent;
   --color: inherit;
   --padding-top: 2px;
   --padding-bottom: 2px;
-  --padding-start: 20px;
-  --padding-end: 13px;
+  --padding-start: 14px;
+  --padding-end: 10px;
   --inner-padding-start: 0;
   --inner-padding-end: 0;
-  --min-height: 0;
+  --min-height: 68px;
   --border-color: var(--c-line);
+  --detail-icon-color: var(--c-content-muted);
+  --detail-icon-opacity: 0.8;
+}
+
+.settings-icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  margin-inline-end: 12px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 13px;
+}
+
+.settings-icon ion-icon {
+  font-size: 18px;
+}
+
+.settings-icon--primary {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.settings-icon--violet {
+  background: color-mix(in srgb, #7c3aed 12%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #7c3aed 24%, var(--c-line));
+  color: #7c3aed;
+}
+
+.settings-icon--success {
+  background: color-mix(in srgb, #16a34a 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #16a34a 24%, var(--c-line));
+  color: #15803d;
+}
+
+.settings-icon--warning {
+  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #f59e0b 26%, var(--c-line));
+  color: #b45309;
+}
+
+.settings-icon--info {
+  background: color-mix(in srgb, #0284c7 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #0284c7 24%, var(--c-line));
+  color: #0369a1;
+}
+
+.settings-icon--danger {
+  background: color-mix(in srgb, var(--c-error) 10%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, var(--c-error) 22%, var(--c-line));
+  color: var(--c-error);
+}
+
+.settings-icon--neutral {
+  background: var(--c-surface-sunken);
+  border-color: var(--c-line);
+  color: var(--c-content-secondary);
+}
+
+:global(.ion-palette-dark) .settings-icon--violet {
+  color: #c4b5fd;
+}
+
+:global(.ion-palette-dark) .settings-icon--success {
+  color: #86efac;
+}
+
+:global(.ion-palette-dark) .settings-icon--warning {
+  color: #fcd34d;
+}
+
+:global(.ion-palette-dark) .settings-icon--info {
+  color: #7dd3fc;
 }
 </style>

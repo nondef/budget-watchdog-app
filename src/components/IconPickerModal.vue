@@ -69,7 +69,7 @@ const save = () => {
         <ion-title>{{ $t('iconPicker.title') }}</ion-title>
 
         <ion-buttons slot="end">
-          <ion-button @click="closeModal">
+          <ion-button size="large" @click="closeModal">
             <ion-icon :icon="closeOutline" />
           </ion-button>
         </ion-buttons>
@@ -80,8 +80,8 @@ const save = () => {
       <div class="p-8">
         <!-- Seçili İkon -->
         <div class="flex justify-center mb-8">
-          <div :class="[selectedColor, 'icon-preview w-16 h-16 rounded-2xl flex items-center justify-center text-white']">
-            <IonIcon :icon="getIconByName(selectedIconName)" class="size-9 font-semibold"/>
+          <div :class="[selectedColor, 'icon-preview size-20 rounded-2xl flex items-center justify-center text-white']">
+            <IonIcon :icon="getIconByName(selectedIconName)" class="size-10 font-semibold"/>
           </div>
         </div>
 
@@ -186,13 +186,10 @@ ion-modal.icon-picker-modal ion-list.color-list ion-item::part(native) {
   padding: 0;
   min-height: 0;
 }
-/* Açık renkler light zeminde, koyu renkler dark zeminde kaybolmasın: ince
-   hairline halka. Seçili olan primary halka ile işaretlenir. */
-ion-modal.icon-picker-modal .color-swatch {
-  box-shadow: inset 0 0 0 1px var(--c-line);
-}
+
 ion-modal.icon-picker-modal .color-swatch--active {
-  box-shadow: inset 0 0 0 1px var(--c-line), 0 0 0 2px var(--md-surface-container-high), 0 0 0 4px var(--c-primary);
+  border-color: var(--md-surface-container-high);
+  box-shadow: inset 0 0 0 2px var(--c-primary);
 }
 
 /* İkon listesi: ion-item-group + divider başlık. Zemin modal yüzeyiyle aynı,
@@ -223,7 +220,7 @@ ion-modal.icon-picker-modal ion-list.icon-list ion-item {
    zemininden bir ton açık (kağıt), dark'ta bir ton koyu olduğu için iki temada da kutu
    olarak okunur; hairline halka sınırını netleştirir. */
 ion-modal.icon-picker-modal ion-list.icon-list .icon-button {
-  --background: var(--md-surface-container-lowest);
+  --background: var(--md-surface-container);
   --background-hover: var(--md-surface-container-highest);
   --background-activated: var(--md-surface-container-highest);
   --background-focused: var(--md-surface-container-highest);

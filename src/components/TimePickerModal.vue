@@ -71,9 +71,8 @@ const onDismissed = () => {
         {{ title || t('transactions.setTime') }}
       </h2>
 
-      <div class="datetime-picker-time-wheel relative min-h-0 flex-1">
+      <div class="datetime-picker-time-wheel relative flex min-h-0 flex-1 items-center justify-center">
         <ion-datetime
-            class="h-full"
             presentation="time"
             :value="ionicValue"
             :locale="locale"

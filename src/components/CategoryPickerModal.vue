@@ -90,7 +90,7 @@ const close = () => {
         <ion-item
             v-for="category in categories"
             :key="category.id"
-            class="catpick-item"
+            class="picker-row"
             button
             :detail="false"
             lines="none"
@@ -153,44 +153,4 @@ ion-modal.category-picker-modal ion-list.catpick-list {
   background: transparent;
 }
 
-/* Liste satırı: modal zemininden ayrılan kart + hairline halka.
-   Light'ta kağıt tonu (surface-container-lowest), dark'ta elevated
-   (surface-container-highest) — eski --c-surface dark modda modal zemini
-   ile aynı tondu (#2a2a2a) ve satırlar kayboluyordu. */
-ion-modal.category-picker-modal .catpick-item {
-  --background: var(--md-surface-container-lowest) !important;
-  --background-hover: var(--md-surface-container-highest) !important;
-  --background-activated: var(--md-surface-container-highest) !important;
-  --background-focused: var(--md-surface-container-highest) !important;
-  --color: var(--c-content) !important;
-  --border-radius: 16px;
-  --padding-top: 5px;
-  --padding-bottom: 5px;
-  --padding-start: 14px;
-  --inner-padding-end: 14px;
-  --min-height: 60px;
-  margin-bottom: 10px;
-  border-radius: 16px;
-  box-shadow: inset 0 0 0 1px var(--c-line);
-  overflow: hidden;
-  transition: box-shadow 0.18s ease;
-}
-html.ion-palette-dark ion-modal.category-picker-modal .catpick-item {
-  --background: var(--md-surface-container-highest) !important;
-  --background-hover: var(--md-surface-container) !important;
-  --background-activated: var(--md-surface-container) !important;
-  --background-focused: var(--md-surface-container) !important;
-}
-
-/* Seçili kategori: diğer picker'lardaki gibi 2px primary halka.
-   (Eski sabit #6366f1 mor, nötr gri marka paletiyle uyumsuzdu ve
-   tema değişiminden etkilenmiyordu.) */
-ion-modal.category-picker-modal .catpick-item.is-selected,
-html.ion-palette-dark ion-modal.category-picker-modal .catpick-item.is-selected {
-  --background: var(--md-surface-container) !important;
-  --background-hover: var(--md-surface-container) !important;
-  --background-activated: var(--md-surface-container) !important;
-  --background-focused: var(--md-surface-container) !important;
-  box-shadow: inset 0 0 0 2px var(--c-primary);
-}
 </style>

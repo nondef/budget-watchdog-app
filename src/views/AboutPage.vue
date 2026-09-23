@@ -3,6 +3,9 @@ import {
   IonBackButton,
   IonButtons,
   IonCard,
+  IonItem,
+  IonLabel,
+  IonList,
   IonContent,
   IonHeader,
   IonIcon,
@@ -26,7 +29,7 @@ const appInfo = {
 </script>
 
 <template>
-  <ion-page>
+  <ion-page class="design-page">
     <ion-header class="ion-no-border">
       <ion-toolbar class="toolbar-plain">
         <ion-buttons slot="start">
@@ -40,8 +43,8 @@ const appInfo = {
     </ion-header>
 
     <ion-content class="about-content" :scroll-y="true">
-      <div class="mt-5 px-4 pb-10 space-y-5">
-        <ion-card class="card-filled rounded-2xl px-5 py-6">
+      <div class="mx-auto mt-5 w-full max-w-xl px-4 pb-10 space-y-5">
+        <ion-card class="about-hero px-5 py-6">
           <div class="flex flex-col items-center text-center">
             <div class="brand-mark" aria-hidden="true">
               <img
@@ -73,34 +76,37 @@ const appInfo = {
             {{ $t('about.appInfo') }}
           </p>
 
-          <ion-card class="card-filled rounded-2xl px-2">
-            <div class="flex items-center gap-3 px-2 py-3">
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-sunken">
+          <ion-card class="about-list-card">
+            <ion-list lines="full">
+            <ion-item class="about-item" :button="false">
+              <div slot="start" class="about-item__icon">
                 <ion-icon :icon="informationCircleOutline" class="size-[18px] text-content-secondary" />
               </div>
-              <div class="min-w-0 flex-1">
+              <ion-label>
                 <p class="text-[14px] font-medium text-content">
                   {{ $t('about.versionLabel') }}
                 </p>
                 <p class="mt-0.5 text-[11px] text-content-muted">
                   {{ appInfo.version }}
                 </p>
-              </div>
-            </div>
+              </ion-label>
+            </ion-item>
 
-            <button
-              type="button"
-              class="flex w-full items-center gap-3 border-t border-line px-2 py-3 text-left transition active:bg-surface-sunken"
+            <ion-item
+              class="about-item"
+              button
+              :detail="false"
               @click="$router.push('/settings/privacy')"
             >
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-sunken">
+              <div slot="start" class="about-item__icon">
                 <ion-icon :icon="lockClosedOutline" class="size-[18px] text-content-secondary" />
               </div>
-              <p class="min-w-0 flex-1 text-[14px] font-medium text-content">
+              <ion-label class="text-[14px] font-medium text-content">
                 {{ $t('about.privacyPolicy') }}
-              </p>
-              <ion-icon :icon="chevronForwardOutline" class="size-4 shrink-0 text-content-muted" />
-            </button>
+              </ion-label>
+              <ion-icon slot="end" :icon="chevronForwardOutline" class="size-4 shrink-0 text-content-muted" />
+            </ion-item>
+            </ion-list>
           </ion-card>
         </section>
 
@@ -128,6 +134,8 @@ ion-page {
   border-radius: 28px;
   overflow: hidden;
   background: var(--c-surface-sunken);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--c-content) 10%, transparent);
 }
 
 .brand-logo {
@@ -146,5 +154,46 @@ html.ion-palette-dark .brand-logo--light {
 
 html.ion-palette-dark .brand-logo--dark {
   display: block;
+}
+
+.about-hero,
+.about-list-card {
+  margin: 0;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: var(--c-surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+.about-hero {
+  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
+}
+
+.about-list-card {
+  overflow: hidden;
+}
+
+.about-list-card ion-list {
+  padding: 0;
+  background: transparent;
+}
+
+.about-item {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --border-color: var(--c-line);
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  --min-height: 64px;
+}
+
+.about-item__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  background: var(--c-surface-sunken);
 }
 </style>
