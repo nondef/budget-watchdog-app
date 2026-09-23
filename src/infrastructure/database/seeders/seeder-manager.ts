@@ -1,7 +1,7 @@
 import { Seeder, SeederResult } from "@/infrastructure/database/seeders/base-seeder";
 import { CurrencySeeder } from "@/infrastructure/database/seeders/currency-seeder";
 import { CategoriesSeeder } from "@/infrastructure/database/seeders/categories-seeder";
-import { FakeDataMode, FakeDataSeeder } from "@/infrastructure/database/seeders/dev/fake-data-seeder";
+import type { FakeDataMode } from "@/infrastructure/database/seeders/dev/fake-data-seeder";
 import { DatabaseAdapter } from "@/domain";
 import { logger } from "@/infrastructure/logging";
 
@@ -44,22 +44,40 @@ function fakeDataMode(): FakeDataMode | 'off' {
 
 export class SeederManager {
     private seeders: Seeder[] = []
+    private registration?: Promise<void>
 
     constructor(private db: DatabaseAdapter) {
-        this.registerSeeders()
     }
 
-    private registerSeeders() {
+    /**
+     * Kayıt async, çünkü FakeDataSeeder dinamik import ediliyor (bkz. aşağı).
+     * İki giriş noktası (runAll/rollbackAll) da bunu bekler; promise saklanır
+     * ki ikisi peş peşe çağrılsa bile liste bir kez kurulsun.
+     */
+    private ensureSeeders(): Promise<void> {
+        return this.registration ??= this.registerSeeders()
+    }
+
+    private async registerSeeders() {
         this.seeders = [
             new CurrencySeeder(),
             new CategoriesSeeder(),
         ]
 
-        // Sahte test verisi: sadece dev ortamında (bkz. fakeDataMode)
-        const mode = fakeDataMode()
+        // Sahte test verisi: sadece dev ortamında (bkz. fakeDataMode).
+        //
+        // `import.meta.env.DEV` build sırasında sabit `false`'a dönüşür, bu yüzden
+        // blok tamamen elenir ve dinamik import ile birlikte @faker-js/faker
+        // üretim bundle'ına HİÇ girmez. Eskiden statik import'tu: faker (525 kB
+        // ham / 205 kB gzip) açılış zincirindeki database-factory chunk'ına
+        // bağlanıp her kullanıcıya iniyordu.
+        if (import.meta.env.DEV) {
+            const mode = fakeDataMode()
 
-        if (mode !== 'off') {
-            this.seeders.push(new FakeDataSeeder(mode))
+            if (mode !== 'off') {
+                const { FakeDataSeeder } = await import("@/infrastructure/database/seeders/dev/fake-data-seeder")
+                this.seeders.push(new FakeDataSeeder(mode))
+            }
         }
     }
 
@@ -70,6 +88,8 @@ export class SeederManager {
      */
     async runAll(): Promise<SeederResult[]> {
         try {
+            await this.ensureSeeders()
+
             const results: SeederResult[] = []
 
             for (const seeder of this.seeders) {
@@ -89,6 +109,8 @@ export class SeederManager {
 
     async rollbackAll() {
         try {
+            await this.ensureSeeders()
+
             logger.debug('Seeder rollback başlatılıyor', { context: CTX })
 
             for (let i = this.seeders.length - 1; i >= 0; i--) {
