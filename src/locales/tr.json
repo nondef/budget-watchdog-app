@@ -70,11 +70,6 @@
     "currency": "Para Birimi",
     "categories": "Kategoriler"
   },
-  "sidebar": {
-    "welcome": "Hoş geldiniz",
-    "totalBalance": "Toplam Bakiye",
-    "currentRates": "Güncel Döviz Kurları"
-  },
   "settings": {
     "title": "Ayarlar",
     "sections": {
@@ -153,6 +148,7 @@
       }
     },
     "currencyHint": "Ana para birimini buradan değiştir.",
+    "currencyActive": "Aktif",
     "currencyNoMatch": "Eşleşen para birimi yok."
   },
   "months": [
@@ -504,12 +500,8 @@
     }
   },
   "pageTitles": {
-    "currencyCalculator": "Döviz Hesaplayıcısı",
     "feedback": "Geri Bildirim",
     "help": "Yardım ve Destek",
-    "importExport": "Veri İçe/Dışa Aktarma",
-    "logs": "Hata Kayıtları",
-    "personalInfo": "Profil Bilgileri",
     "pinSetup": "PIN Belirle",
     "budgetDetail": "Bütçe Detayı"
   },
@@ -678,7 +670,9 @@
     "walletReminder": "Cüzdan Hatırlatıcısı",
     "walletReminderDesc": "Her akşam günün harcamalarını yazmayı hatırlat",
     "reminderTime": "Hatırlatma Saati",
-    "reminderTimeDesc": "Bildirim her gün bu saatte gelir",
+    "reminderTimeDesc": "Her gün seçtiğin saat için planlanır",
+    "exactAlarmTitle": "Zamanında hatırlatma için izin ver",
+    "exactAlarmDesc": "İzin kapalı olduğunda bildirim gecikebilir. Dokunarak Android ayarlarında Alarmlar ve hatırlatıcılar iznini aç.",
     "alerts": "Uyarılar",
     "budget": "Bütçe Uyarısı",
     "budgetDesc": "Bütçe eşiğine yaklaşınca veya aşılınca",
@@ -933,54 +927,6 @@
     "deleteMessage": "Bu bütçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     "remainingAmount": "{amount} kaldı"
   },
-  "auth": {
-    "passwordPlaceholder": "Parolanızı Giriniz",
-    "confirmPasswordPlaceholder": "Şifrenizi tekrar girin",
-    "emailPlaceholder": "E-posta Adresinizi Giriniz",
-    "emailShortPlaceholder": "E-posta adresiniz",
-    "fullNamePlaceholder": "Ad Soyad girin",
-    "passwordMinPlaceholder": "6 karakterden az olamaz",
-    "emailLabel": "E-posta Adresi",
-    "emailLabelShort": "E-posta",
-    "passwordLabel": "Parola",
-    "passwordLabelAlt": "Şifre",
-    "confirmPasswordLabel": "Şifre Tekrar",
-    "fullNameLabel": "Ad Soyad",
-    "welcomeBack": "Yeniden Hoşgeldiniz!",
-    "loginSubtitle": "Hesabınıza giriş yaparak devam edin",
-    "forgotPassword": "Şifreyi mi unuttunuz?",
-    "signIn": "Oturum Aç",
-    "noAccount": "Hesap oluşturmak ister misiniz?",
-    "createAccount": "Hesap Oluştur",
-    "fillEmailPassword": "Lütfen e-posta ve şifrenizi girin",
-    "loginFailed": "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.",
-    "registerTitle": "Güvenli bir hesap oluşturmak için aşağıdan kaydolun.",
-    "signInWith": "{provider} ile giriş yap",
-    "or": "ya da",
-    "registerWithEmail": "E-posta ile kayıt ol",
-    "haveAccount": "Zaten bir hesabın var mı?",
-    "haveAccountShort": "Hesabınız var mı?",
-    "skipNow": "Şimdi Atla",
-    "termsPrefix": "Kaydolarak ve bağlanarak yukarıdaki",
-    "termsLink": "Kullanım Koşulları",
-    "termsMiddle": "kabul etmiş, ve kişisel verileri nasıl ele aldığımızı açıklayan",
-    "privacyLink": "Gizlilik Politikası",
-    "termsSuffix": "onaylamış olursunuz.",
-    "registerSubtitle": "Yeni hesap açarak hızlıca başlayın",
-    "acceptTerms": "Kullanım şartlarını ve gizlilik politikasını kabul ediyorum",
-    "register": "KAYIT OL",
-    "passwordsNoMatch": "Şifreler eşleşmiyor",
-    "fillAllFields": "Lütfen tüm alanları doldurun ve şartları kabul edin",
-    "registerSuccess": "Kaydınız başarıyla oluşturuldu. Giriş yapabilirsiniz.",
-    "registerFailed": "Kayıt oluşturulamadı. Lütfen tekrar deneyin.",
-    "resetTitle": "Şifre Sıfırlama",
-    "resetSubtitle": "E-posta adresinizi girin, size şifre sıfırlama bağlantısı göndereceğiz.",
-    "sendResetLink": "SIFIRLAMA BAĞLANTISI GÖNDER",
-    "rememberPassword": "Şifrenizi hatırladınız mı?",
-    "enterEmail": "Lütfen e-posta adresinizi girin",
-    "resetSent": "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.",
-    "operationFailed": "İşlem başarısız oldu. Lütfen tekrar deneyin."
-  },
   "forms": {
     "searchCurrency": "Para birimi ara",
     "searchQuestion": "Soru ara..."
@@ -1022,23 +968,6 @@
     "complete": "Tamamla",
     "createFailed": "Cüzdan oluşturulamadı, lütfen tekrar dene",
     "checkFields": "Lütfen alanları kontrol et"
-  },
-  "personalInfo": {
-    "phone": "Telefon",
-    "birthDate": "Doğum Tarihi",
-    "saveChanges": "Değişiklikleri Kaydet",
-    "changePassword": "Şifre Değiştir",
-    "currentPassword": "Mevcut Şifre",
-    "newPassword": "Yeni Şifre",
-    "confirmNewPassword": "Yeni Şifre (Tekrar)",
-    "changePasswordBtn": "Şifreyi Değiştir",
-    "profileUpdated": "Profil bilgileri başarıyla güncellendi",
-    "profileUpdateError": "Profil bilgileri güncellenirken bir hata oluştu",
-    "passwordChanged": "Şifreniz başarıyla değiştirildi",
-    "passwordChangeError": "Şifre değiştirme işlemi başarısız oldu",
-    "clearConfirm": "Tüm verileriniz temizlenecek. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
-    "dataCleared": "Verileriniz başarıyla temizlendi",
-    "dataClearError": "Veri temizleme işlemi başarısız oldu"
   },
   "help": {
     "heading": "Nasıl Yardımcı Olabiliriz?",
@@ -1126,14 +1055,6 @@
     "requesting": "İzin isteniyor…",
     "allowAndContinue": "İzin Ver ve Devam Et",
     "notNow": "Şimdi değil"
-  },
-  "personalInfoForm": {
-    "emailPlaceholder": "E-posta adresinizi giriniz",
-    "phonePlaceholder": "Telefon numaranızı giriniz",
-    "birthDatePlaceholder": "Doğum tarihinizi seçiniz",
-    "currentPasswordPlaceholder": "Mevcut şifrenizi giriniz",
-    "newPasswordPlaceholder": "Yeni şifrenizi giriniz",
-    "confirmPasswordPlaceholder": "Yeni şifrenizi tekrar giriniz"
   },
   "exchangeRates": {
     "updateFailed": "Bazı kurlar güncellenemedi.",
@@ -1262,10 +1183,8 @@
       "ACCOUNT_INACTIVE": "Bu hesap aktif değil.",
       "ACCOUNT_IN_USE": "Bu hesaba bağlı işlem, bütçe veya birikim hedefi var; silmek yerine pasife alabilirsin.",
       "ACCOUNT_LIMIT_EXCEEDED": "Hesap limitine ulaştın, yeni hesap ekleyemezsin.",
-      "BUDGET_EXCEEDED": "Bütçe limiti aşıldı.",
       "BUDGET_INACTIVE": "Bu bütçe aktif değil.",
       "BUDGET_PERIOD_ERROR": "Bütçe dönemi geçersiz.",
-      "INVALID_TRANSACTION_TYPE": "İşlem türü geçersiz.",
       "TRANSFER_REQUIRES_DESTINATION": "Transfer için hedef hesap seçmelisin.",
       "TRANSFER_SAME_ACCOUNT": "Kaynak ve hedef hesap aynı olamaz.",
       "TRANSFER_DESTINATION_AMOUNT_REQUIRED": "Farklı para birimine transferde hedef tutarı girmelisin.",
@@ -1274,12 +1193,9 @@
       "SAVING_GOAL_INACTIVE": "Bu hedef aktif değil.",
       "SAVING_GOAL_COMPLETED": "Bu hedef zaten tamamlanmış.",
       "NEGATIVE_AMOUNT": "Tutar pozitif olmalı.",
-      "ZERO_AMOUNT": "Tutar sıfır olamaz.",
-      "DIVISION_BY_ZERO": "Geçersiz hesaplama.",
       "STATE_NOT_INITIALIZED": "Uygulama verileri henüz hazır değil, lütfen tekrar dene.",
       "BUSINESS_RULE_VIOLATION": "Bu işlem geçerli değil.",
       "OPERATION_NOT_ALLOWED": "Bu işleme şu an izin verilmiyor.",
-      "CONCURRENCY_CONFLICT": "Bu kayıt başka bir yerde değişti, lütfen tekrar dene.",
       "EXCHANGE_RATES_UNAVAILABLE": "Güncel kur bilgisi alınamadı. İnternet bağlantını kontrol edip tekrar dene.",
       "_default": "Bir şeyler ters gitti, lütfen tekrar dene."
     }

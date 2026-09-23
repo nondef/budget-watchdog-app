@@ -93,11 +93,6 @@
     "currency": "Währung",
     "categories": "Kategorien"
   },
-  "sidebar": {
-    "welcome": "Willkommen",
-    "totalBalance": "Gesamtsaldo",
-    "currentRates": "Aktuelle Wechselkurse"
-  },
   "settings": {
     "title": "Einstellungen",
     "sections": {
@@ -176,6 +171,7 @@
       }
     },
     "currencyHint": "Ändere hier deine Hauptwährung.",
+    "currencyActive": "Aktiv",
     "currencyNoMatch": "Keine passende Währung."
   },
   "months": [
@@ -527,12 +523,8 @@
     }
   },
   "pageTitles": {
-    "currencyCalculator": "Währungsrechner",
     "feedback": "Feedback",
     "help": "Hilfe & Support",
-    "importExport": "Daten Import/Export",
-    "logs": "Fehlerprotokolle",
-    "personalInfo": "Profilinformationen",
     "pinSetup": "PIN festlegen",
     "budgetDetail": "Budgetdetails"
   },
@@ -694,7 +686,9 @@
     "walletReminder": "Wallet-Erinnerung",
     "walletReminderDesc": "Erinnere mich jeden Abend daran, die Ausgaben des Tages einzutragen",
     "reminderTime": "Erinnerungszeit",
-    "reminderTimeDesc": "Die Benachrichtigung kommt täglich zu dieser Zeit",
+    "reminderTimeDesc": "Wird täglich für die gewählte Uhrzeit geplant",
+    "exactAlarmTitle": "Pünktliche Erinnerungen erlauben",
+    "exactAlarmDesc": "Ohne Berechtigung können Benachrichtigungen verspätet eintreffen. Tippe hier, um Alarme und Erinnerungen in den Android-Einstellungen zu erlauben.",
     "alerts": "Warnungen",
     "budget": "Budget-Warnung",
     "budgetDesc": "Wenn ein Budget die Schwelle erreicht oder überschritten wird",
@@ -949,54 +943,6 @@
     "deleteMessage": "Möchtest du dieses Budget wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "remainingAmount": "Noch {amount}"
   },
-  "auth": {
-    "passwordPlaceholder": "Gib dein Passwort ein",
-    "confirmPasswordPlaceholder": "Passwort erneut eingeben",
-    "emailPlaceholder": "Gib deine E-Mail-Adresse ein",
-    "emailShortPlaceholder": "Deine E-Mail-Adresse",
-    "fullNamePlaceholder": "Vollständigen Namen eingeben",
-    "passwordMinPlaceholder": "Mindestens 6 Zeichen",
-    "emailLabel": "E-Mail-Adresse",
-    "emailLabelShort": "E-Mail",
-    "passwordLabel": "Passwort",
-    "passwordLabelAlt": "Passwort",
-    "confirmPasswordLabel": "Passwort wiederholen",
-    "fullNameLabel": "Vollständiger Name",
-    "welcomeBack": "Willkommen zurück!",
-    "loginSubtitle": "Melde dich an, um fortzufahren",
-    "forgotPassword": "Passwort vergessen?",
-    "signIn": "Anmelden",
-    "noAccount": "Möchtest du ein Konto erstellen?",
-    "createAccount": "Konto erstellen",
-    "fillEmailPassword": "Bitte gib deine E-Mail und dein Passwort ein",
-    "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfe deine Daten.",
-    "registerTitle": "Registriere dich unten, um ein sicheres Konto zu erstellen.",
-    "signInWith": "Mit {provider} anmelden",
-    "or": "oder",
-    "registerWithEmail": "Mit E-Mail registrieren",
-    "haveAccount": "Hast du bereits ein Konto?",
-    "haveAccountShort": "Konto vorhanden?",
-    "skipNow": "Jetzt überspringen",
-    "termsPrefix": "Mit der Registrierung stimmst du unseren",
-    "termsLink": "Nutzungsbedingungen",
-    "termsMiddle": "und unserer",
-    "privacyLink": "Datenschutzrichtlinie",
-    "termsSuffix": "zu, die erklärt, wie wir mit deinen Daten umgehen.",
-    "registerSubtitle": "Lege schnell los, indem du ein neues Konto erstellst",
-    "acceptTerms": "Ich akzeptiere die Nutzungsbedingungen und die Datenschutzrichtlinie",
-    "register": "REGISTRIEREN",
-    "passwordsNoMatch": "Passwörter stimmen nicht überein",
-    "fillAllFields": "Bitte fülle alle Felder aus und akzeptiere die Bedingungen",
-    "registerSuccess": "Dein Konto wurde erfolgreich erstellt. Du kannst dich anmelden.",
-    "registerFailed": "Konto konnte nicht erstellt werden. Bitte versuche es erneut.",
-    "resetTitle": "Passwort zurücksetzen",
-    "resetSubtitle": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen des Passworts.",
-    "sendResetLink": "LINK ZUM ZURÜCKSETZEN SENDEN",
-    "rememberPassword": "Erinnerst du dich an dein Passwort?",
-    "enterEmail": "Bitte gib deine E-Mail-Adresse ein",
-    "resetSent": "Ein Link zum Zurücksetzen des Passworts wurde an deine E-Mail-Adresse gesendet.",
-    "operationFailed": "Der Vorgang ist fehlgeschlagen. Bitte versuche es erneut."
-  },
   "forms": {
     "searchCurrency": "Währung suchen",
     "searchQuestion": "Frage suchen..."
@@ -1038,23 +984,6 @@
     "complete": "Fertigstellen",
     "createFailed": "Wallet konnte nicht erstellt werden, bitte versuche es erneut",
     "checkFields": "Bitte überprüfe die Felder"
-  },
-  "personalInfo": {
-    "phone": "Telefon",
-    "birthDate": "Geburtsdatum",
-    "saveChanges": "Änderungen speichern",
-    "changePassword": "Passwort ändern",
-    "currentPassword": "Aktuelles Passwort",
-    "newPassword": "Neues Passwort",
-    "confirmNewPassword": "Neues Passwort (wiederholen)",
-    "changePasswordBtn": "Passwort ändern",
-    "profileUpdated": "Profilinformationen erfolgreich aktualisiert",
-    "profileUpdateError": "Beim Aktualisieren der Profilinformationen ist ein Fehler aufgetreten",
-    "passwordChanged": "Dein Passwort wurde erfolgreich geändert",
-    "passwordChangeError": "Passwortänderung fehlgeschlagen",
-    "clearConfirm": "Alle deine Daten werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Möchtest du fortfahren?",
-    "dataCleared": "Deine Daten wurden erfolgreich gelöscht",
-    "dataClearError": "Löschen der Daten fehlgeschlagen"
   },
   "help": {
     "heading": "Wie können wir helfen?",
@@ -1126,14 +1055,6 @@
         "description": "Keine Daten verlassen dein Gerät. Das heißt aber auch: kein Cloud-Backup — sichere deine Daten regelmäßig."
       }
     ]
-  },
-  "personalInfoForm": {
-    "emailPlaceholder": "Gib deine E-Mail-Adresse ein",
-    "phonePlaceholder": "Gib deine Telefonnummer ein",
-    "birthDatePlaceholder": "Wähle dein Geburtsdatum",
-    "currentPasswordPlaceholder": "Gib dein aktuelles Passwort ein",
-    "newPasswordPlaceholder": "Gib dein neues Passwort ein",
-    "confirmPasswordPlaceholder": "Neues Passwort erneut eingeben"
   },
   "exchangeRates": {
     "updateFailed": "Einige Wechselkurse konnten nicht aktualisiert werden.",
@@ -1262,10 +1183,8 @@
       "ACCOUNT_INACTIVE": "Dieses Konto ist inaktiv.",
       "ACCOUNT_IN_USE": "Diesem Konto sind Transaktionen, Budgets oder Sparziele zugeordnet; du kannst es archivieren statt löschen.",
       "ACCOUNT_LIMIT_EXCEEDED": "Du hast das Kontolimit erreicht und kannst kein neues Konto hinzufügen.",
-      "BUDGET_EXCEEDED": "Budgetlimit überschritten.",
       "BUDGET_INACTIVE": "Dieses Budget ist nicht aktiv.",
       "BUDGET_PERIOD_ERROR": "Der Budgetzeitraum ist ungültig.",
-      "INVALID_TRANSACTION_TYPE": "Ungültiger Transaktionstyp.",
       "TRANSFER_REQUIRES_DESTINATION": "Du musst ein Zielkonto für die Überweisung auswählen.",
       "TRANSFER_SAME_ACCOUNT": "Quell- und Zielkonto dürfen nicht identisch sein.",
       "TRANSFER_DESTINATION_AMOUNT_REQUIRED": "Gib den Zielbetrag für eine Überweisung in anderer Währung ein.",
@@ -1274,12 +1193,9 @@
       "SAVING_GOAL_INACTIVE": "Dieses Ziel ist nicht aktiv.",
       "SAVING_GOAL_COMPLETED": "Dieses Ziel ist bereits abgeschlossen.",
       "NEGATIVE_AMOUNT": "Der Betrag muss positiv sein.",
-      "ZERO_AMOUNT": "Der Betrag darf nicht null sein.",
-      "DIVISION_BY_ZERO": "Ungültige Berechnung.",
       "STATE_NOT_INITIALIZED": "App-Daten sind noch nicht bereit, bitte versuche es erneut.",
       "BUSINESS_RULE_VIOLATION": "Dieser Vorgang ist ungültig.",
       "OPERATION_NOT_ALLOWED": "Dieser Vorgang ist derzeit nicht erlaubt.",
-      "CONCURRENCY_CONFLICT": "Dieser Datensatz wurde an anderer Stelle geändert, bitte versuche es erneut.",
       "EXCHANGE_RATES_UNAVAILABLE": "Wechselkurse konnten nicht abgerufen werden. Prüfe deine Verbindung und versuche es erneut.",
       "_default": "Etwas ist schiefgelaufen, bitte versuche es erneut."
     }

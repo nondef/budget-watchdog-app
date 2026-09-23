@@ -4,6 +4,7 @@ import { useNotificationsStore } from '@/stores/notifications';
 import { logger } from "@/infrastructure/logging";
 import { isBackupStale, isSnoozed, readLastExportAt, readStatus } from "@/infrastructure/services/backup-status";
 import { t } from "@/i18n";
+import { readonly, ref } from 'vue';
 
 export type NotificationKind = 'budget' | 'goal'
 
@@ -41,6 +42,7 @@ const nextEventId = () => ++eventIdCounter;
 
 const isNative = () => Capacitor.isNativePlatform()
 const isAndroid = () => Capacitor.getPlatform() === 'android'
+const exactAlarmGranted = ref<boolean | null>(null)
 
 export const canSendOsNotification = (kind: NotificationKind) => {
     const { prefs } = useNotificationsStore();
@@ -145,9 +147,32 @@ export const ensureChannels = async () => {
 export const useNotifier = () => {
     const store = useNotificationsStore();
 
+    const checkExactAlarmPermission = async () => {
+        if (!isAndroid()) return;
+        try {
+            const { exact_alarm } = await LocalNotifications.checkExactNotificationSetting();
+            exactAlarmGranted.value = exact_alarm === 'granted';
+        } catch (error) {
+            exactAlarmGranted.value = null;
+            logger.warn('Kesin alarm izni okunamadı', { context: 'notifier', error });
+        }
+    };
+
+    const openExactAlarmSettings = async () => {
+        if (!isAndroid()) return;
+        try {
+            await LocalNotifications.changeExactNotificationSetting();
+            await checkExactAlarmPermission();
+            await resyncSchedules();
+        } catch (error) {
+            logger.warn('Kesin alarm ayarı açılamadı', { context: 'notifier', error });
+        }
+    };
+
     // ─── İzin akışı ──────────────────────────────────────────────────────
 
     const checkPermission = async (): Promise<boolean> => {
+        await checkExactAlarmPermission();
         if (!isNative()) {
             const granted = 'Notification' in window && Notification.permission === 'granted'
             store.prefs.permissionGranted = granted
@@ -409,6 +434,8 @@ export const useNotifier = () => {
     };
 
     return {
+        exactAlarmGranted: readonly(exactAlarmGranted),
+        openExactAlarmSettings,
         checkPermission,
         requestPermission,
         ensureChannels,

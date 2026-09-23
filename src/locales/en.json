@@ -70,11 +70,6 @@
     "currency": "Currency",
     "categories": "Categories"
   },
-  "sidebar": {
-    "welcome": "Welcome",
-    "totalBalance": "Total Balance",
-    "currentRates": "Current Exchange Rates"
-  },
   "settings": {
     "title": "Settings",
     "sections": {
@@ -153,6 +148,7 @@
       }
     },
     "currencyHint": "Change your main currency here.",
+    "currencyActive": "Active",
     "currencyNoMatch": "No matching currency."
   },
   "months": [
@@ -527,12 +523,8 @@
     }
   },
   "pageTitles": {
-    "currencyCalculator": "Currency Calculator",
     "feedback": "Feedback",
     "help": "Help & Support",
-    "importExport": "Import / Export Data",
-    "logs": "Error Logs",
-    "personalInfo": "Profile Information",
     "pinSetup": "Set PIN",
     "budgetDetail": "Budget Details"
   },
@@ -694,7 +686,9 @@
     "walletReminder": "Wallet Reminder",
     "walletReminderDesc": "Remind me every evening to log today's spending",
     "reminderTime": "Reminder Time",
-    "reminderTimeDesc": "The notification arrives at this time every day",
+    "reminderTimeDesc": "Scheduled for your chosen time every day",
+    "exactAlarmTitle": "Allow timely reminders",
+    "exactAlarmDesc": "Notifications may be delayed without permission. Tap to allow Alarms & reminders in Android settings.",
     "alerts": "Alerts",
     "budget": "Budget Alert",
     "budgetDesc": "When a budget nears its threshold or is exceeded",
@@ -949,54 +943,6 @@
     "deleteMessage": "Are you sure you want to delete this budget? This action cannot be undone.",
     "remainingAmount": "{amount} left"
   },
-  "auth": {
-    "passwordPlaceholder": "Enter your password",
-    "confirmPasswordPlaceholder": "Re-enter your password",
-    "emailPlaceholder": "Enter your email address",
-    "emailShortPlaceholder": "Your email address",
-    "fullNamePlaceholder": "Enter your full name",
-    "passwordMinPlaceholder": "Must be at least 6 characters",
-    "emailLabel": "Email Address",
-    "emailLabelShort": "Email",
-    "passwordLabel": "Password",
-    "passwordLabelAlt": "Password",
-    "confirmPasswordLabel": "Confirm Password",
-    "fullNameLabel": "Full Name",
-    "welcomeBack": "Welcome back!",
-    "loginSubtitle": "Sign in to your account to continue",
-    "forgotPassword": "Forgot password?",
-    "signIn": "Sign In",
-    "noAccount": "Want to create an account?",
-    "createAccount": "Create Account",
-    "fillEmailPassword": "Please enter your email and password",
-    "loginFailed": "Could not sign in. Please check your details.",
-    "registerTitle": "Sign up below to create a secure account.",
-    "signInWith": "Sign in with {provider}",
-    "or": "or",
-    "registerWithEmail": "Sign up with email",
-    "haveAccount": "Already have an account?",
-    "haveAccountShort": "Have an account?",
-    "skipNow": "Skip for now",
-    "termsPrefix": "By signing up, you agree to our",
-    "termsLink": "Terms of Use",
-    "termsMiddle": "and our",
-    "privacyLink": "Privacy Policy",
-    "termsSuffix": "which explains how we handle your personal data.",
-    "registerSubtitle": "Get started quickly by creating a new account",
-    "acceptTerms": "I accept the terms of use and privacy policy",
-    "register": "SIGN UP",
-    "passwordsNoMatch": "Passwords do not match",
-    "fillAllFields": "Please fill in all fields and accept the terms",
-    "registerSuccess": "Your account was created successfully. You can sign in.",
-    "registerFailed": "Could not create account. Please try again.",
-    "resetTitle": "Reset Password",
-    "resetSubtitle": "Enter your email address and we'll send you a password reset link.",
-    "sendResetLink": "SEND RESET LINK",
-    "rememberPassword": "Remember your password?",
-    "enterEmail": "Please enter your email address",
-    "resetSent": "A password reset link has been sent to your email address.",
-    "operationFailed": "The operation failed. Please try again."
-  },
   "forms": {
     "searchCurrency": "Search currency",
     "searchQuestion": "Search question..."
@@ -1038,23 +984,6 @@
     "complete": "Complete",
     "createFailed": "Could not create wallet, please try again",
     "checkFields": "Please check the fields"
-  },
-  "personalInfo": {
-    "phone": "Phone",
-    "birthDate": "Birth Date",
-    "saveChanges": "Save Changes",
-    "changePassword": "Change Password",
-    "currentPassword": "Current Password",
-    "newPassword": "New Password",
-    "confirmNewPassword": "New Password (Confirm)",
-    "changePasswordBtn": "Change Password",
-    "profileUpdated": "Profile information updated successfully",
-    "profileUpdateError": "An error occurred while updating profile information",
-    "passwordChanged": "Your password was changed successfully",
-    "passwordChangeError": "Password change failed",
-    "clearConfirm": "All your data will be cleared. This action cannot be undone. Do you want to continue?",
-    "dataCleared": "Your data was cleared successfully",
-    "dataClearError": "Data clearing failed"
   },
   "help": {
     "heading": "How can we help?",
@@ -1126,14 +1055,6 @@
         "description": "No data ever leaves your device. That also means no cloud backup — export a backup regularly to keep it safe."
       }
     ]
-  },
-  "personalInfoForm": {
-    "emailPlaceholder": "Enter your email address",
-    "phonePlaceholder": "Enter your phone number",
-    "birthDatePlaceholder": "Select your birth date",
-    "currentPasswordPlaceholder": "Enter your current password",
-    "newPasswordPlaceholder": "Enter your new password",
-    "confirmPasswordPlaceholder": "Re-enter your new password"
   },
   "exchangeRates": {
     "updateFailed": "Some rates could not be updated.",
@@ -1262,10 +1183,8 @@
       "ACCOUNT_INACTIVE": "This account is inactive.",
       "ACCOUNT_IN_USE": "This account has linked transactions, budgets or saving goals; you can archive it instead of deleting.",
       "ACCOUNT_LIMIT_EXCEEDED": "You have reached the account limit and cannot add a new account.",
-      "BUDGET_EXCEEDED": "Budget limit exceeded.",
       "BUDGET_INACTIVE": "This budget is not active.",
       "BUDGET_PERIOD_ERROR": "The budget period is invalid.",
-      "INVALID_TRANSACTION_TYPE": "Invalid transaction type.",
       "TRANSFER_REQUIRES_DESTINATION": "You must select a destination account for the transfer.",
       "TRANSFER_SAME_ACCOUNT": "The source and destination accounts cannot be the same.",
       "TRANSFER_DESTINATION_AMOUNT_REQUIRED": "Enter the destination amount for a cross-currency transfer.",
@@ -1274,12 +1193,9 @@
       "SAVING_GOAL_INACTIVE": "This goal is not active.",
       "SAVING_GOAL_COMPLETED": "This goal is already completed.",
       "NEGATIVE_AMOUNT": "The amount must be positive.",
-      "ZERO_AMOUNT": "The amount cannot be zero.",
-      "DIVISION_BY_ZERO": "Invalid calculation.",
       "STATE_NOT_INITIALIZED": "App data is not ready yet, please try again.",
       "BUSINESS_RULE_VIOLATION": "This operation is not valid.",
       "OPERATION_NOT_ALLOWED": "This operation is not allowed right now.",
-      "CONCURRENCY_CONFLICT": "This record was changed elsewhere, please try again.",
       "EXCHANGE_RATES_UNAVAILABLE": "Exchange rates could not be retrieved. Check your connection and try again.",
       "_default": "Something went wrong, please try again."
     }
