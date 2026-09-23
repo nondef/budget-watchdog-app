@@ -29,10 +29,8 @@ export const DomainErrorCode = {
     ACCOUNT_LIMIT_EXCEEDED: 'ACCOUNT_LIMIT_EXCEEDED',
     ACCOUNT_INACTIVE: 'ACCOUNT_INACTIVE',
     ACCOUNT_IN_USE: 'ACCOUNT_IN_USE',
-    BUDGET_EXCEEDED: 'BUDGET_EXCEEDED',
     BUDGET_INACTIVE: 'BUDGET_INACTIVE',
     BUDGET_PERIOD_ERROR: 'BUDGET_PERIOD_ERROR',
-    INVALID_TRANSACTION_TYPE: 'INVALID_TRANSACTION_TYPE',
     TRANSFER_REQUIRES_DESTINATION: 'TRANSFER_REQUIRES_DESTINATION',
     TRANSFER_SAME_ACCOUNT: 'TRANSFER_SAME_ACCOUNT',
     TRANSFER_DESTINATION_AMOUNT_REQUIRED: 'TRANSFER_DESTINATION_AMOUNT_REQUIRED',
@@ -41,11 +39,8 @@ export const DomainErrorCode = {
     SAVING_GOAL_INACTIVE: 'SAVING_GOAL_INACTIVE',
     SAVING_GOAL_COMPLETED: 'SAVING_GOAL_COMPLETED',
     NEGATIVE_AMOUNT: 'NEGATIVE_AMOUNT',
-    ZERO_AMOUNT: 'ZERO_AMOUNT',
-    DIVISION_BY_ZERO: 'DIVISION_BY_ZERO',
     BUSINESS_RULE_VIOLATION: 'BUSINESS_RULE_VIOLATION',
     OPERATION_NOT_ALLOWED: 'OPERATION_NOT_ALLOWED',
-    CONCURRENCY_CONFLICT: 'CONCURRENCY_CONFLICT',
     STATE_NOT_INITIALIZED: 'STATE_NOT_INITIALIZED',
     EXCHANGE_RATES_UNAVAILABLE: 'EXCHANGE_RATES_UNAVAILABLE',
 } as const;
@@ -257,18 +252,6 @@ export class EntityAlreadyExistsException extends DomainException {
 }
 
 /**
- * Optimistic-locking / eşzamanlılık çakışması (aynı kayıt aynı anda güncellendi).
- */
-export class ConcurrencyConflictException extends DomainException {
-    constructor(entityName: string, criteria: LookupCriteria) {
-        const { criteria: c, text } = DomainException.describeCriteria(criteria);
-        super(DomainErrorCode.CONCURRENCY_CONFLICT, `${entityName} was modified concurrently (${text})`, {
-            details: { entityName, criteria: c },
-        });
-    }
-}
-
-/**
  * Uygulama açılışında (bootstrap) her zaman var olması gereken bir singleton/
  * invariant kayıt yok. Bu "kullanıcı bir şey aradı bulunamadı" DEĞİLDİR —
  * bozuk/eksik sistem durumudur; bu yüzden `EntityNotFoundException` yerine bunu
@@ -349,16 +332,6 @@ export class AccountInactiveException extends DomainException {
 /*  Budget                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export class BudgetExceededException extends DomainException {
-    constructor(budgetName: string, limit: number, spent: number) {
-        super(
-            DomainErrorCode.BUDGET_EXCEEDED,
-            `Budget '${budgetName}' exceeded. Limit: ${limit}, Spent: ${spent}`,
-            { severity: 'warning', details: { budgetName, limit, spent, overBy: spent - limit } },
-        );
-    }
-}
-
 export class BudgetInactiveException extends DomainException {
     constructor(budgetId: string) {
         const { criteria, text } = DomainException.describeCriteria(budgetId);
@@ -377,16 +350,6 @@ export class BudgetPeriodException extends DomainException {
 /* -------------------------------------------------------------------------- */
 /*  Transaction                                                               */
 /* -------------------------------------------------------------------------- */
-
-export class InvalidTransactionTypeException extends DomainException {
-    constructor(expectedType: string, actualType: string) {
-        super(
-            DomainErrorCode.INVALID_TRANSACTION_TYPE,
-            `Expected transaction type '${expectedType}', got '${actualType}'`,
-            { details: { expectedType, actualType } },
-        );
-    }
-}
 
 export class TransferRequiresDestinationException extends DomainException {
     constructor() {
@@ -489,21 +452,6 @@ export class NegativeAmountException extends DomainException {
             severity: 'warning',
             details: { context },
         });
-    }
-}
-
-export class ZeroAmountException extends DomainException {
-    constructor(context: string) {
-        super(DomainErrorCode.ZERO_AMOUNT, `${context} amount cannot be zero`, {
-            severity: 'warning',
-            details: { context },
-        });
-    }
-}
-
-export class DivisionByZeroException extends DomainException {
-    constructor() {
-        super(DomainErrorCode.DIVISION_BY_ZERO, 'Cannot divide by zero');
     }
 }
 

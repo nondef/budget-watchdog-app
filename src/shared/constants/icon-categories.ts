@@ -154,5 +154,3 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     }
 ]
-
-export const ALL_CATEGORIES = ICON_CATEGORIES.flatMap(category => category.icons)
