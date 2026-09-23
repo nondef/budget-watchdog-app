@@ -1,0 +1,83 @@
+/* MD3 RENK ROLLERI + SEMANTIK TOKENLAR - LIGHT */
+
+:root {
+  --app-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ion-font-family: var(--app-font);
+
+  /* ===================================================================
+     MATERIAL DESIGN 3 RENK ROLLERİ — LIGHT
+     Kaynak: m3.material.io tone map, monokrom/nötr gri seed (pastel gri).
+     Tek yönetim noktası: tüm bileşenler ya doğrudan --md-* rollerini
+     ya da aşağıdaki --c-* eşlemelerini kullanır.
+     =================================================================== */
+  /* LIGHT palet: SICAK NÖTR ("kağıt") tonlar — soğuk saf gri + bembeyaz
+     kart kombinasyonu parlama yapıp göz yoruyordu. Aynı MD3 rol düzeni
+     korunur; tüm yüzeyler aynı sıcak eksene oturduğu için zemin/kart/
+     toolbar kendiliğinden uyumludur. Metin rolleri sıcak siyaha yakın
+     tutulur (okunabilirlik önce gelir). */
+  --md-primary: #38342f;
+  --md-on-primary: #ffffff;
+
+  --md-secondary-container: #e4e0d9;
+  --md-on-secondary-container: #1d1b18;
+
+  --md-surface: #eae6e0;   /* sayfa zemini: sıcak açık gri → krem kartlar belirginleşir */
+  --md-surface-container-lowest: #f8f5f0;  /* kart: beyaza yakın değil, krem/kağıt tonu */
+  --md-surface-container-low: #efebe5;
+  --md-surface-container: #e7e3dc;
+  --md-surface-container-high: #e1dcd5;
+  --md-surface-container-highest: #dad5cd;
+  /* Wheel picker fade gradient ham RGB ister (--wheel-fade-background-rgb). */
+  --md-surface-container-high-rgb: 225, 220, 213;
+
+  --md-on-surface: #1a1815;
+  --md-on-surface-variant: #322f2b;
+  --md-outline: #4f4b45;
+  --md-outline-variant: #d0cbc3;   /* ayraç/kenarlık: yumuşak hairline (eski #a5a099 fazla belirgindi) */
+
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+
+  --md-inverse-surface: #32302b;
+  --md-inverse-on-surface: #f5f2ee;
+
+  /* ===================================================================
+     SEMANTIC --c-* TOKENLARI — MD3 rollerine eşlenir.
+     Bileşenler bu adlarla devam eder (Tailwind bg-surface, text-content
+     vb.); renk yönetimi yukarıdaki MD3 rollerinden gelir.
+     =================================================================== */
+  --c-primary: var(--md-primary);
+  --c-on-primary: var(--md-on-primary);
+  --c-primary-strong: #201d1a;                       /* press/hover tonu */
+
+  --c-inverse-surface: var(--md-inverse-surface);
+  --c-inverse-on-surface: var(--md-inverse-on-surface);
+
+  --c-page: var(--md-surface);                       /* sayfa zemini */
+  --c-surface: var(--md-surface-container-lowest);   /* kart / sheet / modal */
+  --c-surface-sunken: var(--md-surface-container);   /* iç kutu / ikon zemini */
+  --c-surface-strong: var(--md-surface-container-highest); /* track / chip */
+
+  --c-content: var(--md-on-surface);                 /* birincil metin */
+  --c-content-secondary: #22201c;                    /* etiket / alt başlık */
+  --c-content-tertiary: var(--md-on-surface-variant);/* ikincil gövde */
+  --c-content-muted: var(--md-on-surface-variant);   /* caption / pasif */
+  --c-content-faint: var(--md-outline);              /* ipucu / devre dışı */
+
+  --c-line: var(--md-outline-variant);               /* ayraç (MD3 divider) */
+  --c-line-strong: var(--md-outline);                /* belirgin border */
+
+  --c-error: var(--md-error);
+  --c-on-error: var(--md-on-error);            /* hata zemini uzerindeki metin */
+
+  /* ── Ionic palette (color="primary" kontroller MD3 primary kullansın) ── */
+  --ion-color-primary: var(--md-primary);
+  --ion-color-primary-rgb: 56, 52, 47;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2d2a26;
+  --ion-color-primary-tint: #4c4842;
+
+  --ion-background-color: var(--md-surface);
+  --ion-text-color: var(--md-on-surface);
+}

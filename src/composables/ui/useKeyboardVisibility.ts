@@ -17,7 +17,7 @@ const KEYBOARD_OPEN_CLASS = 'keyboard-open'
  * kapatınca geri gelmesi.
  *
  * Burada yalnızca durum yayınlanır ve `<html>` üzerine `.keyboard-open` sınıfı
- * basılır; görsel karar (hangi elemanın gizleneceği) variables.css'te tek bir
+ * basılır; görsel karar (hangi elemanın gizleneceği) src/theme/base/keyboard.css'te tek bir
  * global kuralda tutulur — her sayfaya ayrı `v-if` yazmaya gerek kalmaz.
  *
  * App.vue'da BİR KEZ çağrılmalıdır.

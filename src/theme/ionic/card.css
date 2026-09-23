@@ -1,0 +1,71 @@
+/* MD3 KARTLAR (ion-card) */
+
+/* ===================================================================
+   MD3 KARTLAR — ion-card taban + varyantlar.
+   m3.material.io/components/cards: zemin MD3 surface container
+   rollerinden gelir; GÖLGE Ionic'ten DEĞİL, karta verilen Tailwind
+   shadow-* sınıfından (elevation'ı utility ile kontrol et). --md-*
+   tokenları light/dark'ı kendisi çözer; dark'taki global ion-card
+   !important kuralını geçmek için varyantlar da !important taşır.
+   Kullanım:  <ion-card class="card-filled p-4">           gölgesiz
+              <ion-card class="shadow-sm p-4">             elevated
+              <ion-card class="card-outlined p-4">         çerçeveli
+   =================================================================== */
+ion-card {
+  margin: 0;                                       /* boşluk Tailwind'den (gap/space) */
+  border-radius: 12px;                             /* MD3 kart köşe yarıçapı */
+  box-shadow: none;                                /* elevation → Tailwind shadow-* */
+  --background: var(--md-surface-container-lowest); /* light: beyaz kart, gri sayfada belirgin */
+  background: var(--md-surface-container-lowest);
+  --color: var(--md-on-surface);
+  color: var(--md-on-surface);
+}
+
+/* Filled card — en belirgin container tonu, gölgesiz */
+ion-card.card-filled,
+html.ion-palette-dark ion-card.card-filled {
+  --background: var(--md-surface-container-highest) !important;
+  background: var(--md-surface-container-highest) !important;
+}
+
+/* Outlined card — surface zemin + outline-variant çerçeve, gölgesiz */
+ion-card.card-outlined,
+html.ion-palette-dark ion-card.card-outlined {
+  --background: var(--md-surface) !important;
+  background: var(--md-surface) !important;
+  border: 1px solid var(--md-outline-variant);
+}
+
+/* Inverse card — vurgu/hero kartı (ör. toplam bakiye): light'ta koyu,
+   dark'ta açık zemin. MD3 inverse surface rolü. */
+ion-card.card-inverse,
+html.ion-palette-dark ion-card.card-inverse {
+  --background: var(--c-inverse-surface) !important;
+  background: var(--c-inverse-surface) !important;
+  --color: var(--c-inverse-on-surface);
+  color: var(--c-inverse-on-surface);
+}
+
+/* Kart tipografisi — MD3: başlık on-surface, alt başlık/gövde
+   on-surface-variant. */
+ion-card-title {
+  color: inherit;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+ion-card-subtitle {
+  color: var(--md-on-surface-variant);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+ion-card-content,
+ion-card.card-inverse ion-card-subtitle {
+  color: inherit;
+}
+
+html.ion-palette-dark ion-card {
+  --background: var(--c-surface) !important;
+  --color: var(--c-content) !important;
+}

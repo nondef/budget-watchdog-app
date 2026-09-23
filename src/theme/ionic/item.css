@@ -1,0 +1,50 @@
+/* ITEM / LIST / BOLUM BASLIGI */
+
+/* ===================================================================
+   BÖLÜM BAŞLIĞI (ion-item-divider) — Ayarlar benzeri listelerde
+   "FİNANS YÖNETİMİ" gibi başlıklar. Ionic'in çalışma anında enjekte
+   edilen bileşen stili (#999999 renk, 0.875rem boyut) utility
+   sınıflarını cascade'de geçtiğinden token rengi uygulanmıyordu;
+   burada !important ile tek noktadan bağlanır. Zemin şeffaf: divider
+   sayfa zemininde durur, kart değildir.
+   =================================================================== */
+ion-item-divider {
+  --background: transparent;
+  --color: var(--c-content-tertiary);
+  --padding-start: 4px;
+  border: none;
+  min-height: 28px;
+}
+
+ion-item-divider ion-label {
+  color: var(--c-content-tertiary) !important;
+  font-size: 12px !important;
+  font-weight: 500;
+}
+
+/* Item, list, card */
+html.ion-palette-dark ion-item,
+html.ion-palette-dark ion-list {
+  --background: var(--c-surface) !important;
+  --color: var(--c-content) !important;
+}
+
+/* Düz (plain) satırlar kart içinde şeffaf kalmalı — yukarıdaki global
+   ion-item kuralı !important ile ezdiğinden burada geri alıyoruz. Aksi
+   halde dark modda satır kendi zeminini boyayıp kartın yuvarlak üst
+   köşelerini kare gösteriyor. */
+html.ion-palette-dark ion-item.plain-item {
+  --background: transparent !important;
+  /* Dokunma/odak durumlarında da açık renk (slate-50) yerine koyu sunken
+     ton kullan — yoksa satıra dokunup datetime modalı kapanınca satır
+     beyaz/açık kalıyordu. */
+  --background-activated: var(--c-surface-sunken) !important;
+  --background-focused: var(--c-surface-sunken) !important;
+  --background-hover: transparent !important;
+  /* lines="full" ayraç rengi: scoped bileşenlerdeki
+     `:global(.ion-palette-dark) ion-item.plain-item` override'ı Vue tarafından
+     `.ion-palette-dark`e yanlış derleniyor (descendant kısmı düşüyor) ve html'e
+     uygulanıyordu; bu yüzden satır açık (slate-100) border ile kalıyordu.
+     Dark ayracı tek noktadan burada veriyoruz. */
+  --border-color: var(--c-line) !important;
+}

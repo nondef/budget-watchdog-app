@@ -1,0 +1,20 @@
+/* MODAL YUZEYI */
+
+/* ===================================================================
+   MODAL YÜZEYİ — MD3: dialog/sheet zemini surface-container-high.
+   Light/dark otomatik; her modalde ayrı override gerekmez. Şeffaf
+   isteyen modaller kendi --background: transparent değerini verir.
+   =================================================================== */
+ion-modal {
+  --background: var(--md-surface-container-high);
+  --border-radius: 28px;   /* MD3 dialog/sheet köşe yarıçapı */
+}
+
+/* Global toolbar/content kuralları !important taşıdığından modal içi
+   yüzeyler de !important ile eşitlenir (light + dark). */
+ion-modal ion-content,
+ion-modal ion-toolbar,
+html.ion-palette-dark ion-modal ion-content,
+html.ion-palette-dark ion-modal ion-toolbar {
+  --background: var(--md-surface-container-high) !important;
+}

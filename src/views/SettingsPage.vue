@@ -13,7 +13,7 @@ import { IonPage, IonContent, IonRouterOutlet } from '@ionic/vue';
 <style scoped>
 /* Header/toolbar opak sayfa zemini kullansın — şeffaf bırakılırsa içerik
    yukarı kaydırılınca toolbar arkasından yazılar görünüyordu. Dark mode'u
-   global variables.css'teki kural ezer. */
+   theme/ionic/header-toolbar.css'teki global kural ezer. */
 :deep(ion-toolbar) {
   --background: var(--c-page);
 }

@@ -1,0 +1,86 @@
+/* PICKER ALANI (.md3-picker) + destek metinleri */
+
+/* ===================================================================
+   PICKER ALANI — input'larla (fill="solid") aynı KART dili: --c-surface
+   zemin, 16px yuvarlak köşe, alt çizgi yok; hata = iç halka (error).
+   (para birimi / hesap / kategori / tarih seçicileri). PickerField.vue
+   bu sınıfları kullanır. Global !important item kurallarını ezmek için
+   dark varyantlar da burada.
+   =================================================================== */
+ion-item.md3-picker,
+html.ion-palette-dark ion-item.md3-picker {
+  --background: var(--c-surface) !important;
+  --background-activated: var(--md-surface-container-high) !important;
+  --background-focused: var(--md-surface-container-high) !important;
+  --background-hover: var(--c-surface) !important;
+  --color: var(--md-on-surface) !important;
+  --padding-start: 16px;
+  --padding-top: 2px;
+  --padding-end: 0;
+  --border-radius: 16px;
+  --inner-padding-end: 14px;
+  --min-height: 55px;
+  --border-width: 0;
+  --ripple-color: var(--md-on-surface);
+  overflow: hidden;
+  font-weight: 600;
+}
+
+/* Hata halkası host'a değil, zemini boyayan part(native)'e çizilir —
+   host'a çizilince native'in opak zemini halkayı örtüp kenarlarda
+   soluk kırmızı bir hat bırakıyordu (search odak halkasıyla aynı
+   artefakt). */
+ion-item.md3-picker.md3-picker--error::part(native) {
+  box-shadow: inset 0 0 0 1px var(--md-error);
+}
+
+ion-item.md3-picker [slot="start"] {
+  margin: 0 12px 0 0;
+}
+
+ion-item.md3-picker [slot="end"] {
+  margin: 0 0 0 12px;
+}
+
+/* Küçük üst etiket + değer (filled field'in floating label düzeni) */
+.md3-picker__label {
+  display: block;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--md-on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.md3-picker--error .md3-picker__label {
+  color: var(--md-error);
+}
+
+.md3-picker__value {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+}
+
+.md3-picker__value--placeholder {
+  color: var(--md-on-surface-variant);
+  font-weight: 400;
+}
+
+/* MD3 supporting/error metni — alan altındaki mesajlar */
+.md3-supporting {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--md-on-surface-variant);
+  margin-top: 6px;
+  padding-inline: 16px;
+}
+
+.md3-supporting--error {
+  color: var(--md-error);
+}
+
+/* Eski .field-error kullanımları da MD3 error rengine bağlanır */
+.field-error {
+  color: var(--md-error) !important;
+}

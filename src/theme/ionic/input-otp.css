@@ -1,0 +1,18 @@
+/* PIN / OTP KUTULARI (ion-input-otp) */
+
+/* ===================================================================
+   PIN / OTP KUTULARI (ion-input-otp) — kilit ekranı + PIN belirleme.
+   Ionic varsayılanı tema tokenlarına bağlı olmadığından kutular dark
+   modda açık kalıyordu. İki ekran da aynı görünümü buradan alır:
+   kart zemini, yumuşak hairline kenarlık, odakta primary vurgu.
+   =================================================================== */
+ion-input-otp {
+  --background: var(--c-surface);
+  --color: var(--c-content);
+  --border-color: var(--c-line);
+  --border-radius: 12px;
+  --highlight-color-focused: var(--md-primary);
+  --highlight-color-valid: var(--md-primary);
+  --highlight-color-invalid: var(--md-error);
+  caret-color: var(--md-primary);
+}

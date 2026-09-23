@@ -1,0 +1,81 @@
+/* MD3 RENK ROLLERI + SEMANTIK TOKENLAR - DARK */
+
+/* ===== Dark mode defaults (MD3 renk rolleri + Ionic palette) ===== */
+.ion-palette-dark {
+  /* ===================================================================
+     MATERIAL DESIGN 3 RENK ROLLERİ — DARK (aynı nötr gri seed, dark scheme)
+     =================================================================== */
+  --md-primary: #ededed;
+  --md-on-primary: #1c1c1c;
+
+  --md-secondary-container: #474747;
+  --md-on-secondary-container: #e2e2e2;
+
+  /* Dark tone map: surface/dim N-11 (eski N-6 #131313 fazla siyah geldi),
+     bright N-24, container lowest→highest N-4/10/12/17/22; on-surface N-90,
+     on-surface-variant NV-80, outline NV-60, outline-variant NV-30. */
+  --md-surface: #1c1c1c;
+  --md-surface-container-lowest: #0e0e0e;
+  --md-surface-container-low: #1b1b1b;
+  --md-surface-container: #202020;
+  --md-surface-container-high: #2a2a2a;
+  --md-surface-container-highest: #3a3a3a;
+  --md-surface-container-high-rgb: 42, 42, 42;
+
+  --md-on-surface: #f6f6f6;
+  --md-on-surface-variant: #e4e4e4;
+  --md-outline: #bdbdbd;
+  --md-outline-variant: #454545;   /* ayraç/kenarlık: yumuşak hairline (eski #6b6b6b fazla belirgindi) */
+
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+
+  --md-inverse-surface: #ececec;
+  --md-inverse-on-surface: #262626;
+
+  /* --- SEMANTIC --c-* (dark) — MD3 rollerine eşlenir --- */
+  --c-primary: var(--md-primary);
+  --c-on-primary: var(--md-on-primary);
+  --c-primary-strong: #f2f2f2;   /* press/hover tonu */
+
+  --c-inverse-surface: var(--md-inverse-surface);
+  --c-inverse-on-surface: var(--md-inverse-on-surface);
+
+  --c-page: var(--md-surface);                        /* sayfa zemini */
+  --c-surface: var(--md-surface-container-high);      /* kart / input / sheet */
+  --c-surface-sunken: var(--md-surface-container);    /* iç kutu / ikon zemini */
+  --c-surface-strong: var(--md-surface-container-highest); /* track / chip */
+
+  --c-content: var(--md-on-surface);
+  --c-content-secondary: #ededed;
+  --c-content-tertiary: var(--md-on-surface-variant);
+  --c-content-muted: var(--md-on-surface-variant);
+  --c-content-faint: var(--md-outline);
+
+  --c-line: var(--md-outline-variant);
+  --c-line-strong: var(--md-outline);
+
+  --c-error: var(--md-error);
+  --c-on-error: var(--md-on-error);
+
+  /* --- Ionic palette: aynı tek kaynağa bağlı --- */
+  --ion-background-color: var(--c-page);
+  --ion-background-color-rgb: 28, 28, 28;
+
+  --ion-text-color: var(--c-content);
+  --ion-text-color-rgb: 242, 242, 242;
+
+  /* color="primary" kontroller dark'ta açık gri kullansın */
+  --ion-color-primary: var(--md-primary);
+  --ion-color-primary-rgb: 237, 237, 237;
+  --ion-color-primary-contrast: #1c1c1c;
+  --ion-color-primary-contrast-rgb: 28, 28, 28;
+  --ion-color-primary-shade: #d4d4d4;
+  --ion-color-primary-tint: #f0f0f0;
+
+  --ion-toolbar-background: var(--c-page);
+  --ion-item-background: var(--c-surface);   /* kartlar */
+  --ion-card-background: var(--c-surface);
+  --ion-tab-bar-background: var(--c-page);
+  --ion-border-color: var(--c-line-strong);
+}

@@ -1,0 +1,62 @@
+/* IKON RENK UYUMU - tint kutulari + dark ikon tonlari */
+
+/* ===================================================================
+   İKON RENK UYUMU — renkli tint kutuları + ikon renkleri (light+dark).
+   Tailwind'in -50/-100 pastelleri beyaz tabanlı OPAK renklerdir: sıcak
+   krem kartta soğuk/yabancı durur, dark: varyantı unutulmuş yerlerde
+   koyu modda açık kutu olarak patlar. Tek noktadan düzeltme:
+   1) Kutu zeminleri YARI ŞEFFAF hue tint'ine çevrilir — alttaki yüzeye
+      karıştığı için light'ta krem, dark'ta koyu kartla kendiliğinden
+      uyumludur (açıkça yazılmış dark:bg-*-500/10 varyantları zaten aynı
+      dili üretir, onlar özgüllükle geçerli kalır).
+   2) Dark modda -500/-600 ikon/metin tonları okunur -400 tonuna
+      yükseltilir (dark:text-*-400 yazan yerlerle aynı değerler).
+
+   KAPSAM: yalnızca şablonlarda GERÇEKTEN `class` olarak uygulanan hue'lar.
+   Tailwind kullanılmayan utility'yi hiç üretmez, ama bu dosya elle yazıldığı
+   için her satır koşulsuz bundle'a girer — o yüzden liste dar tutulur.
+   YENİ BİR HUE kullanmaya başlarsan (`bg-teal-50`, `text-purple-600` …)
+   karşılığını buraya EKLE, yoksa o kutu light'ta opak pastel, dark'ta
+   patlamış açık kutu olarak kalır.
+   NOT: `indigo` bu projede nötr gri markadır (tailwind.config) — hue
+   tint'i değil yüzey/metin tokenlarına bağlanır. -500 ve üzeri OPAK
+   zeminler (kategori/hesap renk paleti) bilinçli olarak kapsam dışıdır;
+   `shared/utils/ui/colors.ts` ise CSS değil, grafik/gradyan için hex
+   arama haritasıdır — oradaki anahtarlar bu kapsamı genişletmez.
+   =================================================================== */
+/* — Nötr "indigo" kutu ve ikonları: tokenlara bağlan — */
+.bg-indigo-50, .bg-indigo-100 {
+  background-color: var(--c-surface-sunken);
+}
+
+.text-indigo-600, .text-indigo-500 {
+  color: var(--c-content-secondary);
+}
+
+/* — Renkli tint kutuları: -50 → %12, -100 → %18 hue tint — */
+.bg-emerald-50 { background-color: rgb(16 185 129 / 0.12); }
+.bg-emerald-100 { background-color: rgb(16 185 129 / 0.18); }
+.bg-green-50 { background-color: rgb(34 197 94 / 0.12); }
+.bg-green-100 { background-color: rgb(34 197 94 / 0.18); }
+.bg-sky-50 { background-color: rgb(14 165 233 / 0.12); }
+.bg-sky-100 { background-color: rgb(14 165 233 / 0.18); }
+.bg-blue-50 { background-color: rgb(59 130 246 / 0.12); }
+.bg-blue-100 { background-color: rgb(59 130 246 / 0.18); }
+.bg-rose-50 { background-color: rgb(244 63 94 / 0.12); }
+.bg-rose-100 { background-color: rgb(244 63 94 / 0.18); }
+.bg-red-50 { background-color: rgb(239 68 68 / 0.12); }
+.bg-red-100 { background-color: rgb(239 68 68 / 0.18); }
+.bg-amber-50 { background-color: rgb(245 158 11 / 0.14); }
+.bg-amber-100 { background-color: rgb(245 158 11 / 0.20); }
+.bg-yellow-50 { background-color: rgb(234 179 8 / 0.14); }
+.bg-yellow-100 { background-color: rgb(234 179 8 / 0.20); }
+
+/* — Dark: -500/-600 ikon/metin tonları → okunur -400 tonu — */
+html.ion-palette-dark .text-emerald-500, html.ion-palette-dark .text-emerald-600 { color: #34d399; }
+html.ion-palette-dark .text-green-500, html.ion-palette-dark .text-green-600 { color: #4ade80; }
+html.ion-palette-dark .text-sky-500, html.ion-palette-dark .text-sky-600 { color: #38bdf8; }
+html.ion-palette-dark .text-blue-500, html.ion-palette-dark .text-blue-600 { color: #60a5fa; }
+html.ion-palette-dark .text-rose-500, html.ion-palette-dark .text-rose-600 { color: #fb7185; }
+html.ion-palette-dark .text-red-500, html.ion-palette-dark .text-red-600 { color: #f87171; }
+html.ion-palette-dark .text-amber-500, html.ion-palette-dark .text-amber-600 { color: #fbbf24; }
+html.ion-palette-dark .text-yellow-500, html.ion-palette-dark .text-yellow-600 { color: #facc15; }

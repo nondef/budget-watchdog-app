@@ -50,11 +50,19 @@ ion-modal.datetime-picker-modal .datetime-picker-time-separator {
   top: 50%;
   left: 50%;
   z-index: 2;
-  transform: translate(-50%, -52%);
+  /* Ionic wheel seçenekleri 22px fontla, 34px yüksekliğinde ve 34px
+     line-height ile çiziliyor. Ayıracı aynı metriklere bağlamak rakamlar ve
+     ':' işaretinin aynı baseline üzerinde kalmasını sağlar. */
+  width: 18px;
+  height: 34px;
+  transform: translate(-50%, -50%);
   color: var(--c-content);
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 34px;
+  text-align: center;
+  font-family: var(--app-font);
+  font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
 

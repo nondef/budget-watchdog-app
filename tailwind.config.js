@@ -10,7 +10,7 @@ export default {
       fontFamily: {
         sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
-      // Semantic renkler — tek kaynak src/theme/variables.css (--c-* değişkenleri).
+      // Semantic renkler — tek kaynak src/theme/tokens/ (--c-* değişkenleri).
       // Değerler light/dark'a göre otomatik değişir; bileşenlerde dark: prefix'i GEREKMEZ.
       colors: {
         // ── MARKA PRİMARY = Material 3 nötr gri (pastel/monokrom) tonal paleti ──

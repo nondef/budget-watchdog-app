@@ -1,0 +1,45 @@
+/* TIPOGRAFI - kok olcek, govde agirligi, caption boyutlari */
+
+/* ===================================================================
+   TİPOGRAFİ ÖLÇEĞİ — "yazılar küçük/ince, okunmuyor" düzeltmesi.
+   1) Kök font %106.25 (16px→17px): tüm rem tabanlı Tailwind boyutları
+      (text-xs/sm/base…) tek noktadan ~%6 büyür.
+   2) Light modda gövde kalınlığı 400→500: Plus Jakarta Sans 400,
+      açık zeminde küçük boyutlarda fazla ince kalıyordu. Dark mod
+      olduğu gibi bırakılır (kullanıcı onayı: dark iyi durumda).
+   3) Font smoothing: light'ta subpixel (auto) → daha dolgun glif;
+      antialiased yalnızca dark'ta (açık metin koyu zeminde şişmesin).
+   =================================================================== */
+html {
+  font-size: 106.25%;             /* 16px → 17px taban */
+}
+
+html, body {
+  font-family: var(--app-font);
+  font-feature-settings: 'ss01', 'cv11', 'tnum';
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  letter-spacing: -0.005em;
+  background: var(--c-page);      /* light mode default surface */
+  overscroll-behavior-y: none;    /* iOS rubber-band'i kapat */
+}
+
+html:not(.ion-palette-dark) body {
+  font-weight: 500;               /* açık zeminde gövde metni dolgunlaşır */
+}
+
+html.ion-palette-dark,
+html.ion-palette-dark body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Bileşenlerde yaygın kullanılan sabit px caption boyutları (355 kullanım)
+   rem ölçeğinden etkilenmez; tek noktadan 1'er px yükseltilir. Utility'ler
+   @tailwind utilities'ten SONRA geldiği için eşit özgüllükte bu kurallar
+   kazanır. 9-10px etiketler okunabilirlik alt sınırının altındaydı. */
+.text-\[9px\]  { font-size: 10px; }
+.text-\[10px\] { font-size: 11px; }
+.text-\[11px\] { font-size: 12px; }
+.text-\[12px\] { font-size: 13px; }
+.text-\[13px\] { font-size: 14px; }

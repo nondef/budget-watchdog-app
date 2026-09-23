@@ -1,0 +1,32 @@
+/* BIRINCIL CTA BUTONLARI */
+
+/* ===================================================================
+   BİRİNCİL CTA BUTONLARI — NÖTR GRİ (tek nokta, light + dark).
+   Tüm `bg-indigo-600` primary butonlar (save-bar/footer "Kaydet",
+   "Oluştur", "İleri" vb.) marka teal'i yerine nötr inverse-surface
+   zemin kullanır: light'ta koyu gri buton + açık metin, dark'ta açık
+   buton + koyu metin. `text-white` ve `active:bg-indigo-700` Tailwind
+   yardımcıları bu kuralla ezilir (active için ayrı press tonu altta).
+   Emerald (başarı) / rose (yıkıcı) butonlar kendi semantik renklerinde
+   kalır. =================================================================== */
+button.bg-indigo-600:not(:disabled) {
+  background-color: var(--c-inverse-surface) !important;
+  color: var(--c-inverse-on-surface) !important;
+}
+
+button.bg-indigo-600:not(:disabled):active {
+  background-color: var(--c-content) !important;
+}
+
+html.ion-palette-dark button.bg-indigo-600:not(:disabled):active {
+  background-color: #d8d8d8 !important;   /* press tonu */
+}
+
+/* .app-button dark karşılığı — nötr açık gri buton + koyu metin. */
+html.ion-palette-dark .app-button {
+  --background: var(--c-inverse-surface);
+  --background-activated: #d8d8d8;   /* press tonu */
+  --background-focused: #d8d8d8;
+  --background-hover: #d8d8d8;
+  --color: var(--c-inverse-on-surface);
+}

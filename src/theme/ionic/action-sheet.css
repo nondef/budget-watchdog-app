@@ -1,0 +1,46 @@
+/* ACTION SHEET (ion-action-sheet) */
+
+/* ===================================================================
+   ACTION SHEET (ion-select interface="action-sheet", menü sheet'leri) —
+   Ionic MD'de --button-color, tanımsız --ion-color-step-850 yüzünden
+   #262626'ya düşüyor; dark modda koyu zeminde koyu yazı = okunmuyor.
+   Yüzey diğer modallarla aynı (surface-container-high); MD3 bottom sheet
+   gibi üst köşeler 28dp ve yıkıcı aksiyon error rengini alır.
+   =================================================================== */
+ion-action-sheet.md {
+  --background: var(--md-surface-container-high);
+  --color: var(--c-content-tertiary);     /* başlık/alt başlık */
+  --button-color: var(--c-content);
+  --button-color-selected: var(--c-primary);
+  --button-background-selected: var(--md-surface-container-highest);
+}
+
+ion-action-sheet.md .action-sheet-group {
+  background: var(--md-surface-container-high);
+}
+ion-action-sheet.md .action-sheet-group:first-of-type {
+  border-radius: 28px 28px 0 0;
+}
+
+/* Ayrı duran "Vazgeç" grubu — sheet'ten kopuk kart gibi görünmesin. */
+ion-action-sheet.md .action-sheet-group-cancel {
+  border-top: 1px solid var(--c-line);
+}
+
+ion-action-sheet.md .action-sheet-title {
+  color: var(--c-content-tertiary);
+}
+
+ion-action-sheet.md .action-sheet-button.ion-activated {
+  background: var(--md-surface-container-highest);
+}
+
+ion-action-sheet.md .action-sheet-button.action-sheet-destructive {
+  color: var(--c-error);
+}
+ion-action-sheet.md .action-sheet-button.action-sheet-cancel {
+  color: var(--c-content-tertiary);
+}
+ion-action-sheet.md .action-sheet-icon {
+  color: inherit;
+}

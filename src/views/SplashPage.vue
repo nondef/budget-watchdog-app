@@ -202,8 +202,9 @@ const back = () => {
   --border-color: transparent;
 }
 
-/* Footer stilleri artık variables.css'teki global ion-footer kuralında.
-   Splash'a özgü şeffaflık ise variables.css'teki .splash-page ion-footer'da. */
+/* Footer stilleri theme/ionic/footer.css'teki global ion-footer kuralında.
+   Splash'a özgü şeffaflık ise theme/patterns/splash.css'teki
+   .splash-page ion-footer'da. */
 
 ion-page {
   overflow: hidden;

@@ -1,7 +1,7 @@
 # Budget Watchdog — Tasarım Sistemi (Material Design 3)
 
 Stack: **Ionic 8 + Vue 3 + TailwindCSS**. Tüm ekranlar aşağıdaki beş kurala uyar.
-Tek renk kaynağı: [`src/theme/variables.css`](../src/theme/variables.css) — MD3 renk rolleri (`--md-*`)
+Tek renk kaynağı: [`src/theme/tokens/`](../src/theme/tokens) — MD3 renk rolleri (`--md-*`)
 ve onlara eşlenen semantik tokenlar (`--c-*`). Tailwind utility'leri bu tokenlara
 [`tailwind.config.js`](../tailwind.config.js) üzerinden bağlıdır.
 
@@ -13,7 +13,7 @@ Yapısal UI daima Ionic bileşenidir: `IonCard`, `IonItem`, `IonInput`, `IonSele
 `IonToggle`, `IonSegment`… Ionic bileşenlerinin görünümü **global CSS'te bir kez**
 MD3'e bağlanmıştır; sayfa içinde bileşen başına renk/gölge override YAZMA.
 
-Hazır MD3 sınıfları (variables.css):
+Hazır MD3 sınıfları (global tema, [`src/theme/`](../src/theme)):
 
 | Sınıf | Bileşen | MD3 karşılığı |
 |---|---|---|
@@ -55,7 +55,7 @@ Hiçbir bileşende hex / `rgb()` / ham Tailwind renk yazılmaz. Sıralama:
 2. Semantik karşılığı yoksa MD3 rolü: `var(--md-surface-container-high)`,
    `var(--md-on-surface-variant)`…
 3. Ionic bileşen özelinde: `--ion-color-primary`, `--ion-background-color`
-   (bunlar da variables.css'te MD3 rollerine bağlıdır).
+   (bunlar da `src/theme/tokens/` içinde MD3 rollerine bağlıdır).
 
 Tokenlar light/dark'ı kendisi çözer → bileşenlerde `dark:` prefix'i genelde
 GEREKMEZ. İstisna: token dışı semantik renkler (emerald/rose) zemin tersine
@@ -91,6 +91,30 @@ dönüyorsa (`.card-inverse` gibi) `dark:text-emerald-700` ile ton düzeltilir.
 - Yardımcı/etiket metni 11px altına inmez; gövde 15px.
 - Durum renkli metinlerde zemine göre ton seç: açık zeminde `*-600/700`,
   koyu zeminde `*-400`.
+
+---
+
+## 6. CSS dosya düzeni — kuralı nereye yazmalı
+
+Global tema tek bir giriş noktasından yüklenir: [`src/theme/index.css`](../src/theme/index.css).
+`main.ts` yalnızca bu dosyayı import eder; sıra bu dosyada belirlenir ve
+**sıra önemlidir** (Tailwind utility'lerini ezen kurallar en sonda gelir).
+
+| Klasör | İçerik |
+|---|---|
+| `theme/tokens/` | `light.css` / `dark.css` — yalnızca `--md-*` ve `--c-*` değişkenleri |
+| `theme/base/` | tipografi, sayfa zemini/reset, klavye açık durumu |
+| `theme/ionic/` | Ionic bileşeni başına bir dosya (`card.css`, `form-fields.css`, `alert.css`…) |
+| `theme/patterns/` | uygulamaya ait ortak sınıflar (`.app-button`, `.save-bar`, `.md3-seg-btn`…) |
+| `theme/overrides/` | Tailwind sınıflarını ezen kurallar (kontrast, tint kutuları) |
+
+Karar kuralı:
+
+1. Kural **tek bir bileşeni** ilgilendiriyorsa → o bileşenin `<style scoped>` bloğu.
+2. Global bir **Ionic elemanını** ilgilendiriyorsa → `theme/ionic/<bileşen>.css`.
+3. Birden çok sayfanın kullandığı bir **sınıf** ise → `theme/patterns/`.
+4. Dark varyant, light kuralıyla **aynı dosyada** durur — token kullanıldığında
+   çoğu zaman ayrı bir dark kuralına gerek kalmaz.
 
 ---
 

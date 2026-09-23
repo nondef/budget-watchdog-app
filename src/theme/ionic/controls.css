@@ -1,0 +1,89 @@
+/* DUZ (plain) KONTROLLER - toggle, chip, stepper, progress */
+
+/* ===== Düz (plain) Ionic kontrol stilleri — form sayfalarında ortak ===== */
+
+/* MD3 switch renkleri (w-11 h-6 kompakt boy korunur) */
+ion-toggle.plain-toggle {
+  --track-background: var(--md-surface-container-highest);
+  --track-background-checked: var(--md-primary);
+  --handle-background: var(--md-outline);
+  --handle-background-checked: var(--md-on-primary);
+  --handle-width: 20px;
+  --handle-height: 20px;
+  --handle-spacing: 2px;
+  --handle-box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+  width: 44px;
+  height: 24px;
+}
+
+ion-toggle.plain-toggle::part(track) {
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+}
+
+html.ion-palette-dark ion-toggle.plain-toggle {
+  --track-background: var(--c-surface-strong);   /* resimdeki kapalı track tonu */
+}
+
+/* Seçili kategori chip'i (h-8, slate-50 zemin) */
+ion-chip.cat-chip {
+  margin: 0;
+  height: 2rem;
+  min-height: 2rem;
+  padding: 0 10px 0 4px;
+  gap: 6px;
+  --background: var(--md-surface-container-low);
+  --color: inherit;
+  font-size: 13px;
+}
+
+html.ion-palette-dark ion-chip.cat-chip {
+  --background: var(--md-surface-container-highest);
+}
+
+/* "Ekle" aksiyon chip'i (h-7, indigo zemin) */
+ion-chip.add-chip {
+  margin: 0;
+  height: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0 10px;
+  gap: 4px;
+  --background: var(--md-secondary-container);
+  --color: var(--md-on-secondary-container);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Küçük kare stepper butonu (size-9, slate zemin) */
+ion-button.step-btn {
+  margin: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-height: 0;
+  --background: var(--md-surface-container);
+  --background-activated: var(--md-surface-container-highest);
+  --background-hover: var(--md-surface-container);
+  --color: var(--md-on-surface-variant);
+  --border-radius: 0.75rem;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --box-shadow: none;
+}
+
+html.ion-palette-dark ion-button.step-btn {
+  --background: var(--c-surface-strong);
+  --background-activated: #404040;   /* press tonu */
+  --color: var(--c-content);
+}
+
+/* İnce progress bar (h-1.5) — MD3: track = surface-container-highest,
+   dolgu = primary */
+ion-progress-bar.plain-progress {
+  height: 0.375rem;
+  border-radius: 9999px;
+  --background: var(--md-surface-container-highest);
+  --progress-background: var(--md-primary);
+}

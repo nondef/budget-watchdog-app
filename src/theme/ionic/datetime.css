@@ -1,0 +1,65 @@
+/* TARIH / SAAT SECICI (ion-datetime) */
+
+/* ===================================================================
+   TARİH / SAAT SEÇİCİ (ion-datetime) — hem takvim (date) hem tekerlek
+   (time / date-time) modu. Zemin diğer dialog yüzeyleriyle aynı
+   (surface-container-high); iç parçalar Ionic'in --ion-color-step-*
+   varsayılanlarına düşmesin diye tema tokenlarına bağlanır.
+   =================================================================== */
+ion-datetime {
+  --background: var(--md-surface-container-high);
+  --title-color: var(--md-on-surface);
+  /* Saat tekerleğinin üst/alt solma gradyanı: zeminle aynı renk olmalı,
+     aksi halde tekerlek kenarlarında beyaz/siyah bant görünür. */
+  --wheel-fade-background-rgb: var(--md-surface-container-high-rgb);
+  --wheel-highlight-background: var(--md-surface-container-highest);
+  color: var(--md-on-surface);
+}
+
+/* Başlık satırı ve ay/yıl açılır düğmesi */
+ion-datetime::part(month-year-button),
+ion-datetime::part(time-button) {
+  color: var(--c-content);
+}
+ion-datetime::part(time-button) {
+  background: var(--md-surface-container-highest);
+}
+ion-datetime::part(time-button active) {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+/* Takvim günleri: pasif/bugün/seçili — nötr marka paleti. */
+ion-datetime::part(calendar-day) {
+  color: var(--c-content);
+}
+ion-datetime::part(calendar-day disabled) {
+  color: var(--c-content-faint);
+}
+ion-datetime::part(calendar-day today) {
+  color: var(--c-content);
+  box-shadow: inset 0 0 0 1px var(--c-primary);
+}
+ion-datetime::part(calendar-day active),
+ion-datetime::part(calendar-day active today) {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  box-shadow: none;
+}
+
+/* Hafta günü başlıkları ve ay ileri/geri okları — Ionic varsayılanı sabit
+   gri (#808080 / #595959); dark zeminde sönük kalıyordu. */
+ion-datetime::part(calendar-days-of-week) {
+  color: var(--c-content-muted);
+}
+ion-datetime::part(navigation-button) {
+  color: var(--c-content);
+}
+
+/* Tekerlek (saat/dakika) öğeleri */
+ion-datetime::part(wheel-item) {
+  color: var(--c-content-tertiary);
+}
+ion-datetime::part(wheel-item active) {
+  color: var(--c-content);
+}

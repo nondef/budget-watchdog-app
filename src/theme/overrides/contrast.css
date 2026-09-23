@@ -1,0 +1,17 @@
+/* KONTRAST DUZELTMESI - soluk gri metin siniflari */
+
+/* ===================================================================
+   KONTRAST DÜZELTMESİ — hardcoded soluk gri metin sınıfları.
+   Bileşenlerde kalan `text-slate-400`, `text-gray-300` vb. caption/ikon
+   renkleri light modda okunmuyordu. Tek noktadan tema-duyarlı tokenlara
+   bağlanır (tokenlar light/dark'ı kendisi çözer). `dark:` varyantlı
+   sınıflar daha yüksek özgüllükle bunları ezmeye devam eder.
+
+   KAPSAM: yalnızca şablonlarda gerçekten `class` olarak uygulananlar
+   (bkz. tailwind-tints.css'teki aynı gerekçe). Yeni bir soluk gri ton
+   kullanırsan buraya EKLE. 100/200 tonları (koyu zemin üstü açık metin)
+   bilinçli olarak kapsam dışıdır.
+   =================================================================== */
+.text-gray-300, .text-slate-400 {
+  color: var(--c-content-muted);
+}

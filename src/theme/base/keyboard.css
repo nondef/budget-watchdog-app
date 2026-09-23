@@ -1,0 +1,21 @@
+/* KLAVYE ACIKKEN DAVRANIS */
+
+/* ===================================================================
+   KLAVYE AÇIKKEN FOOTER GİZLENİR.
+   Android activity'si `adjustResize` ile çalıştığından klavye açılınca
+   WebView küçülür ve alta yapışık ion-footer klavyenin ÜSTÜNDE asılı
+   kalıyordu (kaydet butonu input'un hemen dibinde yüzüyordu). Sınıf
+   App.vue'daki useKeyboardVisibility tarafından basılır.
+
+   `visibility: hidden` değil `display: none`: footer layout'tan tamamen
+   çıkmazsa ion-content'in altında klavyenin üstünde boş bir şerit kalırdı.
+   =================================================================== */
+html.keyboard-open ion-footer {
+  display: none;
+}
+
+/* Klavye açıkken alt güvenli alan (home indicator) zaten klavyenin
+   arkasında kalır; içeriğe fazladan boşluk bırakmayalım. */
+html.keyboard-open ion-content {
+  --padding-bottom: 0;
+}

@@ -1,0 +1,47 @@
+/* ARAMA CUBUGU (ion-searchbar.app-searchbar) */
+
+/* ===================================================================
+   ARAMA ÇUBUĞU — uygulama geneli tek stil (ion-searchbar.app-searchbar).
+   Form alanlarıyla aynı kart dili: --c-surface zemin, 16px köşe,
+   gölgesiz, token renkleri; odakta input'larla aynı iç halka. Stil
+   daha önce CurrencyPickerModal'da scoped tanımlıydı; TransactionsPage
+   aynı sınıfı kullanınca stiller oraya uygulanmıyor, çubuk Ionic
+   varsayılanında (saf beyaz + gölge) kalıyordu. Modal içinde zemin
+   sunken tona döner (modal yüzeyinden ayrışsın).
+   =================================================================== */
+ion-searchbar.app-searchbar {
+  --background: var(--c-surface);
+  --color: var(--c-content);
+  --placeholder-color: var(--c-content-muted);
+  --placeholder-opacity: 1;
+  --icon-color: var(--c-content-muted);
+  --clear-button-color: var(--c-content-muted);
+  --border-radius: 16px;
+  --box-shadow: none;
+  padding: 0;                     /* yatay boşluk sayfadaki sarmalayıcıdan gelir */
+}
+
+ion-searchbar.app-searchbar .searchbar-input {
+  font-size: 16px !important;     /* form alanlarıyla aynı boy */
+}
+
+/* Odak halkası zemini boyayan .searchbar-input'un KENDİSİNE çizilir.
+   Kapsayıcıya çizilince içindeki opak input halkayı örtüyor, kenarlardan
+   yalnızca kırıntıları sızıp "çok hafif kenarlık" artefaktı oluşuyordu. */
+ion-searchbar.app-searchbar.searchbar-has-focus .searchbar-input {
+  box-shadow: inset 0 0 0 1.5px var(--md-primary);
+}
+
+ion-modal ion-searchbar.app-searchbar {
+  --background: var(--c-surface-sunken);
+  padding: 6px 16px 10px;         /* modal toolbar'ındaki eski boşluk düzeni */
+}
+
+/* type="search" input'unda tarayıcının native temizleme düğmesi, Ionic'in
+   kendi clear button'ı ile çakışıyordu (iki adet × görünüyordu). Gizle. */
+ion-searchbar.app-searchbar input[type="search"]::-webkit-search-cancel-button,
+ion-searchbar.app-searchbar input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}

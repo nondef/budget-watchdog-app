@@ -1,0 +1,186 @@
+/* FORM ALANLARI (ion-input / ion-textarea / ion-select) */
+
+/* ===================================================================
+   FORM ALANLARI — KART DİLİNDE FILLED FIELD (ion-input / ion-textarea /
+   ion-select, fill="solid"). MD3'ün "4dp üst köşe + alt çizgi" deseni
+   uygulamanın yumuşak yuvarlak kart diliyle çelişiyordu (uyumsuzluk
+   şikâyeti). Alanlar artık kartlarla aynı görsel dili taşır: --c-surface
+   zemin, 16px tam yuvarlak köşe, alt çizgi YOK; odak = iç halka
+   (primary), hata = iç halka (error) — kartlarla aynı odak deseni.
+   Renkler tokenlardan geldiği için light/dark otomatik uyumludur.
+   =================================================================== */
+/* Vue, fill'i DOM property olarak verdiği için [fill=...] attribute
+   seçicisi eşleşmez; Ionic'in eklediği .input-fill-solid vb. sınıflar
+   hedeflenir. Ekstra .md sınıfı, Ionic'in kendi
+   .sc-ion-input-md-h.input-fill-solid kuralını özgüllükle geçmek için. */
+ion-input.md.input-fill-solid,
+ion-textarea.md.textarea-fill-solid,
+ion-select.md.select-fill-solid {
+  --background: var(--c-surface);
+  --color: var(--md-on-surface);
+  --placeholder-color: var(--md-on-surface-variant);
+  --placeholder-opacity: 1;
+  --border-width: 0;                                  /* alt çizgi kalktı */
+  --border-color: transparent;
+  --border-radius: 16px;                              /* kartlarla aynı köşe */
+  --highlight-height: 0;                              /* odak alt çizgisi kalktı */
+  --highlight-color-focused: var(--md-primary);
+  --highlight-color-valid: var(--md-primary);
+  --highlight-color-invalid: var(--md-error);
+  caret-color: var(--md-primary);
+  min-height: 57px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+ion-input.input-fill-solid .native-input,
+ion-textarea.textarea-fill-solid .native-textarea {
+  caret-color: var(--md-primary);
+}
+
+/* Ionic, solid dolguda sarmalayıcının ALT köşelerini 0'a sabitler ve
+   alt çizgiyi buraya çizer — tam yuvarlak kart köşesi için ikisi de
+   açıkça ezilir. ion-select shadow DOM olduğundan host'ta ezilir. */
+ion-input.md.input-fill-solid .input-wrapper,
+ion-textarea.md.textarea-fill-solid .textarea-wrapper {
+  border-radius: 16px !important;
+  border-bottom: none !important;
+}
+
+/* ion-select shadow DOM'dur; host'tan iç sarmalayıcıya erişilemez. Ionic
+   fill=solid'de .select-wrapper'ın YALNIZ üst köşelerini yuvarlar ve alt
+   çizgiyi buraya çizer → alt köşeler kare kalır ("altı düz"). part="wrapper"
+   ile iç sarmalayıcıya erişip tam yuvarlak köşe + çizgisiz hale getir. */
+ion-select.md.select-fill-solid::part(wrapper) {
+  border-radius: 16px !important;
+  border-bottom: none !important;
+}
+
+/* Alt çizgi yerine odak/hata iç halkası — kart odak halkasıyla aynı.
+   Hata kuralı odak kuralından SONRA geldiği için hatalı alan odakta da
+   kırmızı kalır. */
+ion-input.md.input-fill-solid.has-focus .input-wrapper,
+ion-textarea.md.textarea-fill-solid.has-focus .textarea-wrapper {
+  box-shadow: inset 0 0 0 1.5px var(--md-primary);
+}
+
+/* ion-select shadow DOM: odak/hata halkasını da part="wrapper" üzerinden ver.
+   .select-expanded = açık, .has-focus = odaklı. */
+ion-select.md.select-fill-solid.select-expanded::part(wrapper),
+ion-select.md.select-fill-solid.has-focus::part(wrapper) {
+  box-shadow: inset 0 0 0 1.5px var(--md-primary);
+}
+
+ion-input.md.input-fill-solid.ion-touched.ion-invalid .input-wrapper,
+ion-textarea.md.textarea-fill-solid.ion-touched.ion-invalid .textarea-wrapper {
+  box-shadow: inset 0 0 0 1.5px var(--md-error);
+}
+
+/* Hata halkası — odak kuralından SONRA geldiği için açık/odaklı halde de
+   kırmızı kalır. */
+ion-select.md.select-fill-solid.ion-touched.ion-invalid::part(wrapper) {
+  box-shadow: inset 0 0 0 1.5px var(--md-error) !important;
+}
+
+/* Hata durumunda etiket/placeholder de kırmızı — input'ta Ionic bunu
+   highlight-color ile veriyor; select shadow DOM'da elle veriyoruz. */
+ion-select.md.select-fill-solid.ion-touched.ion-invalid::part(label),
+ion-select.md.select-fill-solid.ion-touched.ion-invalid::part(placeholder) {
+  color: var(--md-error);
+}
+
+/* Ionic, hover/odak durumunda --background'ı kendi açık step renklerine
+   (beyaza yakın) çevirir; dark modda alan beyaz kalıp okunmaz oluyordu.
+   Hover/odak zeminini de kart yüzeyine sabitliyoruz. */
+ion-input.md.input-fill-solid.has-focus,
+ion-textarea.md.textarea-fill-solid.has-focus,
+ion-input.md.input-fill-solid:hover,
+ion-textarea.md.textarea-fill-solid:hover,
+ion-select.md.select-fill-solid.select-expanded,
+ion-select.md.select-fill-solid:hover {
+  --background: var(--c-surface);
+  --color: var(--md-on-surface);
+}
+
+
+
+/* MD3 outlined text field — fill="outline" kullanan alanlar da aynı
+   token setine bağlanır: şeffaf zemin, outline kenarlık, odakta primary. */
+ion-input.md.input-fill-outline,
+ion-textarea.md.textarea-fill-outline,
+ion-select.md.select-fill-outline {
+  --background: transparent;
+  --color: var(--md-on-surface);
+  --placeholder-color: var(--md-on-surface-variant);
+  --placeholder-opacity: 1;
+  --border-color: var(--md-outline);
+  --border-radius: 4px;
+  --highlight-color-focused: var(--md-primary);
+  --highlight-color-valid: var(--md-primary);
+  --highlight-color-invalid: var(--md-error);
+  caret-color: var(--md-primary);
+  min-height: 56px;
+  font-size: 16px;
+}
+
+/* Odak/hover'da zemin şeffaf kalır (MD3 outlined: state layer hariç zemin
+   yok) — Ionic'in kendi açık step renklerine dönmesini engelle. */
+ion-input.md.input-fill-outline.has-focus,
+ion-textarea.md.textarea-fill-outline.has-focus,
+ion-input.md.input-fill-outline:hover,
+ion-textarea.md.textarea-fill-outline:hover,
+ion-select.md.select-fill-outline.select-expanded,
+ion-select.md.select-fill-outline:hover {
+  --background: transparent;
+  --color: var(--md-on-surface);
+}
+
+ion-input.md.input-fill-outline .label-text-wrapper,
+ion-textarea.md.textarea-fill-outline .label-text-wrapper,
+ion-select.select-fill-outline::part(label) {
+  color: var(--md-on-surface-variant);
+}
+
+ion-input.input-fill-outline .input-bottom .helper-text,
+ion-input.input-fill-outline .input-bottom .counter,
+ion-textarea.textarea-fill-outline .textarea-bottom .helper-text,
+ion-textarea.textarea-fill-outline .textarea-bottom .counter {
+  color: var(--md-on-surface-variant);
+}
+
+ion-input.md.input-fill-outline .input-bottom .error-text,
+ion-textarea.md.textarea-fill-outline .textarea-bottom .error-text {
+  color: var(--md-error);
+}
+
+ion-input.input-fill-outline [slot="start"],
+ion-input.input-fill-outline [slot="end"] {
+  color: var(--md-on-surface-variant);
+}
+
+/* Etiket (floating/stacked) dinlenme rengi — odak/hata rengini Ionic
+   highlight-color üzerinden kendisi verir. */
+ion-input.input-fill-solid .label-text-wrapper,
+ion-textarea.textarea-fill-solid .label-text-wrapper,
+ion-select.select-fill-solid::part(label) {
+  color: var(--md-on-surface-variant);
+}
+
+/* Destek metni / sayaç — MD3 supporting text */
+ion-input.input-fill-solid .input-bottom .helper-text,
+ion-input.input-fill-solid .input-bottom .counter,
+ion-textarea.textarea-fill-solid .textarea-bottom .helper-text,
+ion-textarea.textarea-fill-solid .textarea-bottom .counter {
+  color: var(--md-on-surface-variant);
+}
+
+ion-input.input-fill-solid .input-bottom .error-text,
+ion-textarea.textarea-fill-solid .textarea-bottom .error-text {
+  color: var(--md-error);
+}
+
+/* Başındaki/sonundaki slot içerikleri (ikon kutusu, para birimi vb.) */
+ion-input.input-fill-solid [slot="start"],
+ion-input.input-fill-solid [slot="end"] {
+  color: var(--md-on-surface-variant);
+}

@@ -30,7 +30,7 @@ const { notifyReset } = useBudgetNotification()
 const notifier = useNotifier()
 
 // Klavye açıkken <html>.keyboard-open — footer'ın klavyenin üstünde asılı
-// kalmasını engelleyen global CSS kuralı buna bağlı (bkz. variables.css).
+// kalmasını engelleyen global CSS kuralı buna bağlı (bkz. src/theme/base/keyboard.css).
 useKeyboardVisibility()
 let resetTimer: number | undefined;
 let midnightTimeout: number | undefined;
@@ -61,21 +61,6 @@ const syncNotifications = async () => {
 // planda kaldıktan sonra öne gelince gün sayısı ilerlesin.
 const { refresh: refreshBackupStatus } = useBackupReminder()
 
-// Uygulama teması - Kullanıcı ayarlarından ya da sistem temasından al
-// const appTheme = computed(() => {
-//   if (!authStore.user || !authStore.user.settings) return 'light';
-
-//   // Kullanıcı ayarlarında tema varsa kullan
-//   const userTheme = authStore.user.settings.theme;
-
-//   if (userTheme === 'system') {
-//     // Sistem temasını kontrol et
-//     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-//   }
-
-//   return userTheme || 'light';
-// });
-
 const runResetCheck = async () => {
   try {
     // Önce sıfırla (gerçek reset sayısını buradan al), sonra listeyi yükle.
@@ -104,9 +89,6 @@ const scheduleMidnight = () => {
 }
 
 onMounted(async () => {
-  // Uygulama başlatıldığında oturum durumunu kontrol et
-  // await authStore.checkAuth();
-
   // SIRA KASITLI: önce yaşam döngüsü dinleyicileri, sonra veri yüklemeleri.
   //
   // Eskiden tersiydi ve `loadCurrencies()` try/catch'siz await ediliyordu:

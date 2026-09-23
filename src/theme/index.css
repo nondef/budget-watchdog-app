@@ -1,0 +1,60 @@
+/* ===================================================================
+   TEMA GİRİŞ NOKTASI — tüm global CSS buradan, TEK SIRAYLA yüklenir.
+   main.ts yalnızca bu dosyayı import eder.
+
+   SIRA ÖNEMLİDİR:
+   1) tailwindcss/base + components  → utility katmanları
+   2) patterns/layer-components      → @layer components (Tailwind'e ait)
+   3) tailwindcss/utilities          → utility sınıfları
+   4) tokens/                        → --md-* ve --c-* değişkenleri
+   5) base/ → ionic/ → patterns/     → bileşen ve desen stilleri
+   6) overrides/                     → Tailwind sınıflarını ezen kurallar
+                                       (utilities'ten SONRA gelmek ZORUNDA)
+
+   Yeni kural eklerken: bir Ionic bileşenini ilgilendiriyorsa ionic/,
+   uygulamaya ait ortak bir sınıfsa patterns/, yalnızca tek bir bileşeni
+   ilgilendiriyorsa o bileşenin kendi <style scoped> bloğuna yaz.
+   =================================================================== */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import './patterns/layer-components.css';
+@import 'tailwindcss/utilities';
+
+/* — Tasarım tokenları — */
+@import './tokens/light.css';
+@import './tokens/dark.css';
+
+/* — Taban — */
+@import './base/typography.css';
+@import './base/reset.css';
+@import './base/keyboard.css';
+
+/* — Ionic bileşenleri — */
+@import './ionic/header-toolbar.css';
+@import './ionic/footer.css';
+@import './ionic/modal.css';
+@import './ionic/datetime.css';
+@import './ionic/datetime-picker.css';
+@import './ionic/alert.css';
+@import './ionic/action-sheet.css';
+@import './ionic/card.css';
+@import './ionic/searchbar.css';
+@import './ionic/item.css';
+@import './ionic/input-otp.css';
+@import './ionic/controls.css';
+@import './ionic/form-fields.css';
+@import './ionic/picker-field.css';
+
+/* — Uygulama desenleri — */
+@import './patterns/save-bar.css';
+@import './patterns/buttons.css';
+@import './patterns/splash.css';
+@import './patterns/picker-row.css';
+
+/* — Tailwind sınıf ezmeleri (en sonda) — */
+@import './overrides/contrast.css';
+@import './overrides/tailwind-tints.css';
+
+/* Segmented buttons, tint ezmelerinden SONRA gelmeli (eski sira korunur). */
+@import './patterns/segmented.css';

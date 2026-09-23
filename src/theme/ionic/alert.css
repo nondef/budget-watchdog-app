@@ -1,0 +1,78 @@
+/* ALERT (ion-alert) */
+
+/* ===================================================================
+   ALERT (ion-alert) — MD3 basic dialog. Ionic MD varsayılanı zemini
+   --ion-background-color'a (sayfa zemini) ve mesaj rengini
+   --ion-color-step-550'ye bağlıyor: dialog sayfayla aynı tonda kalıyor,
+   mesaj her iki temada da soluk gri (#737373) okunuyordu. Yüzey diğer
+   modallarla aynı (surface-container-high), köşe 28dp.
+   =================================================================== */
+/* Ionic'in kendi `.sc-ion-alert-md` sınıfları düz eleman seçicisini yendiği
+   için yüzey/köşe/mesaj kuralları .md sınıfı ve !important ile yazılır. */
+ion-alert.md {
+  --background: var(--md-surface-container-high);
+  --backdrop-opacity: 0.32;
+  --max-width: 320px;
+}
+
+ion-alert.md .alert-wrapper {
+  background: var(--md-surface-container-high) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+ion-alert .alert-title {
+  color: var(--c-content) !important;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+ion-alert .alert-sub-title,
+ion-alert .alert-message {
+  color: var(--c-content-tertiary) !important;
+  font-size: 14px;
+}
+
+ion-alert .alert-button {
+  color: var(--c-primary);
+  font-weight: 600;
+  text-transform: none;
+  border-radius: 9999px;
+}
+
+ion-alert .alert-button.alert-button-role-cancel {
+  color: var(--c-content-tertiary);
+}
+
+/* Yıkıcı aksiyon — butona `role: 'destructive'` verildiğinde. */
+ion-alert .alert-button.alert-button-role-destructive {
+  color: var(--c-error);
+}
+
+/* Alert içindeki form alanları (prompt) — kart dili */
+ion-alert .alert-input {
+  background: var(--md-surface-container-lowest);
+  color: var(--c-content);
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  padding: 10px 12px;
+}
+ion-alert .alert-input::placeholder {
+  color: var(--c-content-muted);
+}
+
+/* Radio / checkbox listesi */
+ion-alert .alert-radio-label,
+ion-alert .alert-checkbox-label {
+  color: var(--c-content);
+}
+ion-alert .alert-radio-group,
+ion-alert .alert-checkbox-group {
+  border-color: var(--c-line);
+}
+ion-alert [aria-checked="true"] .alert-radio-icon {
+  border-color: var(--c-primary);
+}
+ion-alert [aria-checked="true"] .alert-radio-inner {
+  background: var(--c-primary);
+}

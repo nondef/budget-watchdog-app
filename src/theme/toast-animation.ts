@@ -22,8 +22,6 @@ import { createAnimation, type Animation } from '@ionic/vue';
  * yerinde kalır. Aynı sebeple dinlenme ofsetini DEĞİŞTİRMİYORUZ —
  * swipe-to-dismiss jesti keyframe'lerini translateY(0) referansına göre
  * kurduğu için ofseti burada büyütmek jest başlarken zıplamaya yol açar.
- * MD3'ün 16dp kenar boşluğu bunun yerine variables.css'te host kutusu
- * 8px içeri çekilerek veriliyor.
  */
 
 /** MD3 duration-medium1 */

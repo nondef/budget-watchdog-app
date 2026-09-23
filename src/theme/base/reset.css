@@ -1,0 +1,36 @@
+/* TABAN - sayfa zemini, router-outlet, basliklar */
+
+/* ion-app/ion-tabs container'larında da alt boşluk olmasın */
+ion-app,
+ion-tabs {
+  background: inherit;
+}
+
+/* ===================================================================
+   SAYFA GEÇİŞİ ZEMİNİ — header'da beyaz/gri parlama düzeltmesi.
+   ion-router-outlet varsayılan olarak ŞEFFAFTIR. Geçiş animasyonu
+   sayfanın opaklığını 0'dan açtığı için, sayfa solarken arkasındaki
+   body (--c-page) görünür; toolbar (light'ta beyaz) ile bu zemin
+   farklı olduğundan header bölgesinde bir an parlama oluşur.
+   Outlet'e içerik/toolbar ile aynı katı zemini vererek opaklık
+   bindirmesini tutarlı bir arka plana karşı yapıyoruz → parlama yok. */
+ion-router-outlet {
+  background: var(--ion-background-color, #ffffff);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.015em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Body / html / ion-app arka planı */
+html.ion-palette-dark,
+html.ion-palette-dark body,
+html.ion-palette-dark ion-app {
+  background: var(--c-page) !important;
+  color: var(--c-content);
+}

@@ -1,0 +1,51 @@
+/* HEADER / TOOLBAR (+ tab bar) */
+
+/* ===================================================================
+   HEADER / TOOLBAR — LIGHT VARSAYILANI.
+   Light modda ion-header/ion-toolbar'a açık (opak) zemin tanımlı
+   olmadığından, içerik yukarı kaydırılınca toolbar şeffaf kalıp
+   arkasındaki yazılar görünüyordu. Dark bloğundaki (aşağıda) kuralın
+   light karşılığını burada tek noktadan veriyoruz. Dark varyant daha
+   yüksek özgüllükle bunu ezer. Splash gibi şeffaf isteyen ekranlar
+   kendi !important kuralıyla geçer.
+   =================================================================== */
+
+/* Ion-content default — !important ile scoped style'ları geçer */
+html.ion-palette-dark ion-content {
+  --background: var(--c-page) !important;
+}
+
+ion-header,
+ion-toolbar {
+  --background: var(--c-page) !important;
+  --color: var(--c-content) !important;
+  --border-color: var(--c-page) !important;
+}
+
+html.ion-palette-dark ion-title {
+  color: var(--c-content) !important;
+}
+
+html.ion-palette-dark ion-back-button,
+html.ion-palette-dark ion-menu-button,
+html.ion-palette-dark ion-buttons ion-button {
+  --color: var(--c-content) !important;
+  color: var(--c-content) !important;
+}
+
+/* İstisna: toolbar'daki ters (inverse) çip butonlar — Hesaplar/Bütçe/
+   Tasarruf sayfalarındaki sağ üst "+" gibi. Yukarıdaki genel kural
+   ikonu content rengine (dark'ta beyaza yakın) zorluyordu; dark'ta
+   buton zemini AÇIK (inverse-surface) olduğundan ikon görünmez
+   oluyordu. Zeminle eşleşen zıt metin rengine sabitle. */
+html.ion-palette-dark ion-buttons ion-button.bg-inverse-surface {
+  --color: var(--c-inverse-on-surface) !important;
+  color: var(--c-inverse-on-surface) !important;
+}
+
+/* Tab bar */
+html.ion-palette-dark ion-tab-bar {
+  --background: var(--c-page) !important;
+  --color: var(--c-content-muted) !important;
+  --color-selected: var(--c-primary) !important;
+}

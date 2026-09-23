@@ -1,0 +1,68 @@
+/* TAILWIND @layer components - uygulama sinif API si */
+
+@layer components {
+  .skip-button {
+    --color: var(--c-content-muted);       /* light: slate-500, dark: neutral-400 — otomatik */
+    --color-activated: var(--c-content);   /* basılınca koyulaşır/açılır */
+    --color-hover: var(--c-content);
+    --background: transparent;
+    --box-shadow: none;
+    text-transform: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Odak/tıklama anında form alanı kartına kenarlık.
+     CurrencyInput odaklanınca Ionic host'a `.has-focus` ekler; alanı saran
+     `.bg-surface` kart kenarlık kazanır. Light: slate-600, Dark: beyaz. */
+  .bg-surface:has(.currency-input--plain:focus-within) {
+    box-shadow: inset 0 0 0 1.5px var(--md-primary);
+  }
+
+  :is(html.ion-palette-dark) .bg-surface:has(.currency-input--plain:focus-within) {
+    box-shadow: inset 0 0 0 1.5px #ffffff;
+  }
+
+  /* Geçersiz (validation hatası) alan: alanın içinde `.field-error` hata
+     mesajı bulunduğunda kart rose kenarlık alır ve placeholder rose'a döner.
+     Bu kural odak kenarlığından SONRA geldiği için, hatalı alan odakta bile
+     kırmızı kalır (light/dark fark etmez — rose her iki temada da okunur). */
+  .bg-surface:has(.field-error) {
+    box-shadow: inset 0 0 0 1.5px theme('colors.rose.500');
+  }
+
+  .bg-surface:has(.field-error) input::placeholder,
+  .bg-surface:has(.field-error) textarea::placeholder {
+    color: theme('colors.rose.400');
+    opacity: 1;
+  }
+
+  /* Uygulamanın birincil aksiyon butonu — Splash "Devam", create/edit
+     sayfalarındaki "Kaydet"/"Oluştur" vb. Tek tip indigo-600, 52px boy,
+     rounded-2xl. Dark modda save-bar deseniyle aynı krem (off-white) zemin. */
+  .app-button {
+    --background: var(--c-inverse-surface);   /* nötr buton: light'ta koyu gri */
+    --background-activated: var(--c-content);
+    --background-focused: var(--c-content);
+    --background-hover: var(--c-content);
+    --color: var(--c-inverse-on-surface);
+    --border-radius: 1rem;
+    --box-shadow: none;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .toolbar-plain {
+    --background: transparent;
+    --border-width: 0;
+    --border-color: transparent;
+    --min-height: auto;
+    --padding-top: 0.5rem;   /* senin pt-2 */
+    --padding-start: 0.25rem;
+    --padding-end: 0.25rem;
+  }
+
+}

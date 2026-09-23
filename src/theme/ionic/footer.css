@@ -1,0 +1,28 @@
+/* FOOTER */
+
+/* ===================================================================
+   FOOTER — UYGULAMA GENELİ VARSAYILAN.
+   Üst hairline/gölge yok, zemin sayfa rengiyle aynı, alt boşluk
+   cihazın güvenli alanına (home indicator vb.) saygılı. Onboarding/
+   form ekranları artık sadece `<ion-footer class="ion-no-border px-5">`
+   yazıp içine flex satırını koyar; ayrı scoped stil gerekmez.
+   Şeffaf footer isteyen ekran (Splash) kendi !important kuralıyla ezer.
+   =================================================================== */
+ion-footer::before {
+  display: none;                 /* Ionic md hairline/gölge şeridi */
+}
+
+ion-footer ion-toolbar {
+  --background: var(--c-page);
+  --border-width: 0;
+  --border-color: transparent;
+  --padding-top: calc(env(safe-area-inset-bottom) - 13px);
+  --padding-start: 25px;
+  --padding-end: 25px;
+  --padding-bottom: calc(env(safe-area-inset-bottom) - 15px);
+}
+
+/* expand="block" primary buton footer flex satırında dış boşluksuz otursun */
+ion-footer .app-button {
+  margin: 0;
+}

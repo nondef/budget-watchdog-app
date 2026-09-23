@@ -6,7 +6,7 @@ import { chevronForwardOutline } from 'ionicons/icons'
  * MD3 FILLED text field görünümünde tıklanır seçici alan (menu/picker).
  * Görsel dil ion-input[fill="solid"] ile birebir aynıdır: zemin
  * surface-container-highest, üst köşeler 4dp, altta active indicator,
- * küçük üst etiket + değer. Stiller global (variables.css, .md3-picker).
+ * küçük üst etiket + değer. Stiller global (src/theme/ionic/picker-field.css, .md3-picker).
  *
  *   <picker-field :label="..." :error="errors.x" :empty="!selected" @click="open = true">
  *     <template #start> ...ikon kutusu... </template>

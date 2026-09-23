@@ -1,0 +1,107 @@
+/* SEGMENTED BUTTONS (.md3-seg-btn) */
+
+/* ===================================================================
+   SEGMENTED BUTTONS — tip seçicileri (hesap tipi, bütçe/işlem türü).
+   Eski MD3 deseni (şeffaf + outline / secondary-container) yeni sıcak
+   palette silik kalıyordu. Uygulamanın CTA diliyle hizalandı:
+   seçili = inverse-surface (light'ta koyu, dark'ta açık çip) + zıt
+   metin → hangi tipin seçili olduğu tek bakışta belli; seçili değil =
+   kart yüzeyi + ince kenarlık + ikincil metin.
+   Bileşenlerdeki ion-segment-button host'una uygulanır.
+   =================================================================== */
+.md3-seg-btn {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  color: var(--c-content-tertiary);
+}
+
+.md3-seg-btn:active {
+  background: var(--md-surface-container-high);
+}
+
+.md3-seg-btn--selected {
+  background: var(--c-inverse-surface);
+  border-color: var(--c-inverse-surface);
+  color: var(--c-inverse-on-surface);
+}
+
+/* Ortak ayar/form/liste sayfası yüzey sistemi.
+   Yalnızca açıkça `design-page` verilen ekranları etkiler. */
+ion-page.design-page ion-content {
+  --background: var(--c-page);
+}
+
+ion-page.design-page ion-content > .px-4,
+ion-page.design-page ion-content > main,
+ion-page.design-page ion-content > form {
+  width: 100%;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+/* `.card-filled`'ın ZEMİNİ burada değil: ionic/card.css onu `!important` ile
+   sürüyor (tek sahip orası). Burada yalnızca design-page'e özgü kenarlık ve
+   gölge var — seçici daha özgül olduğu için import sırasından bağımsız geçer. */
+ion-page.design-page :is(section, article, div, a).bg-surface.rounded-2xl,
+ion-page.design-page ion-card.card-filled {
+  border: 1px solid var(--c-line);
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+ion-page.design-page :is(section, article, div, button).bg-surface-sunken.rounded-xl {
+  border: 1px solid var(--c-line);
+}
+
+ion-page.design-page .amount-card {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
+  border-color: var(--c-line);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--c-content) 7%, transparent);
+}
+
+ion-page.design-page :is(button, a).bg-indigo-600 {
+  background-color: var(--c-primary) !important;
+  color: var(--c-on-primary) !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--c-content) 14%, transparent);
+}
+
+ion-page.design-page :is(button, a).bg-indigo-600:active {
+  background-color: var(--c-primary-strong) !important;
+}
+
+ion-page.design-page .rounded-2xl.p-1.flex > button:is(.bg-rose-600, .bg-emerald-600, .bg-inverse-surface),
+ion-page.design-page .rounded-2xl.p-1.grid > button:is(.bg-rose-600, .bg-emerald-600, .bg-inverse-surface) {
+  background-color: var(--c-primary) !important;
+  color: var(--c-on-primary) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--c-content) 16%, transparent);
+}
+
+ion-page.design-page ion-button.app-button,
+ion-page.design-page ion-button[type='submit'] {
+  min-height: 48px;
+  font-weight: 750;
+  text-transform: none;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --border-radius: 14px;
+  --box-shadow: none;
+  --color: var(--c-on-primary);
+}
+
+ion-page.design-page ion-buttons[slot='end'] > ion-button {
+  --border-radius: 12px;
+}
+
+ion-page.design-page :is(.border-line, .border-t, .border-b) {
+  border-color: var(--c-line);
+}
+
+ion-page.design-page :is(button, a):focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 370px) {
+  ion-page.design-page :is(section, article, div).rounded-2xl {
+    border-radius: 14px;
+  }
+}

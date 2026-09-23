@@ -14,36 +14,21 @@ import { IonicVue } from '@ionic/vue';
 import { modernNavAnimation as navAnimation } from '@/theme/nav-animation';
 import { mdSnackbarEnterAnimation, mdSnackbarLeaveAnimation } from '@/theme/toast-animation';
 
-/* Core CSS required for Ionic components to work properly */
+/**
+ * Ionic'ten YALNIZCA core.css alınır — bileşenlerin çalışması için zorunlu olan
+ * tek parça budur.
+ *
+ * Starter'ın getirdiği diğerleri bilinçli olarak dışarıda:
+ *  - typography/structure/normalize → `theme/base/` bunları kendi tokenlarıyla
+ *    kuruyor, ikisi birden yüklenince Ionic'in değerleri bizimkini eziyor.
+ *  - padding/display/flex-utils gibi yardımcılar → Tailwind'in işi.
+ *  - dark palette dosyaları → tema `.ion-palette-dark` sınıfıyla `theme/tokens/`
+ *    üzerinden sürülüyor (bkz. tailwind.config darkMode).
+ */
 import '@ionic/vue/css/core.css';
 
-/* Basic CSS for apps built with Ionic */
-// import '@ionic/vue/css/structure.css';
-// import '@ionic/vue/css/typography.css';
-// import '@ionic/vue/css/normalize.css';
-
-/* Optional CSS utils that can be commented out */
-// import '@ionic/vue/css/padding.css';
-// import '@ionic/vue/css/float-elements.css';
-// import '@ionic/vue/css/text-alignment.css';
-// import '@ionic/vue/css/text-transformation.css';
-// import '@ionic/vue/css/flex-utils.css';
-// import '@ionic/vue/css/display.css';
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-// import '@ionic/vue/css/palettes/dark.always.css';
-// import '@ionic/vue/css/palettes/dark.class.css';
-// import '@ionic/vue/css/palettes/dark.system.css';
-
-/* Theme variables */
-import './theme/variables.css';
-import './theme/datetime-picker.css';
+/* Uygulamanın kendi teması — tek giriş noktası (bkz. docs/design-system.md). */
+import './theme/index.css';
 import { repositoryManager } from "@/infrastructure/database/repositories/repository-manager";
 import { useThemeStore } from "@/stores/theme";
 import { DatabaseFactory } from "@/infrastructure/database/database-factory";

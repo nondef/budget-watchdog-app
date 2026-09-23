@@ -1,0 +1,28 @@
+/* SPLASH EKRANI */
+
+/* ===================================================================
+   SPLASH — header/footer içerikle BİRLEŞİK görünmeli. ion-content
+   fullscreen olduğundan zemin (+ hero glow) header/footer arkasına da
+   uzanır; bar'ları şeffaf yapıp Ionic'in hairline gölgesini kaldırınca
+   üstte düz koyu bant ile alttaki gradyan arasındaki dikiş kalkar.
+   Global (dark) !important toolbar kurallarını geçmek için dark varyant
+   yüksek özgüllükle yazıldı. =================================================================== */
+.splash-page ion-header,
+.splash-page ion-footer {
+  background: transparent !important;
+}
+
+.splash-page ion-header::after,
+.splash-page ion-footer::before {
+  display: none;
+}
+
+.splash-page ion-header ion-toolbar,
+.splash-page ion-footer ion-toolbar,
+html.ion-palette-dark .splash-page ion-header ion-toolbar,
+html.ion-palette-dark .splash-page ion-footer ion-toolbar {
+  --background: transparent !important;
+  --border-width: 0 !important;
+  --border-color: transparent !important;
+  --box-shadow: none !important;
+}
