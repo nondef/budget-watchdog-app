@@ -15,10 +15,10 @@ interface ImportMetaEnv {
   readonly VITE_BRIDGE_LOG?: string;
   /** Ekranlarda gösterilen uygulama adı */
   readonly VITE_APP_NAME?: string;
-  /** Uygulama sürümü */
-  readonly VITE_APP_VERSION?: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare const __APP_VERSION__: string

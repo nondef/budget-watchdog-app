@@ -7,5 +7,5 @@
  */
 export const appConfig = {
     name: import.meta.env.VITE_APP_NAME?.trim() || 'Budget Watchdog',
-    version: import.meta.env.VITE_APP_VERSION?.trim() || '1.0.0',
+    version: __APP_VERSION__
 } as const;
