@@ -19,6 +19,7 @@ export const AppMapper = {
             currencyFormat: entity.currencyFormat.toJSON(),
             weekStartDay: entity.weekStartDay.value,
             privacy: entity.privacy.toJSON(),
+            marketFavorites: entity.marketFavorites ? [...entity.marketFavorites] : null,
             createdAt: entity.createdAt!.toISOString(),
         }
     },

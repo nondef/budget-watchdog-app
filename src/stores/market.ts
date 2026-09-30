@@ -13,8 +13,12 @@ import {
     STALE_AFTER_MS
 } from "@/domain/services/market-quote.service";
 import { marketStorage } from "@/infrastructure/services/market/market-storage";
+import { logger } from "@/infrastructure/logging";
 
 export type MarketSegment = 'fiat' | 'metal' | 'crypto'
+
+/** Kullanıcı hiç favori seçmediyse (`app_settings.market_favorites` NULL) gösterilenler. */
+const DEFAULT_FAVORITES: readonly string[] = ['USD', 'EUR', 'GBP']
 
 // Store'un public API'sinde geçen domain tipleri buradan da erişilebilsin:
 // tüketiciler (FinancialIndicatorsPage) store ile birlikte tek yerden alsın.
@@ -33,7 +37,13 @@ export const useMarketStore = defineStore('market', () => {
     const error = ref<string | null>(null)
     const canRefresh = ref(true)
     const refreshCountdown = ref(0)
-    const favorites = ref<string[]>(marketStorage.loadFavorites())
+
+    const appStore = useAppStore()
+    // Eski sürümün localStorage listesi: `initialize` DB'ye taşıyana kadar gösterilir.
+    let legacyFavorites = marketStorage.loadLegacyFavorites()
+    const favorites = computed<readonly string[]>(() =>
+        appStore.settings?.marketFavorites ?? legacyFavorites ?? DEFAULT_FAVORITES
+    )
 
     let countdownTimer: ReturnType<typeof setInterval> | null = null
     let snapshots: SnapshotStore = marketStorage.loadSnapshots()
@@ -178,7 +188,6 @@ export const useMarketStore = defineStore('market', () => {
         error.value = null
 
         try {
-            const appStore = useAppStore()
             const currenciesStore = useCurrenciesStore()
             const baseCode = appStore.baseCurrency?.code ?? 'USD'
 
@@ -245,20 +254,44 @@ export const useMarketStore = defineStore('market', () => {
         })
     }
 
-    const toggleFavorite = (code: string) => {
-        const idx = favorites.value.indexOf(code)
-        if (idx >= 0) {
-            favorites.value.splice(idx, 1)
-        } else {
-            favorites.value.push(code)
+    const toggleFavorite = async (code: string) => {
+        const next = favorites.value.includes(code)
+            ? favorites.value.filter(c => c !== code)
+            : [...favorites.value, code]
+
+        try {
+            // İyimser güncelleme + hata anında geri alma app store'da.
+            await appStore.updateMarketFavorites(next)
+        } catch (err) {
+            logger.warn('Favori kurlar kaydedilemedi', { context: 'marketStore', error: err })
         }
-        marketStorage.saveFavorites(favorites.value)
     }
 
     const isFavorite = (code: string) => favorites.value.includes(code)
 
+    /**
+     * localStorage'daki eski listeyi bir kez DB'ye taşır. Ayar satırında zaten
+     * bir liste varsa (ör. yedekten geri yüklendi) o kazanır, eski kayıt atılır.
+     * Kayıt başarısızsa localStorage'a dokunulmaz: bir sonraki açılışta yeniden denenir.
+     */
+    const migrateLegacyFavorites = async () => {
+        const settings = appStore.settings
+        if (!legacyFavorites || !settings) return
+
+        try {
+            if (settings.marketFavorites === null) {
+                await appStore.updateMarketFavorites(legacyFavorites)
+            }
+            marketStorage.clearLegacyFavorites()
+            legacyFavorites = null
+        } catch (err) {
+            logger.warn('Eski favori kurlar taşınamadı', { context: 'marketStore', error: err })
+        }
+    }
+
     const initialize = async () => {
         startRefreshTimer()
+        await migrateLegacyFavorites()
         if (fiat.value.length === 0) {
             try {
                 await fetchCurrencies(false)

@@ -12,6 +12,8 @@ export interface AppDTO {
     currencyFormat: CurrencyFormatProps;
     weekStartDay: WeekDayValue;
     privacy: PrivacySettingsProps;
+    /** `null` = kullanıcı hiç seçim yapmadı → varsayılan favoriler. */
+    marketFavorites: string[] | null;
     createdAt: string;
 }
 
@@ -51,6 +53,6 @@ export interface ChangeBaseCurrencyOutput {
 
 // Tek bir toplu "settings güncelle" DTO'su yerine her ayar kendi use-case'ine
 // sahip (UpdateTheme/UpdateLanguage/UpdateCurrencyFormat/UpdatePrivacy/
-// UpdateWeekStartDay) ve hepsi `AppDTO` döner. Eski toplu tipler kullanılmıyordu;
+// UpdateWeekStartDay/UpdateMarketFavorites) ve hepsi `AppDTO` döner. Eski toplu tipler kullanılmıyordu;
 // `theme`/`language` alanları da düz `string`'di, value object'lerle uyumsuz.
 

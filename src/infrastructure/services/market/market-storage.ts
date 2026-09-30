@@ -1,9 +1,8 @@
 import type { ChangeMode, Snapshot, SnapshotStore } from '@/domain/services/market-quote.service'
 
-const FAVORITES_KEY = 'market.favorites.v1'
+const LEGACY_FAVORITES_KEY = 'market.favorites.v1'
 const SNAPSHOTS_KEY = 'market.snapshots.v1'
 const MODE_KEY = 'market.changeMode.v1'
-const DEFAULT_FAVORITES = ['USD', 'EUR', 'GBP']
 
 const isSnapshot = (v: unknown): v is Snapshot =>
     !!v && typeof v === 'object' &&
@@ -35,22 +34,27 @@ export const marketStorage = {
         }
     },
 
-    loadFavorites(): string[] {
+    /**
+     * Favoriler artık `app_settings.market_favorites`'ta. Eski sürümün
+     * `localStorage`'a yazdığı liste yalnızca bir kez devralınmak için okunur;
+     * kayıt yoksa ya da bozuksa `null`.
+     */
+    loadLegacyFavorites(): string[] | null {
         try {
-            const raw = localStorage.getItem(FAVORITES_KEY)
-            if (!raw) return [...DEFAULT_FAVORITES]
+            const raw = localStorage.getItem(LEGACY_FAVORITES_KEY)
+            if (!raw) return null
             const parsed = JSON.parse(raw)
             return Array.isArray(parsed)
                 ? parsed.filter((c): c is string => typeof c === 'string')
-                : [...DEFAULT_FAVORITES]
+                : null
         } catch {
-            return [...DEFAULT_FAVORITES]
+            return null
         }
     },
 
-    saveFavorites(codes: string[]): void {
+    clearLegacyFavorites(): void {
         try {
-            localStorage.setItem(FAVORITES_KEY, JSON.stringify(codes))
+            localStorage.removeItem(LEGACY_FAVORITES_KEY)
         } catch {
             // ignore
         }

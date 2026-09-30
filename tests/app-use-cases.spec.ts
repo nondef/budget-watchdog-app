@@ -17,6 +17,8 @@ import { UpdateLanguageUseCase } from '@/application/use-cases/app/update-langua
 import { UpdateCurrencyFormatUseCase } from '@/application/use-cases/app/update-currency-format.use-case';
 import { UpdatePrivacySettingsUseCase } from '@/application/use-cases/app/update-privacy-settings.use-case';
 import { UpdateWeekStartDayUseCase } from '@/application/use-cases/app/update-week-start-day.use-case';
+import { UpdateMarketFavoritesUseCase } from '@/application/use-cases/app/update-market-favorites.use-case';
+import { AppMapper } from '@/application/mappers';
 
 const immediateUow = {
     async run<T>(work: () => Promise<T>): Promise<T> {
@@ -201,5 +203,25 @@ describe('App use-cases', () => {
             immediateUow
         ).execute({ day: WeekDay.sunday() });
         expect(result.weekStartDay).toBe('sunday');
+    });
+
+    it('UpdateMarketFavorites sırayı koruyup tekrarları eler', async () => {
+        const entity = settings();
+        expect(AppMapper.toDTO(entity).marketFavorites).toBeNull();
+
+        const result = await new UpdateMarketFavoritesUseCase(
+            { async get() { return entity; }, async save() {} } as any,
+            immediateUow
+        ).execute({ codes: ['EUR', 'USD', 'EUR', ' '] });
+        expect(result.marketFavorites).toEqual(['EUR', 'USD']);
+    });
+
+    it('UpdateMarketFavorites boş listeyi NULL ile karıştırmaz', async () => {
+        const entity = settings();
+        const result = await new UpdateMarketFavoritesUseCase(
+            { async get() { return entity; }, async save() {} } as any,
+            immediateUow
+        ).execute({ codes: [] });
+        expect(result.marketFavorites).toEqual([]);
     });
 });

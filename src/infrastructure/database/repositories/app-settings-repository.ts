@@ -9,6 +9,22 @@ import { BooleanCast, Cast, WrappedCast } from './casts';
 import { DatabaseAdapter } from '@/domain/interfaces/database-adapter';
 import { IAppSettingsRepository } from '@/domain/interfaces/app-settings-repository.interface';
 
+/**
+ * JSON kod listesi → string[]. Bozuk değer (elle düzenlenmiş yedek vb.) ayarların
+ * tamamını okunamaz yapmasın: NULL gibi davranılır, ekran varsayılana düşer.
+ */
+function parseCodeList(raw: unknown): string[] | null {
+    if (typeof raw !== 'string') return null;
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed)
+            ? parsed.filter((code): code is string => typeof code === 'string')
+            : null;
+    } catch {
+        return null;
+    }
+}
+
 export class AppSettingsRepository extends BaseRepository<AppSettings> implements IAppSettingsRepository {
     protected readonly table = 'app_settings';
     protected readonly timestamps = { createdAt: true, updatedAt: false };
@@ -43,6 +59,11 @@ export class AppSettingsRepository extends BaseRepository<AppSettings> implement
             }),
         },
         onboardingCompleted: BooleanCast('onboarding_completed', false),
+        marketFavorites: {
+            columns: ['market_favorites'],
+            get: (row) => parseCodeList(row.market_favorites),
+            set: (v: string[] | null) => ({ market_favorites: v ? JSON.stringify(v) : null }),
+        },
     };
 
     constructor(db: DatabaseAdapter) {

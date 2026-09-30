@@ -12,6 +12,7 @@ import {
     UpdateCurrencyFormatUseCase,
     UpdatePrivacySettingsUseCase,
     UpdateWeekStartDayUseCase,
+    UpdateMarketFavoritesUseCase,
     UpdateThemeUseCase,
     UpdateLanguageUseCase,
     AppDTO
@@ -308,6 +309,14 @@ export const useAppStore = defineStore('app', () => {
         )
     }
 
+    const updateMarketFavorites = async (codes: readonly string[]) => {
+        return applySettingsChange(
+            s => ({ ...s, marketFavorites: [...codes] }),
+            () => new UpdateMarketFavoritesUseCase(appRepository, unitOfWork).execute({ codes }),
+            'market.favorites.updateError'
+        )
+    }
+
     async function applySettingsChange(
         optimistic: (s: AppDTO) => AppDTO,
         run: () => Promise<AppDTO>,
@@ -358,5 +367,6 @@ export const useAppStore = defineStore('app', () => {
         updateCurrencyFormat,
         updatePrivacy,
         updateWeekStartDay,
+        updateMarketFavorites,
     }
 })

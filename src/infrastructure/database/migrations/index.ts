@@ -50,6 +50,9 @@ import {
 import {
     CreateSavingGoalContributionsTable
 } from './029_create_saving_goal_contributions_table';
+import {
+    AddMarketFavoritesToAppSettings
+} from './030_add_market_favorites_to_app_settings';
 
 export const migrations: Migration[] = [
     new CreateCurrenciesTable(),
@@ -81,6 +84,7 @@ export const migrations: Migration[] = [
     new BackfillCategoryMetadata(),
     new AllowCreditAccountNegativeBalance(),
     new CreateSavingGoalContributionsTable(),
+    new AddMarketFavoritesToAppSettings(),
 ];
 
 export { type Migration, BaseMigration, type ColumnDefinition, type IndexDefinition } from "./base-migration";

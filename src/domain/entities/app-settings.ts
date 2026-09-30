@@ -25,6 +25,7 @@ export interface AppSettingsProps {
     currencyFormat?: CurrencyFormat;
     weekStartDay?: WeekDay;
     privacy?: PrivacySettings;
+    marketFavorites?: string[] | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -41,6 +42,8 @@ export class AppSettings extends BaseEntity {
     private _currencyFormat: CurrencyFormat;
     private _weekStartDay: WeekDay;
     private _privacy: PrivacySettings;
+    /** Piyasa ekranı favori kur kodları, sıralı. `null` = hiç seçilmedi → varsayılanlar. */
+    private _marketFavorites: string[] | null;
 
     private constructor(props: AppSettingsProps) {
         super(props.id, props.createdAt, props.updatedAt);
@@ -51,6 +54,7 @@ export class AppSettings extends BaseEntity {
         this._currencyFormat = props.currencyFormat ?? CurrencyFormat.default();
         this._weekStartDay = props.weekStartDay ?? WeekDay.default();
         this._privacy = props.privacy ?? PrivacySettings.default();
+        this._marketFavorites = props.marketFavorites ?? null;
     }
 
     /**
@@ -143,6 +147,17 @@ export class AppSettings extends BaseEntity {
         this.touch();
     }
 
+    changeMarketFavorites(codes: readonly string[]): void {
+        // Tekrar eden kodlar ekleme sırasını bozmadan elenir.
+        const next = [...new Set(codes.map(code => code.trim()).filter(Boolean))];
+        const current = this._marketFavorites;
+        if (current && current.length === next.length && current.every((code, i) => code === next[i])) {
+            return;
+        }
+        this._marketFavorites = next;
+        this.touch();
+    }
+
     get baseCurrencyId(): string {
         return this._baseCurrencyId;
     }
@@ -169,6 +184,10 @@ export class AppSettings extends BaseEntity {
 
     get privacy(): PrivacySettings {
         return this._privacy;
+    }
+
+    get marketFavorites(): readonly string[] | null {
+        return this._marketFavorites;
     }
 
     needsOnboarding(): boolean {
