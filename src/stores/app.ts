@@ -264,8 +264,7 @@ export const useAppStore = defineStore('app', () => {
     const changeTheme = async (theme: Theme) => {
         return applySettingsChange(
             s => ({ ...s, theme: theme.value }),
-            () => new UpdateThemeUseCase(appRepository, unitOfWork).execute({ theme }),
-            'settings.theme.updateError'
+            () => new UpdateThemeUseCase(appRepository, unitOfWork).execute({ theme })
         )
     }
 
@@ -276,7 +275,6 @@ export const useAppStore = defineStore('app', () => {
         return applySettingsChange(
             s => ({ ...s }),
             () => new UpdateLanguageUseCase(appRepository, unitOfWork).execute({ language }),
-            'settings.language.updateError',
             () => {
                 if (prevLang) {
                     setLocale(prevLang)
@@ -288,39 +286,34 @@ export const useAppStore = defineStore('app', () => {
     const updateCurrencyFormat = async (format: CurrencyFormat) => {
         return applySettingsChange(
             s => ({ ...s, currencyFormat: format.toJSON() }),
-            () => new UpdateCurrencyFormatUseCase(appRepository, unitOfWork).execute({ format }),
-            'settings.currencyFormat.updateError',
+            () => new UpdateCurrencyFormatUseCase(appRepository, unitOfWork).execute({ format })
         )
     }
 
     const updatePrivacy = async (next: PrivacySettings) => {
         return applySettingsChange(
             s => ({ ...s, privacy: next.toJSON() }),
-            () => new UpdatePrivacySettingsUseCase(appRepository, unitOfWork).execute({ privacy: next }),
-            'settings.privacy.updateError'
+            () => new UpdatePrivacySettingsUseCase(appRepository, unitOfWork).execute({ privacy: next })
         )
     }
 
     const updateWeekStartDay = async (day: WeekDay) => {
         return applySettingsChange(
             s => ({ ...s, weekStartDay: day.value }),
-            () => new UpdateWeekStartDayUseCase(appRepository, unitOfWork).execute({ day }),
-            'settings.weekStartDay.updateError'
+            () => new UpdateWeekStartDayUseCase(appRepository, unitOfWork).execute({ day })
         )
     }
 
     const updateMarketFavorites = async (codes: readonly string[]) => {
         return applySettingsChange(
             s => ({ ...s, marketFavorites: [...codes] }),
-            () => new UpdateMarketFavoritesUseCase(appRepository, unitOfWork).execute({ codes }),
-            'market.favorites.updateError'
+            () => new UpdateMarketFavoritesUseCase(appRepository, unitOfWork).execute({ codes })
         )
     }
 
     async function applySettingsChange(
         optimistic: (s: AppDTO) => AppDTO,
         run: () => Promise<AppDTO>,
-        errorKey: string,
         onRollback?: () => void
     ) {
         const previous = settings.value
