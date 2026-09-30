@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The "~" estimate marker was still shown next to amounts that were hidden.
 - In light mode, the save bar background didn't match the page background.
 - Footer buttons now keep a consistent gap above the gesture bar.
+- The app font is now bundled with the app instead of being loaded from
+    Google Fonts, so the app no longer connects to Google on launch and looks
+    the same offline.
 
 ### Removed
 
