@@ -26,6 +26,10 @@ export interface BudgetDTO {
      */
     isWarning: boolean;
     isExceeded: boolean;
+    /** Harcanan / limit yüzdesi, 0–100 arasına sıkıştırılmış (limit 0 ise 0). */
+    progress: number;
+    /** Limit − harcanan; negatifse bütçe o kadar aşılmıştır. */
+    remainingAmount: IMoney;
     icon: IIcon;
     note?: string;
     periodStart: Date;

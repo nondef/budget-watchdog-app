@@ -1,7 +1,6 @@
 import {
     Account,
     AccountInactiveException,
-    Budget,
     BusinessRuleViolationException,
     CurrencyMismatchException,
     DomainException,
@@ -31,11 +30,11 @@ import {
 import { TransactionMapper } from '@/application/mappers';
 import { assertExists } from '@/application/shared/assert-exists';
 import { buildBudgetNotification } from '@/application/shared/build-budget-notification';
+import { BudgetAlertLevel, budgetAlertLevel, BUDGET_ALERT_RANK } from '@/application/shared/budget-alert-level';
 import { rolloverDueBudgets } from '@/application/shared/rollover-due-budgets';
 import { skippedBudgetReason } from '@/application/shared/skipped-budget-reason';
 
 type BalanceEffect = Map<string, number>;
-type BudgetAlertLevel = 'none' | 'warning' | 'exceeded';
 
 interface BudgetAlertSnapshot {
     level: BudgetAlertLevel;
@@ -48,12 +47,6 @@ interface TransactionChangeSet {
     budgetCoverageChanged: boolean;
     destinationChanged: boolean;
 }
-
-const ALERT_RANK: Record<BudgetAlertLevel, number> = {
-    none: 0,
-    warning: 1,
-    exceeded: 2
-};
 
 export class UpdateTransactionUseCase {
     constructor(
@@ -129,7 +122,7 @@ export class UpdateTransactionUseCase {
                     (await this.budgetRepository.findActive()).map(budget => [
                         budget.id,
                         {
-                            level: this.alertLevel(budget),
+                            level: budgetAlertLevel(budget),
                             periodStart: budget.periodStart.getTime()
                         }
                     ])
@@ -425,7 +418,7 @@ export class UpdateTransactionUseCase {
                 snapshot &&
                 snapshot.periodStart === budget.periodStart.getTime()
                     ? snapshot.level
-                    : this.alertLevel(budget);
+                    : budgetAlertLevel(budget);
 
             try {
                 budget.addSpending(transaction.amount, transaction.date);
@@ -453,9 +446,9 @@ export class UpdateTransactionUseCase {
                 occurredAt: transaction.date,
             });
 
-            const levelAfter = this.alertLevel(budget);
+            const levelAfter = budgetAlertLevel(budget);
 
-            if (ALERT_RANK[levelAfter] > ALERT_RANK[levelBefore]) {
+            if (BUDGET_ALERT_RANK[levelAfter] > BUDGET_ALERT_RANK[levelBefore]) {
                 const notification = buildBudgetNotification(budget);
                 if (notification) notifications.push(notification);
             }
@@ -546,12 +539,5 @@ export class UpdateTransactionUseCase {
                 destinationChanged ||
                 destinationAmountChanged
         };
-    }
-
-    private alertLevel(budget: Budget): BudgetAlertLevel {
-        if (!budget.enableNotifications) return 'none';
-        if (budget.isExceeded()) return 'exceeded';
-        if (budget.isWarning()) return 'warning';
-        return 'none';
     }
 }

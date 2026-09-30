@@ -14,13 +14,9 @@ export function useBudgetFilters(source: ComputedRef<EnrichedBudgetDTO[]>) {
         list = list.filter(b => {
             if (selectedFilter.value === 'all') return true
 
-            const progress = b.amount.amount > 0
-                ? (b.spentAmount.amount / b.amount.amount) * 100
-                : 0
-
             if (selectedFilter.value === 'active') return b.status === 'active'
-            if (selectedFilter.value === 'warning') return progress >= b.warningPercentage && progress < 100
-            if (selectedFilter.value === 'over') return progress >= 100
+            if (selectedFilter.value === 'warning') return b.isWarning
+            if (selectedFilter.value === 'over') return b.isExceeded
 
             return true
         })

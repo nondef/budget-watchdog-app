@@ -24,6 +24,8 @@ export const BudgetMapper = {
             enableNotifications: entity.enableNotifications,
             isWarning: entity.isWarning(),
             isExceeded: entity.isExceeded(),
+            progress: entity.getProgress().value,
+            remainingAmount: entity.getRemainingAmount().toPlainObject(),
             icon: entity.icon.toPlainObject(),
             note: entity.note,
             dailySpent: entity.dailySpent,
