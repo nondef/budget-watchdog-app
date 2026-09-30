@@ -5,6 +5,53 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-09-30
+
+### Added
+
+- Changing the base currency now asks for confirmation first, shows progress
+  while totals are recalculated, and tells you when the last saved rates had
+  to be used because fresh ones couldn't be fetched.
+- The language screen shows the device's default language next to the
+  selected one.
+- The PIN keypad, lock screen and PIN setup give haptic feedback on each key
+  press, success and error.
+- Home cards have a "See all" shortcut to the full page they summarize.
+
+### Changed
+
+- Favorite exchange rates are stored in the app database instead of browser
+  storage, so they are included in backups and can no longer be reset by the
+  system. Favorites from earlier versions are carried over automatically on
+  first launch.
+- The eye button on Home now toggles the "Hide amounts" setting, so masking
+  applies across the whole app and persists between launches.
+- Values, lists and notices now animate when they change. Collapsing cards
+  slide the content below them up instead of making it jump.
+- Redesigned the icon picker with a live preview and a separate color
+  section. Icon category names are now translated instead of always shown in
+  Turkish.
+- Budget details show the remaining amount, or how far the budget is over,
+  in a single figure.
+- Toasts, cards, header buttons and save bars share one set of theme styles,
+  so light and dark mode look the same on every screen.
+- The final confirmation for erasing all data uses a larger input that is
+  easier to type in on a phone.
+
+### Fixed
+
+- Cash-flow chart axis labels didn't update when amounts were hidden or the
+  number format was changed.
+- The "~" estimate marker was still shown next to amounts that were hidden.
+- In light mode, the save bar background didn't match the page background.
+- Footer buttons now keep a consistent gap above the gesture bar.
+
+### Removed
+
+- The unused axios dependency.
+
+[1.2.0]: https://github.com/nondef/budget-watchdog-app/releases/tag/v1.2.0
+
 ## [1.1.0] — 2026-09-23
 
 ### Added
