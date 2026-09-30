@@ -27,6 +27,19 @@ import { mdSnackbarEnterAnimation, mdSnackbarLeaveAnimation } from '@/theme/toas
  */
 import '@ionic/vue/css/core.css';
 
+/**
+ * Yazı tipi pakete gömülü; Google Fonts'tan yüklenmez. Böylece çevrimdışıyken de
+ * aynı görünür ve uygulama açılışta kur servisleri dışında hiçbir adrese
+ * bağlanmaz (bkz. docs/privacy-policy.md). Ağırlıklar eskiden Google'dan
+ * istenen 400–800; her dosya alt kümeleri unicode-range ile böler, cihaz
+ * yalnızca gereken alt kümeyi yükler.
+ */
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/plus-jakarta-sans/800.css';
+
 /* Uygulamanın kendi teması — tek giriş noktası (bkz. docs/design-system.md). */
 import './theme/index.css';
 import { repositoryManager } from "@/infrastructure/database/repositories/repository-manager";
