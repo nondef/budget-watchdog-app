@@ -1,5 +1,6 @@
 export * from './guard-submit'
 export * from './useAlert'
 export * from './useErrorHandler'
+export * from './useHaptics'
 export * from './useKeyboardVisibility'
 export * from './useToast'
