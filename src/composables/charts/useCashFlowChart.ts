@@ -22,7 +22,7 @@ const COLOR = {
 
 export function useCashFlowChart(opts: Options) {
     const { canvasRef, monthData, monthLabel, activeTab, timeRange } = opts
-    const { formatMoney, baseCurrency } = useMoney()
+    const { formatMoney, baseCurrency, formatter } = useMoney()
 
     let chartInstance: Chart | null = null
 
@@ -95,7 +95,9 @@ export function useCashFlowChart(opts: Options) {
         })
     }
 
-    watch([canvasRef, series, timeRange], () => render(), { flush: 'post' })
+    // Eksen etiketleri canvas'a çizildiği an sabitlenir; gizleme ya da biçim
+    // tercihi değişince (formatter yeniden kurulur) grafik de yeniden çizilmeli.
+    watch([canvasRef, series, timeRange, formatter], () => render(), { flush: 'post' })
 
     onBeforeUnmount(() => {
         chartInstance?.destroy()

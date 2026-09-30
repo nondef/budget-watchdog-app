@@ -19,6 +19,12 @@ export interface FormatOptions {
     /** Açıkça verilirse para biriminin minorUnit'ini ezer. */
     decimals?: number
     showSymbol?: boolean
+    /**
+     * 'always': sıfır ve pozitif tutarların başına '+' koyar (net/değişim gibi
+     * yönü anlamlı tutarlar için). İşaret de maskeye dahildir; elle eklenen
+     * '+' maskelenmiş tutarın yönünü ele verirdi.
+     */
+    signDisplay?: 'auto' | 'always'
     /** Privacy: gerçek değer yerine maskeText göster. */
     mask?: boolean
     maskText?: string
@@ -33,6 +39,7 @@ const DEFAULTS: Required<Omit<FormatOptions, 'decimals'>> = {
     position: 'end',
     useGrouping: true,
     showSymbol: true,
+    signDisplay: 'auto',
     mask: false,
     maskText: '••••',
     missingText: '—',
@@ -65,7 +72,9 @@ export class CurrencyFormatter {
             useGrouping: this.opt(options, 'useGrouping'),
         }).format(Math.abs(amount))
 
-        const sign = amount < 0 ? '-' : ''
+        const sign = amount < 0
+            ? '-'
+            : this.opt(options, 'signDisplay') === 'always' ? '+' : ''
 
         if (!this.opt(options, 'showSymbol') || !meta) {
             return `${sign}${numberPart}`

@@ -37,6 +37,9 @@ export function useMoney() {
     const baseCurrency = computed(() => app.baseCurrency)
     const baseId = computed(() => app.baseCurrency?.id ?? '')
 
+    /** Tutarlar maskeli mi — formatter dışında eklenen '~' gibi işaretler için. */
+    const hidden = computed(() => app.privacy.hideAmounts)
+
     /** Appearance ekranındaki tercihler → FormatOptions. */
     const defaults = computed<FormatOptions>(() => {
         const f = app.currencyFormat
@@ -125,6 +128,7 @@ export function useMoney() {
     return {
         baseCurrency,
         baseId,
+        hidden,
         maskText: MASK_TEXT,
         formatMoney,
         formatInBase,

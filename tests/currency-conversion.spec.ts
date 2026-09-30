@@ -298,6 +298,16 @@ describe('CurrencyFormatter', () => {
         expect(fmt.formatAmount(1000, 'TRY', { mask: true })).toBe('••••')
     })
 
+    it("signDisplay 'always' pozitife ve sıfıra + koyar", () => {
+        expect(fmt.formatAmount(50, 'TRY', { signDisplay: 'always' })).toBe('+50,00 ₺')
+        expect(fmt.formatAmount(0, 'TRY', { signDisplay: 'always' })).toBe('+0,00 ₺')
+        expect(fmt.formatAmount(-50, 'TRY', { signDisplay: 'always' })).toBe('-50,00 ₺')
+    })
+
+    it('maskeleme işareti de gizler', () => {
+        expect(fmt.formatAmount(50, 'TRY', { signDisplay: 'always', mask: true })).toBe('••••')
+    })
+
     it('constructor defaults çağrı bazında ezilebilir', () => {
         const masked = new CurrencyFormatter(id => meta[id] ?? null, { mask: true })
 
