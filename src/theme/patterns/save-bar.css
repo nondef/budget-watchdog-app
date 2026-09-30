@@ -1,13 +1,18 @@
 /* STICKY KAYDET CUBUGU (.save-bar / .action-bar) */
 
 /* ===================================================================
-   STICKY KAYDET ÇUBUĞU — tüm form sayfalarındaki .save-bar (ve
-   .action-bar) için dark mode gradyanı TEK NOKTADAN. Bazı sayfalarda
-   per-sayfa dark override eksik/uygulanmıyordu; bu global kural
-   !important ile scoped açık gradyanı her zaman geçer ve "kaydet
-   butonu etrafı beyaz" sorununu kökten çözer.
+   STICKY KAYDET ÇUBUĞU — form sayfalarındaki .save-bar ve .action-bar
+   TEK NOKTADAN. Gradyan sayfa zemininde (--c-page) biter; token light/
+   dark'ı kendisi çözdüğü için ayrı dark override'a gerek yok (eski
+   sabit #f4f4f5 light'ta sıcak sayfa zemininden kopuk duruyordu).
    =================================================================== */
-html.ion-palette-dark .save-bar,
-html.ion-palette-dark .action-bar {
-  background: linear-gradient(180deg, rgba(30, 30, 30, 0) 0%, var(--c-page) 30%) !important;
+.save-bar,
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+  background: linear-gradient(180deg, transparent 0%, var(--c-page) 30%);
+  z-index: 10;
 }

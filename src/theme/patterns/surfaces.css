@@ -1,0 +1,150 @@
+/* ORTAK YÜZEYLER (.app-card / .app-hero / .intro-card / .option-card / .tone-*) */
+
+/* ===================================================================
+   Sayfalarda birebir tekrarlanan kart yüzeyleri tek noktadan.
+   Sayfaya özgü sınıflar (ör. .overview-card) şablonda kalır; yalnızca
+   o sayfaya ait ek kurallar (padding, overflow, iç liste) onlarda durur.
+   =================================================================== */
+
+/* Standart içerik kartı. */
+.app-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+}
+
+/* Sayfa başındaki vurgulu özet kartı (bakiye, önizleme, hero). */
+.app-hero {
+  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
+  border: 1px solid var(--c-line);
+  border-radius: 22px;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
+}
+
+/* Kart grubunun üstündeki küçük büyük harfli başlık. */
+.section-label {
+  margin: 0 4px 9px;
+  color: var(--c-content-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ── Intro kartı: ikon + başlık/açıklama (Dil, Tema, Geri Bildirim) ── */
+.intro-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
+}
+
+.intro-card__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-size: 20px;
+}
+
+/* ── Seçenek listesi kartı: radyo satırları (Dil, Tema) ──
+   Metin kuralları .option-card altında: ion-label'ın slot stilleri
+   (.sc-ion-label-md-s h3 / > p) tek sınıflı seçiciyi geçiyor. */
+.option-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 6%, transparent);
+}
+
+.option-card ion-list {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.option-card ion-item.plain-item {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --background-hover: transparent;
+  --border-color: var(--c-line);
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  --min-height: 62px;
+}
+
+.option-radio {
+  width: 100%;
+}
+
+.option-radio::part(label) {
+  margin-inline-end: 8px;
+}
+
+.option-card .option-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.option-card .option-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-content);
+}
+
+.option-card .option-sub {
+  font-size: 12px;
+  color: var(--c-content-muted);
+  margin-top: 2px;
+  white-space: normal;
+}
+
+/* ── Durum tonları: ikon kutuları için zemin + kenarlık + ikon rengi ──
+   Kutunun ölçüsü/kenarlık kalınlığı kendi sınıfında; ton yalnızca rengi
+   verir. Dark'ta zemin/kenarlık token'la çözülür, ikon rengi açılır. */
+.tone-primary {
+  background: var(--c-primary);
+  border-color: transparent;
+  color: var(--c-on-primary);
+}
+
+.tone-info {
+  background: color-mix(in srgb, #0284c7 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #0284c7 23%, var(--c-line));
+  color: #0369a1;
+}
+
+.tone-warning {
+  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #f59e0b 25%, var(--c-line));
+  color: #b45309;
+}
+
+.tone-violet {
+  background: color-mix(in srgb, #7c3aed 11%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, #7c3aed 23%, var(--c-line));
+  color: #7c3aed;
+}
+
+html.ion-palette-dark .tone-info {
+  color: #7dd3fc;
+}
+
+html.ion-palette-dark .tone-warning {
+  color: #fcd34d;
+}
+
+html.ion-palette-dark .tone-violet {
+  color: #c4b5fd;
+}

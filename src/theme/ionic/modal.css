@@ -13,8 +13,10 @@ ion-modal {
 /* Global toolbar/content kuralları !important taşıdığından modal içi
    yüzeyler de !important ile eşitlenir (light + dark). */
 ion-modal ion-content,
+ion-modal ion-header,
 ion-modal ion-toolbar,
 html.ion-palette-dark ion-modal ion-content,
+html.ion-palette-dark ion-modal ion-header,
 html.ion-palette-dark ion-modal ion-toolbar {
   --background: var(--md-surface-container-high) !important;
 }

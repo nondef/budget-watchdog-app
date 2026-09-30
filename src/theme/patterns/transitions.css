@@ -1,0 +1,108 @@
+/* ===================================================================
+   ORTAK GEÇİŞLER — Ana Sayfa kartlarında aynı hareket dili.
+
+   Vue <transition>/<transition-group> sınıfları çalışma anında eklendiği
+   için bunlar scoped değil global: her kart aynı ismi kullanarak aynı
+   animasyonu alıyor.
+
+   - value-swap  : Metin değişimi. `:key` metnin kendisi; eskisi yukarı
+                   çıkar, yenisi aşağıdan gelir. Aynı değer gelirse oynamaz.
+   - icon-swap   : İkon değişimi (ör. göz aç/kapa).
+   - list-row    : <transition-group> satırları. Giren/çıkan satır solar,
+                   kalanlar yeni yerlerine kayar. Çıkan satır akıştan alınır
+                   ki diğerleri hemen kayabilsin; kapsayıcı `relative` olmalı.
+   - fade        : Liste ↔ boş durum gibi blok değişimleri.
+   - progress-bar: Genişliği değişen ilerleme çubukları.
+
+   Kart yüksekliği için bkz. AnimatedHeight.vue, kartın kendisinin gelip
+   gitmesi için CollapseTransition.vue, tek bir değer için SwapText.vue.
+   =================================================================== */
+
+/* SwapText'in span'i: transform için inline-block olmalı. `:where` ile
+   özgüllük 0 — dışarıdan `block` gibi bir sınıf verilirse o kazansın (bu
+   dosya Tailwind utility'lerinden SONRA yükleniyor). `truncate` bir
+   ebeveynin içindeyse ellipsis artık span'in kendisinde çalışmalı. */
+:where(.swap-text) {
+  display: inline-block;
+}
+
+.truncate > .swap-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.value-swap-enter-active,
+.value-swap-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.value-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.value-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.icon-swap-enter-active,
+.icon-swap-leave-active {
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.icon-swap-enter-from,
+.icon-swap-leave-to {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.list-row-move,
+.list-row-enter-active,
+.list-row-leave-active {
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.list-row-enter-from,
+.list-row-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.list-row-leave-active {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 180ms ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.progress-bar {
+  transition: width 400ms cubic-bezier(0.22, 1, 0.36, 1), background-color 400ms ease;
+}
+
+/* Hareket hassasiyeti: her şey anında olur. */
+@media (prefers-reduced-motion: reduce) {
+  .value-swap-enter-active,
+  .value-swap-leave-active,
+  .icon-swap-enter-active,
+  .icon-swap-leave-active,
+  .list-row-move,
+  .list-row-enter-active,
+  .list-row-leave-active,
+  .fade-enter-active,
+  .fade-leave-active,
+  .progress-bar {
+    transition: none;
+  }
+}

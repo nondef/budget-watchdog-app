@@ -1,5 +1,16 @@
 /* HEADER / TOOLBAR (+ tab bar) */
 
+/* Boşluk header yüksekliğine dahil olur; Ionic içerik yerleşimi ve üst
+   safe-area hesabı korunur. Çok toolbar'lı başlıklarda yalnızca bir kez eklenir. */
+ion-header,
+.app-page-header {
+  padding-bottom: 12px;
+}
+
+ion-header {
+  background: var(--background);
+}
+
 /* ===================================================================
    HEADER / TOOLBAR — LIGHT VARSAYILANI.
    Light modda ion-header/ion-toolbar'a açık (opak) zemin tanımlı
@@ -48,4 +59,14 @@ html.ion-palette-dark ion-tab-bar {
   --background: var(--c-page) !important;
   --color: var(--c-content-muted) !important;
   --color-selected: var(--c-primary) !important;
+}
+
+/* Toolbar'ın tam ortasına sabitlenen, tıklanmayan öğe (onboarding adım
+   göstergesi). Başlık/buton genişliklerinden bağımsız ortalanır. */
+.toolbar-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }

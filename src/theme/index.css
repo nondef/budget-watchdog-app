@@ -37,6 +37,7 @@
 @import './ionic/datetime.css';
 @import './ionic/datetime-picker.css';
 @import './ionic/alert.css';
+@import './ionic/toast.css';
 @import './ionic/action-sheet.css';
 @import './ionic/card.css';
 @import './ionic/searchbar.css';
@@ -51,6 +52,9 @@
 @import './patterns/buttons.css';
 @import './patterns/splash.css';
 @import './patterns/picker-row.css';
+@import './patterns/surfaces.css';
+@import './patterns/form-page.css';
+@import './patterns/transitions.css';
 
 /* — Tailwind sınıf ezmeleri (en sonda) — */
 @import './overrides/contrast.css';

@@ -30,3 +30,81 @@ html.ion-palette-dark .app-button {
   --background-hover: #d8d8d8;
   --color: var(--c-inverse-on-surface);
 }
+
+/* ===================================================================
+   SAYFA BUTON DESENLERİ — birden çok sayfada birebir aynı olanlar.
+   =================================================================== */
+
+/* Başlık çubuğundaki kare "ekle" butonu (Hesaplar, Bütçeler, Hedefler).
+   ion-buttons içindeki Ionic slot stillerini (.sc-ion-buttons-md-s
+   .button-clear / ion-button:not(.button-round)) geçecek özgüllükte. */
+ion-buttons ion-button.toolbar-add-button.button {
+  width: 38px;
+  height: 38px;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --border-radius: 12px;
+  --box-shadow: none;
+  --color: var(--c-on-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button.toolbar-add-button ion-icon {
+  color: var(--c-on-primary);
+}
+
+/* Global dark toolbar buton rengini (header-toolbar.css) geçer. */
+html.ion-palette-dark ion-buttons ion-button.toolbar-add-button {
+  --color: var(--c-on-primary) !important;
+  color: var(--c-on-primary) !important;
+}
+
+/* Boş durum kartındaki hap şeklinde eylem butonu. */
+.empty-action {
+  --background: var(--c-primary);
+  --color: var(--c-on-primary);
+  --border-radius: 999px;
+  --box-shadow: none;
+  min-height: 38px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Ay seçicideki önceki/sonraki ay butonları (Genel Bakış, Kategoriler). */
+ion-button.month-button {
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  --background: var(--c-surface);
+  --background-activated: var(--c-surface-strong);
+  --border-radius: 14px;
+  --box-shadow: none;
+  --color: var(--c-content);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+/* Detay sayfalarının altındaki çerçeveli "Sil" butonu. */
+.delete-button {
+  --background: transparent;
+  --background-activated: rgba(244, 63, 94, 0.12);
+  --background-hover: rgba(244, 63, 94, 0.08);
+  --color: theme('colors.rose.500');
+  --border-color: rgba(244, 63, 94, 0.45);
+  --border-radius: 1rem;
+  --box-shadow: none;
+  height: 52px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0;
+}
+
+html.ion-palette-dark .delete-button {
+  --background-activated: rgba(251, 113, 133, 0.16);
+  --background-hover: rgba(251, 113, 133, 0.12);
+  --color: theme('colors.rose.400');
+  --border-color: rgba(251, 113, 133, 0.45);
+}

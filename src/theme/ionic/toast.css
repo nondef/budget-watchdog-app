@@ -1,0 +1,55 @@
+/* Controller ve template toast'ları aynı tema tokenlarını kullanır.
+   Renkler tokens/light.css ve tokens/dark.css'teki --c-toast-* rollerinden
+   gelir; burada yalnızca varyant → rol eşlemesi yapılır. */
+ion-toast {
+  --toast-background: var(--c-toast-background);
+  --toast-content: var(--c-toast-content);
+  --toast-border: var(--c-toast-border);
+  --toast-accent: var(--c-toast-accent);
+  --background: var(--toast-background);
+  --color: var(--toast-content);
+  --button-color: var(--toast-content);
+  --border-color: var(--toast-border);
+  --border-style: solid;
+  --border-width: 1px;
+  --box-shadow: var(--c-toast-shadow);
+}
+
+/* Ionic color verilince --background/--color yerine bu değişkenleri okur.
+   Eşleme yalnızca toast üzerinde kalır; diğer kontrollerin paleti değişmez. */
+ion-toast.ion-color {
+  --ion-color-base: var(--toast-background);
+  --ion-color-contrast: var(--toast-content);
+}
+
+ion-toast.ion-color-success {
+  --toast-background: var(--c-toast-success-background);
+  --toast-content: var(--c-toast-success-content);
+  --toast-border: var(--c-toast-success-border);
+  --toast-accent: var(--c-toast-success-accent);
+}
+
+ion-toast.ion-color-danger {
+  --toast-background: var(--c-toast-danger-background);
+  --toast-content: var(--c-toast-danger-content);
+  --toast-border: var(--c-toast-danger-border);
+  --toast-accent: var(--c-toast-danger-accent);
+}
+
+ion-toast.ion-color-warning {
+  --toast-background: var(--c-toast-warning-background);
+  --toast-content: var(--c-toast-warning-content);
+  --toast-border: var(--c-toast-warning-border);
+  --toast-accent: var(--c-toast-warning-accent);
+}
+
+/* Durum ikonu metinden bir ton daha doygun: varyant bir bakışta ayırt edilir. */
+ion-toast::part(icon) {
+  color: var(--toast-accent);
+}
+
+/* MD'nin renksiz toast için sabit kapatma rengi dahil tüm aksiyonlar. */
+ion-toast::part(button),
+ion-toast::part(button cancel) {
+  color: var(--toast-content);
+}
