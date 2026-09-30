@@ -374,17 +374,7 @@
       "goal": "Hedef"
     },
     "welcomeFollowUp": "Hesabın kontrol altında",
-    "logoAlt": "Budget Watchdog logosu",
-    "reminders": {
-      "settings": "Ayarlar",
-      "today": "Bugün {time}",
-      "tomorrow": "Yarın {time}",
-      "onDate": "{date} · {time}",
-      "off": "Kapalı",
-      "backupWeekly": "Haftada bir, yedek alınana kadar",
-      "disabled": "Bildirimler kapalı, hatırlatıcılar gönderilmiyor.",
-      "enable": "Aç"
-    }
+    "logoAlt": "Budget Watchdog logosu"
   },
   "overview": {
     "title": "Genel Bakış",

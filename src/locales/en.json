@@ -398,17 +398,7 @@
       "goal": "Goal"
     },
     "welcomeFollowUp": "You are on track",
-    "logoAlt": "Budget Watchdog logo",
-    "reminders": {
-      "settings": "Settings",
-      "today": "Today {time}",
-      "tomorrow": "Tomorrow {time}",
-      "onDate": "{date} · {time}",
-      "off": "Off",
-      "backupWeekly": "Weekly, until you back up",
-      "disabled": "Notifications are off, so no reminders are sent.",
-      "enable": "Turn on"
-    }
+    "logoAlt": "Budget Watchdog logo"
   },
   "overview": {
     "title": "Overview",

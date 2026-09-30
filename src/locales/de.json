@@ -397,17 +397,7 @@
       "goal": "Ziel"
     },
     "welcomeFollowUp": "Alles im Griff",
-    "logoAlt": "Budget-Watchdog-Logo",
-    "reminders": {
-      "settings": "Einstellungen",
-      "today": "Heute {time}",
-      "tomorrow": "Morgen {time}",
-      "onDate": "{date} · {time}",
-      "off": "Aus",
-      "backupWeekly": "Wöchentlich, bis du ein Backup erstellst",
-      "disabled": "Benachrichtigungen sind aus, es werden keine Erinnerungen gesendet.",
-      "enable": "Einschalten"
-    }
+    "logoAlt": "Budget-Watchdog-Logo"
   },
   "overview": {
     "title": "Übersicht",
