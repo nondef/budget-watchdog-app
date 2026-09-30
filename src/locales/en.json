@@ -149,7 +149,16 @@
     },
     "currencyHint": "Change your main currency here.",
     "currencyActive": "Active",
-    "currencyNoMatch": "No matching currency."
+    "currencyNoMatch": "No matching currency.",
+    "currencyChange": {
+      "title": "Change base currency?",
+      "message": "All totals and reports will now be shown in {currency}. Your existing transactions stay in their own currencies.",
+      "updating": "Updating…",
+      "success": "Base currency updated",
+      "ratesStale": "Currency changed. Latest rates couldn't be fetched, so the last saved rates are being used.",
+      "error": "Couldn't update"
+    }
+
   },
   "months": [
     "January",
@@ -265,7 +274,23 @@
     }
   },
   "iconPicker": {
-    "title": "Icon Picker"
+    "title": "Icon Picker",
+    "preview": "Preview",
+    "hint": "Choose a color and icon to personalize it.",
+    "colors": "Colors",
+    "categories": {
+      "entertainment": "Entertainment",
+      "work": "Work",
+      "finance": "Finance",
+      "foodDrink": "Food & Drink",
+      "transport": "Transport",
+      "shopping": "Shopping",
+      "health": "Health",
+      "home": "Home",
+      "technology": "Technology",
+      "natureTravel": "Nature & Travel",
+      "other": "Other"
+    }
   },
   "accountTypes": {
     "cash": "Cash",
@@ -373,7 +398,17 @@
       "goal": "Goal"
     },
     "welcomeFollowUp": "You are on track",
-    "logoAlt": "Budget Watchdog logo"
+    "logoAlt": "Budget Watchdog logo",
+    "reminders": {
+      "settings": "Settings",
+      "today": "Today {time}",
+      "tomorrow": "Tomorrow {time}",
+      "onDate": "{date} · {time}",
+      "off": "Off",
+      "backupWeekly": "Weekly, until you back up",
+      "disabled": "Notifications are off, so no reminders are sent.",
+      "enable": "Turn on"
+    }
   },
   "overview": {
     "title": "Overview",
@@ -880,6 +915,7 @@
     "remaining": "Remaining",
     "spent": "Spent",
     "over": "Over",
+    "remainingOrOver": "Remaining / Over",
     "empty": "No budgets yet",
     "emptyDesc": "Tap the button at the top right to add a new budget.",
     "emptyFiltered": "No budgets match this filter",
@@ -1103,6 +1139,7 @@
     "loading": "Loading...",
     "retry": "Retry",
     "all": "All",
+    "details": "Details",
     "none": "None",
     "income": "Income",
     "expense": "Expense",
@@ -1145,6 +1182,9 @@
   "language": {
     "title": "Language",
     "heading": "App Language",
+    "deviceLanguage": "Device default language: {language}",
+    "deviceLanguageUnknown": "Unknown",
+    "selectedHint": "Your selected language is the marked option.",
     "subtitle": "Choose the language the app is displayed in.",
     "note": "When you change the language some content is reloaded, which may take a few seconds.",
     "names": {

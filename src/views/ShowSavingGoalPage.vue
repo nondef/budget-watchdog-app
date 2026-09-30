@@ -30,6 +30,8 @@ import { formatDateLocalized } from "@/i18n/format";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import SavingGoalHistory from '@/components/SavingGoalHistory.vue';
 import CurrencyInput from "@/components/CurrencyInput.vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import SwapText from "@/components/SwapText.vue";
 import { SavingGoalContributionDTO } from "@/application";
 
 import {
@@ -315,6 +317,8 @@ watch(goalId, () => {
     </ion-header>
 
     <ion-content class="show-content" :scroll-y="true">
+      <!-- Yükleniyor → içerik (veya hata) çapraz solar. -->
+      <transition name="fade" mode="out-in">
       <div v-if="isLoading" class="p-6 text-center" role="status">{{ $t('common.loading') }}</div>
       <div v-else-if="loadFailed" class="p-6 text-center" role="alert">
         <p>{{ $t('savingGoals.errors.load') }}</p>
@@ -323,10 +327,12 @@ watch(goalId, () => {
       <div v-else-if="!goal" class="p-6 text-center">{{ $t('savingGoals.notFound') }}</div>
       <div v-else-if="goal" class="mt-5 px-4 pb-32 space-y-3">
 
-        <div v-if="refreshFailed" role="alert" class="p-3 text-sm text-amber-700">
-          {{ $t('savingGoals.refreshWarning') }}
-          <ion-button fill="clear" @click="loadPage">{{ $t('common.retry') }}</ion-button>
-        </div>
+        <collapse-transition>
+          <div v-if="refreshFailed" role="alert" class="p-3 text-sm text-amber-700">
+            {{ $t('savingGoals.refreshWarning') }}
+            <ion-button fill="clear" @click="loadPage">{{ $t('common.retry') }}</ion-button>
+          </div>
+        </collapse-transition>
         <!-- Hero -->
         <section class="bg-surface rounded-2xl px-4 py-5">
           <div class="flex items-center gap-3">
@@ -342,22 +348,23 @@ watch(goalId, () => {
                   class="inline-flex items-center gap-1 mt-1 px-2 h-5 rounded-full text-[10px] font-bold"
                   :class="statusMeta.pill"
               >
-                {{ statusMeta.label }}
+                <swap-text :text="statusMeta.label" />
               </span>
             </div>
           </div>
 
-          <!-- Progress -->
+          <!-- Progress: para ekle/çıkar sonrası yüzde, çubuk ve tutarlar yerinde akar. -->
           <div class="mt-5">
             <div class="flex items-baseline justify-between mb-1.5">
               <span class="text-[11px] text-content-muted">{{ $t('savingGoals.progress') }}</span>
-              <span class="text-[16px] font-extrabold text-indigo-700 dark:text-indigo-300 tabular-nums">
-                %{{ Math.round(progressPercentage) }}
-              </span>
+              <swap-text
+                  class="text-[16px] font-extrabold text-indigo-700 dark:text-indigo-300 tabular-nums"
+                  :text="`%${Math.round(progressPercentage)}`"
+              />
             </div>
             <div class="h-2 bg-surface-sunken rounded-full overflow-hidden">
               <div
-                  class="h-full rounded-full transition-all"
+                  class="progress-bar h-full rounded-full"
                   :class="isGoalReached ? 'bg-emerald-500' : 'bg-indigo-600'"
                   :style="{ width: `${progressPercentage}%` }"
               />
@@ -368,20 +375,23 @@ watch(goalId, () => {
           <div class="mt-4 pt-4 border-t border-line grid grid-cols-2 gap-3">
             <div>
               <p class="text-[10px] uppercase tracking-wider text-content-faint">{{ $t('savingGoals.saved') }}</p>
-              <p class="mt-1 text-[18px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {{ formatMoney(goal.savedAmount.amount, goal.savedAmount.currencyId) }}
-              </p>
+              <swap-text
+                  class="block mt-1 text-[18px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums"
+                  :text="formatMoney(goal.savedAmount.amount, goal.savedAmount.currencyId)"
+              />
             </div>
             <div class="text-right">
               <p class="text-[10px] uppercase tracking-wider text-content-faint">{{ $t('savingGoals.target') }}</p>
-              <p class="mt-1 text-[18px] font-bold text-content tabular-nums">
-                {{ formatMoney(goal.targetAmount.amount, goal.targetAmount.currencyId) }}
-              </p>
+              <swap-text
+                  class="block mt-1 text-[18px] font-bold text-content tabular-nums"
+                  :text="formatMoney(goal.targetAmount.amount, goal.targetAmount.currencyId)"
+              />
             </div>
           </div>
         </section>
 
-        <!-- Tamamlandı kartı -->
+        <!-- Tamamlandı kartı: hedefe ulaşınca yerinde açılır. -->
+        <collapse-transition>
         <section v-if="isGoalReached"
                  class="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl px-4 py-4 text-center">
           <div
@@ -393,6 +403,7 @@ watch(goalId, () => {
             }}</p>
           <p class="text-[12px] text-emerald-700 dark:text-emerald-300">{{ $t('savingGoals.goalReached') }}</p>
         </section>
+        </collapse-transition>
 
         <!-- İstatistikler -->
         <section class="bg-surface rounded-2xl">
@@ -406,11 +417,13 @@ watch(goalId, () => {
               </div>
               <div class="flex-1">
                 <p class="text-[11px] text-content-muted">{{ $t('savingGoals.remainingAmount') }}</p>
-                <p class="text-[15px] font-bold text-content tabular-nums">
-                  {{ formatMoney(remainingAmount, goal.targetAmount.currencyId) }}
-                </p>
+                <swap-text
+                    class="block text-[15px] font-bold text-content tabular-nums"
+                    :text="formatMoney(remainingAmount, goal.targetAmount.currencyId)"
+                />
               </div>
             </div>
+            <collapse-transition>
             <div v-if="daysRemaining !== null" class="flex items-center gap-3 py-3 border-t border-line">
               <div
                   class="size-9 rounded-xl flex items-center justify-center shrink-0"
@@ -422,13 +435,16 @@ watch(goalId, () => {
               </div>
               <div class="flex-1">
                 <p class="text-[11px] text-content-muted">{{ $t('savingGoals.daysLeft') }}</p>
-                <p
-                    class="text-[15px] font-bold tabular-nums"
-                    :class="isOverdue ? 'text-rose-700 dark:text-rose-400' : 'text-content'">
-                  {{ isOverdue ? $t('savingGoals.overdue') : $t('savingGoals.days', { count: daysRemaining }) }}
-                </p>
+                <swap-text
+                    class="block text-[15px] font-bold tabular-nums"
+                    :class="isOverdue ? 'text-rose-700 dark:text-rose-400' : 'text-content'"
+                    :text="isOverdue ? $t('savingGoals.overdue') : $t('savingGoals.days', { count: daysRemaining })"
+                />
               </div>
             </div>
+            </collapse-transition>
+            <!-- Hedefe ulaşınca "günlük gereken" satırı yerinde katlanır. -->
+            <collapse-transition>
             <div v-if="dailySavingsNeeded !== null && remainingAmount > 0"
                  class="flex items-center gap-3 py-3 border-t border-line">
               <div class="size-9 rounded-xl bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center shrink-0">
@@ -437,11 +453,12 @@ watch(goalId, () => {
               <div class="flex-1">
                 <p class="text-[11px] text-content-muted">{{ $t('savingGoals.dailyNeeded') }}</p>
                 <p class="text-[15px] font-bold text-amber-700 dark:text-amber-400 tabular-nums">
-                  {{ formatMoney(dailySavingsNeeded, goal.targetAmount.currencyId) }} <span
+                  <swap-text :text="formatMoney(dailySavingsNeeded, goal.targetAmount.currencyId)" /> <span
                     class="text-[11px] text-content-muted font-normal">{{ $t('savingGoals.perDay') }}</span>
                 </p>
               </div>
             </div>
+            </collapse-transition>
           </div>
         </section>
 
@@ -492,6 +509,7 @@ watch(goalId, () => {
             @retry="retryHistory"
         />
       </div>
+      </transition>
 
       <div
           v-if="!isLoading && !loadFailed && goal && (goal.status === 'active' || (isCompleted && goal.savedAmount.amount > 0))"
@@ -625,20 +643,6 @@ watch(goalId, () => {
 <style scoped>
 .show-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.action-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
 }
 </style>
 

@@ -26,6 +26,8 @@ import AccountsTotalCard from "@/components/AccountsTotalCard.vue";
 import { useAlert } from "@/composables";
 import { useI18n } from "vue-i18n";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import CollapseTransition from '@/components/CollapseTransition.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const accountsStore = useAccountsStore();
 const exchangeRateStore = useExchangeRateStore();
@@ -75,11 +77,11 @@ onIonViewWillEnter(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('nav.accounts')">
       <template #end>
-        <ion-button router-link="/accounts/new" class="add-account-button">
+        <ion-button router-link="/accounts/new" class="toolbar-add-button">
           <ion-icon :icon="addOutline" class="size-[20px]"/>
         </ion-button>
       </template>
@@ -89,19 +91,22 @@ onIonViewWillEnter(async () => {
       <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
       <div>
         <!-- Toplam bakiye özet kartı -->
-        <AccountsTotalCard v-if="accountsStore.accounts.length"
-                           :total="totalSummary.text"
-                           :active-accounts="accountsStore.activeAccounts.length"
-                           :has-missing="totalSummary.hasMissing"/>
+        <collapse-transition>
+          <AccountsTotalCard v-if="accountsStore.accounts.length"
+                             :total="totalSummary.text"
+                             :active-accounts="accountsStore.activeAccounts.length"
+                             :has-missing="totalSummary.hasMissing"/>
+        </collapse-transition>
       </div>
 
       <!-- Liste -->
       <div class="mt-4">
+      <transition name="fade" mode="out-in">
 
         <!-- Empty state -->
         <div
             v-if="accountsStore.accounts.length === 0"
-            class="accounts-card px-4 py-10 text-center"
+            class="app-card accounts-card px-4 py-10 text-center"
         >
           <div class="size-14 rounded-2xl bg-surface-sunken flex items-center justify-center mx-auto">
             <ion-icon :icon="walletOutline" class="size-6 text-slate-400" />
@@ -120,8 +125,11 @@ onIonViewWillEnter(async () => {
         </div>
 
         <!-- Account listesi -->
-        <section v-else class="accounts-card overflow-hidden">
-          <ion-list :inset="false" lines="full">
+        <section v-else class="app-card accounts-card overflow-hidden">
+          <!-- Silinen hesap solarak çıkar, altındakiler yukarı kayar. Etiketsiz
+               transition-group parça (fragment) render eder: ion-list kalır. -->
+          <ion-list :inset="false" lines="full" class="relative">
+          <transition-group name="list-row">
           <ion-item
               v-for="(account, idx) in accountsStore.accounts"
               :key="account.id"
@@ -152,9 +160,10 @@ onIonViewWillEnter(async () => {
 
             <!-- Tutar + sil -->
             <div slot="end" class="flex shrink-0 items-center gap-1">
-              <p class="account-balance tabular-nums">
-                {{ formatMoney(account.balance.amount, account.balance.currencyId) }}
-              </p>
+              <swap-text
+                  class="account-balance tabular-nums"
+                  :text="formatMoney(account.balance.amount, account.balance.currencyId)"
+              />
               <ion-button
                   fill="clear"
                   class="delete-account-button"
@@ -165,8 +174,10 @@ onIonViewWillEnter(async () => {
               </ion-button>
             </div>
           </ion-item>
+          </transition-group>
           </ion-list>
         </section>
+      </transition>
       </div>
       </main>
     </ion-content>
@@ -177,41 +188,6 @@ onIonViewWillEnter(async () => {
 <style scoped>
 .accounts-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-ion-button.add-account-button {
-  width: 38px;
-  height: 38px;
-  --background: var(--c-primary);
-  --background-activated: var(--c-primary-strong);
-  --border-radius: 12px;
-  --box-shadow: none;
-  --color: var(--c-on-primary);
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-ion-button.add-account-button ion-icon {
-  color: var(--c-on-primary);
-}
-
-/* Toolbar'ın genel dark-mode kuralı tüm sağ butonları açık metne zorluyor.
-   Bu butonun zemini dark modda zaten açık primary olduğu için ikonu kendi
-   on-primary rengine (koyu) geri al. */
-:global(html.ion-palette-dark) ion-button.add-account-button {
-  --color: var(--c-on-primary) !important;
-  color: var(--c-on-primary) !important;
-}
-
-.accounts-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
 }
 
 .accounts-card ion-list {
@@ -248,12 +224,12 @@ ion-button.add-account-button ion-icon {
   line-height: 1.35;
 }
 
-:global(.ion-palette-dark) .account-name,
-:global(.ion-palette-dark) .account-balance {
+:global(html.ion-palette-dark .account-name),
+:global(html.ion-palette-dark .account-balance) {
   color: #ffffff;
 }
 
-:global(.ion-palette-dark) .account-currency {
+:global(html.ion-palette-dark .account-currency) {
   color: #d6d6d6;
 }
 

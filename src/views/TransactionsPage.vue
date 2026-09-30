@@ -34,6 +34,8 @@ import { useTransactionGrouping } from "@/composables/features/useTransactionGro
 import MissingRatesNotice from "@/components/MissingRatesNotice.vue";
 import TransactionEmptyState from "@/components/TransactionEmptyState.vue";
 import TransactionDateGroup from "@/components/TransactionDateGroup.vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import SwapText from "@/components/SwapText.vue";
 import { useCategoriesStore } from "@/stores/categories";
 import { translateCategoryName } from "@/composables/features/useCategoryName";
 import { TransactionDTO } from "@/application";
@@ -43,7 +45,7 @@ const router = useRouter();
 const { t } = useI18n();
 const transactionStore = useTransactionsStore();
 const categoriesStore = useCategoriesStore()
-const { convertToBase, formatMoney } = useMoney()
+const { convertToBase, formatMoney, hidden: amountsHidden } = useMoney()
 
 const showDateModal = ref(false)
 
@@ -87,13 +89,13 @@ const summary = computed(() => {
   // kurda olduğu gibi `~` ile yaklaşık olduğunu işaretle. Kullanıcı kaydırıp
   // tüm sayfaları yükledikçe işaret kalkar.
   const partial = hasMissing || transactionStore.hasNext
-  const mark = (s: string) => partial ? `~${s}` : s
+  const mark = (s: string) => partial && !amountsHidden.value ? `~${s}` : s
 
   return {
     count: filteredTransactions.value.length,
     income: mark(formatMoney(income)),
     expense: mark(formatMoney(expense)),
-    total: mark(formatMoney(income - expense)),
+    total: mark(formatMoney(income - expense, undefined, { signDisplay: 'always' })),
     net: income - expense,
     partial,
     hasMissing
@@ -148,12 +150,14 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
         <ion-buttons slot="end">
           <ion-button class="filter-trigger" @click="showFilters = !showFilters" :aria-label="$t('transactions.filter')">
             <ion-icon :icon="filterOutline" class="size-[20px]" />
-            <span
-                v-if="activeFilterCount"
-                class="filter-count absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
-            >
-              {{ activeFilterCount }}
-            </span>
+            <transition name="icon-swap">
+              <span
+                  v-if="activeFilterCount"
+                  class="filter-count absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
+              >
+                <swap-text :text="activeFilterCount" />
+              </span>
+            </transition>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -177,19 +181,21 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
              `~` ile yaklaşık gösteriliyor; uyarı listenin başında dursun. -->
         <MissingRatesNotice class="mt-3" />
 
-        <!-- Filtre paneli -->
-        <transition name="filter">
-          <section v-if="showFilters" class="tx-card filter-card mt-3 p-4">
+        <!-- Filtre paneli: gerçek yüksekliğiyle açılıp kapanır, liste kayar. -->
+        <collapse-transition>
+          <section v-if="showFilters" class="app-card tx-card filter-card mt-3 p-4">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-[13px] font-semibold text-content">{{ $t('transactions.filters') }}</h3>
-              <ion-button
-                  v-if="activeFilterCount"
-                  fill="clear"
-                  class="clear-filter"
-                  @click="clearFilters"
-              >
-                {{ $t('transactions.clear') }}
-              </ion-button>
+              <transition name="fade">
+                <ion-button
+                    v-if="activeFilterCount"
+                    fill="clear"
+                    class="clear-filter"
+                    @click="clearFilters"
+                >
+                  {{ $t('transactions.clear') }}
+                </ion-button>
+              </transition>
             </div>
 
             <div class="space-y-2">
@@ -229,52 +235,62 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
               >
                 <span class="text-[12px] text-content-muted">{{ $t('transactions.date') }}</span>
                 <span class="text-[13px] text-content-secondary truncate flex items-center gap-1.5">
-                  {{ dateRangeLabel }}
+                  <swap-text :text="dateRangeLabel" />
                   <ion-icon :icon="calendarOutline" class="size-[14px] text-slate-400" />
                 </span>
               </button>
             </div>
           </section>
-        </transition>
+        </collapse-transition>
 
         <!-- Özet -->
-        <section v-if="summary.count > 0" class="tx-card summary-card mt-3 p-4">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] text-content-muted">{{ $t('transactions.countLabel', { count: summary.count }) }}</span>
-            <div class="flex items-center gap-3 text-[12px]">
-              <span class="inline-flex items-center gap-1 text-emerald-600 font-medium tabular-nums">
-                <ion-icon :icon="arrowUpOutline" class="size-3" />
-                {{ summary.income }}
-              </span>
-              <span class="inline-flex items-center gap-1 text-rose-600 font-medium tabular-nums">
-                <ion-icon :icon="arrowDownOutline" class="size-3" />
-                {{ summary.expense }}
-              </span>
+        <collapse-transition>
+          <section v-if="summary.count > 0" class="app-card tx-card summary-card mt-3 p-4">
+            <div class="flex items-center justify-between">
+              <swap-text
+                  class="text-[11px] text-content-muted"
+                  :text="$t('transactions.countLabel', { count: summary.count })"
+              />
+              <div class="flex items-center gap-3 text-[12px]">
+                <span class="inline-flex items-center gap-1 text-emerald-600 font-medium tabular-nums">
+                  <ion-icon :icon="arrowUpOutline" class="size-3" />
+                  <swap-text :text="summary.income" />
+                </span>
+                <span class="inline-flex items-center gap-1 text-rose-600 font-medium tabular-nums">
+                  <ion-icon :icon="arrowDownOutline" class="size-3" />
+                  <swap-text :text="summary.expense" />
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="mt-3 flex items-center justify-between border-t border-line pt-3">
-            <span class="text-[12px] font-medium text-content-muted">{{ $t('common.net') }}</span>
-            <span
-                class="text-[15px] font-bold tabular-nums"
-                :class="summary.net >= 0 ? 'text-emerald-600' : 'text-rose-600'"
-            >
-              {{ summary.net >= 0 ? '+' : '' }}{{ summary.total }}
-            </span>
-          </div>
-        </section>
+            <div class="mt-3 flex items-center justify-between border-t border-line pt-3">
+              <span class="text-[12px] font-medium text-content-muted">{{ $t('common.net') }}</span>
+              <swap-text
+                  class="text-[15px] font-bold tabular-nums"
+                  :class="amountsHidden ? 'text-content' : summary.net >= 0 ? 'text-emerald-600' : 'text-rose-600'"
+                  :text="summary.total"
+              />
+            </div>
+          </section>
+        </collapse-transition>
 
-      <!-- Liste -->
+      <!-- Liste: gün grupları arama/filtreyle girer, çıkar, yerlerine kayar.
+           Anahtar gün başlığı — dizin olsaydı filtrelenince yanlış grup
+           "değişmiş" sayılır, giriş/çıkış animasyonu yanlış karta oynardı. -->
       <div class="transaction-list mt-4">
-        <TransactionEmptyState v-if="filteredTransactions.length === 0" />
+        <transition name="fade">
+          <TransactionEmptyState v-if="filteredTransactions.length === 0" />
+        </transition>
 
-        <TransactionDateGroup
-            v-for="(group, i) in groupedByDate"
-            :key="i"
-            :title="group.title"
-            :items="group.items"
-            class="transaction-group"
-            @select-transaction="openDetail"
-        />
+        <transition-group tag="div" name="list-row" class="relative">
+          <TransactionDateGroup
+              v-for="group in groupedByDate"
+              :key="group.title"
+              :title="group.title"
+              :items="group.items"
+              class="app-card transaction-group"
+              @select-transaction="openDetail"
+          />
+        </transition-group>
       </div>
 
       <!-- Sonraki sayfa: eskiden yalnız ilk 50 kayıt gösterilip 51+ görünmüyordu -->
@@ -369,10 +385,6 @@ ion-modal.date-modal ion-datetime {
   --background: var(--c-page);
 }
 
-ion-page {
-  overflow: hidden;
-}
-
 ion-button.filter-trigger {
   position: relative;
   --border-radius: 12px;
@@ -382,14 +394,6 @@ ion-button.filter-trigger {
 .filter-count {
   background: var(--c-primary);
   color: var(--c-on-primary);
-}
-
-.tx-card,
-.transaction-group {
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
 }
 
 ion-button.clear-filter {
@@ -456,20 +460,5 @@ ion-button.apply-date-button {
   --border-radius: 14px;
   --box-shadow: none;
   --color: var(--c-on-primary);
-}
-
-/* Filtre animasyonu */
-.filter-enter-active, .filter-leave-active {
-  transition: opacity 200ms ease, transform 200ms ease, max-height 200ms ease;
-  overflow: hidden;
-}
-.filter-enter-from, .filter-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-  max-height: 0;
-}
-.filter-enter-to, .filter-leave-from {
-  opacity: 1;
-  max-height: 400px;
 }
 </style>

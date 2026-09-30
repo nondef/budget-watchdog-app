@@ -5,14 +5,14 @@ import {
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAppNavigation } from '@/composables/navigation/useAppNavigation';
-import { Haptics, NotificationType } from '@capacitor/haptics';
+import { useHaptics } from '@/composables/ui/useHaptics';
 import { useSecurityStore } from '@/stores/security';
-import { useToast } from '@/composables/ui/useToast';
 import PinKeypad from '@/components/PinKeypad.vue';
+import { Toast } from "@capacitor/toast";
 
 const { goBackOrFallback } = useAppNavigation();
 const security = useSecurityStore();
-const toast = useToast();
+const haptics = useHaptics();
 const { t } = useI18n();
 
 const PIN_LENGTH = 4;
@@ -56,7 +56,7 @@ const fail = (message: string) => {
   errorMessage.value = message;
   shake.value = true;
   busy.value = true;
-  void Haptics.notification({ type: NotificationType.Error }).catch(() => {});
+  haptics.error();
 
   setTimeout(() => {
     shake.value = false;
@@ -93,8 +93,10 @@ const handleComplete = async () => {
     if (pin.value !== newPin.value) return fail(t('security.pinSetup.mismatch'));
 
     await security.setPin(newPin.value);
-    void Haptics.notification({ type: NotificationType.Success }).catch(() => {});
-    toast.success(t('security.pinSetup.updated'));
+    haptics.success();
+
+    Toast.show({ text: t('security.pinSetup.updated') })
+
     goBackOrFallback('/settings/security');
   } catch (e) {
     fail(e instanceof Error ? e.message : t('security.pinSetup.saveFailed'));

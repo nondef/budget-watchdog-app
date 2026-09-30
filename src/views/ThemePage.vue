@@ -19,6 +19,7 @@ import { useThemeStore } from '@/stores/theme';
 import { logger } from '@/infrastructure/logging';
 import type { ThemeMode } from '@/domain/value-objects/theme';
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const themeStore = useThemeStore();
 
@@ -49,7 +50,7 @@ const selectedMode = computed({
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('theme.title')"/>
 
@@ -57,26 +58,31 @@ const selectedMode = computed({
       <div class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
 
         <!-- Tema seçimi -->
-        <div class="theme-intro">
-          <span class="theme-intro__icon">
-            <ion-icon :icon="selectedMode === 'dark' ? moonOutline : selectedMode === 'light' ? sunnyOutline : phonePortraitOutline" />
+        <div class="intro-card theme-intro">
+          <!-- Mod değişince ikon ve durum metni yerinde yer değiştirir. -->
+          <span class="intro-card__icon">
+            <transition name="icon-swap" mode="out-in">
+              <ion-icon
+                  :key="selectedMode"
+                  :icon="selectedMode === 'dark' ? moonOutline : selectedMode === 'light' ? sunnyOutline : phonePortraitOutline"
+              />
+            </transition>
           </span>
           <div>
             <p class="theme-section">{{ $t('theme.appearance') }}</p>
             <p class="theme-status">
-              {{ $t('theme.status', { mode: themeStore.isDark ? $t('theme.statusDark') : $t('theme.statusLight') }) }}
+              <swap-text :text="$t('theme.status', { mode: themeStore.isDark ? $t('theme.statusDark') : $t('theme.statusLight') })" />
             </p>
           </div>
         </div>
 
-        <div class="theme-card">
+        <div class="option-card">
           <ion-radio-group v-model="selectedMode">
             <ion-list :inset="false" lines="full">
               <ion-item
                   v-for="(opt, idx) in options"
                   :key="opt.value"
                   class="plain-item"
-                  :class="{ 'plain-item--active': selectedMode === opt.value }"
                   :lines="idx === options.length - 1 ? 'none' : 'full'"
                   :button="false"
               >
@@ -85,9 +91,9 @@ const selectedMode = computed({
                     :value="opt.value"
                     justify="space-between"
                     label-placement="start"
-                    class="theme-radio"
+                    class="option-radio"
                 >
-                  <span class="theme-row">
+                  <span class="option-row">
                     <span
                         class="theme-tint"
                         :class="{ 'theme-tint--active': selectedMode === opt.value }"
@@ -95,8 +101,8 @@ const selectedMode = computed({
                       <ion-icon :icon="opt.icon" class="size-[18px]" />
                     </span>
                     <ion-label>
-                      <h3 class="theme-title">{{ $t(opt.labelKey) }}</h3>
-                      <p class="theme-sub">{{ $t(opt.descKey) }}</p>
+                      <h3 class="option-title">{{ $t(opt.labelKey) }}</h3>
+                      <p class="option-sub">{{ $t(opt.descKey) }}</p>
                     </ion-label>
                   </span>
                 </ion-radio>
@@ -113,55 +119,6 @@ const selectedMode = computed({
 <style scoped>
 .theme-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-/* Kart: ion-list'i saran yüzey — köşeler kartta, satırlar şeffaf. */
-.theme-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 1.25rem;
-  overflow: hidden;
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--c-content) 6%, transparent);
-}
-
-.theme-card ion-item.plain-item--active {
-  --background: color-mix(in srgb, var(--c-primary) 8%, var(--c-surface));
-}
-
-.theme-card ion-list {
-  background: transparent;
-  padding: 0;
-  margin: 0;
-}
-
-.theme-card ion-item.plain-item {
-  --background: transparent;
-  --background-activated: var(--c-surface-sunken);
-  --background-focused: var(--c-surface-sunken);
-  --background-hover: transparent;
-  --border-color: var(--c-line);
-  --padding-start: 14px;
-  --inner-padding-end: 14px;
-  --min-height: 62px;
-}
-
-/* Radio satırın tamamını kaplasın: etiket başta, işaret sonda. */
-.theme-radio {
-  width: 100%;
-}
-
-.theme-radio::part(label) {
-  margin-inline-end: 8px;
-}
-
-.theme-row {
-  display: flex;
-  align-items: center;
-  min-width: 0;
 }
 
 .theme-tint {
@@ -188,19 +145,6 @@ ion-page {
   box-shadow: 0 4px 12px color-mix(in srgb, var(--c-primary) 28%, transparent);
 }
 
-.theme-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--c-content);
-}
-
-.theme-sub {
-  font-size: 12px;
-  color: var(--c-content-muted);
-  margin-top: 2px;
-  white-space: normal;
-}
-
 .theme-section {
   font-size: 12px;
   font-weight: 800;
@@ -219,25 +163,6 @@ ion-page {
 }
 
 .theme-intro {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin-bottom: 14px;
-  padding: 16px;
-  border: 1px solid var(--c-line);
-  border-radius: 1.25rem;
-  background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
-}
-
-.theme-intro__icon {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  border-radius: 14px;
-  background: var(--c-primary);
-  color: var(--c-on-primary);
-  font-size: 20px;
 }
 </style>

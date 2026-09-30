@@ -166,10 +166,10 @@ onBeforeUnmount(() => observer?.disconnect());
 .app-tab-bar {
   --background: var(--c-surface);
   --border: none;
-  /* Tab bar safe-area'ya kadar uzansın, böylece alt boşluk olmaz.
-     İç içerik (buton/ikon) padding ile home indicator üstünde kalır. */
-  height: calc(65px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
+  /* Zemin ekranın altına uzanırken butonlar güvenli alanın 12px üstünde
+     kalır. Ek boşluğu yüksekliğe de dahil ederek dokunma alanını koru. */
+  height: calc(65px + 12px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+  padding-bottom: calc(12px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom, 0px)));
   /*border-top: 1px solid var(--c-line-strong);*/
   box-shadow: 2px 2px 2px rgba(15, 23, 42, 0.02);
 }

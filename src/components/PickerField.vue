@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { IonItem, IonIcon } from '@ionic/vue'
 import { chevronForwardOutline } from 'ionicons/icons'
+import CollapseTransition from '@/components/CollapseTransition.vue'
+import SwapText from '@/components/SwapText.vue'
 
 /**
  * MD3 FILLED text field görünümünde tıklanır seçici alan (menu/picker).
@@ -62,6 +64,9 @@ const emit = defineEmits<{ (e: 'click'): void }>()
       </slot>
     </ion-item>
 
-    <p class="md3-supporting md3-supporting--error font-medium" v-if="error">{{ error }}</p>
+    <!-- Hata satırı alanın altında açılıp katlanır; form zıplamaz. -->
+    <collapse-transition>
+      <p class="md3-supporting md3-supporting--error font-medium" v-if="error"><swap-text :text="error" /></p>
+    </collapse-transition>
   </div>
 </template>

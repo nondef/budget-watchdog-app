@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { TransactionDTO } from "@/application";
 import TransactionListItem from "@/components/TransactionListItem.vue";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
 
 defineProps<{
   title: string,
@@ -20,14 +21,19 @@ const emit = defineEmits<{
       </p>
     </div>
 
-    <div class="py-1">
-      <TransactionListItem
-          v-for="(item, idx) in items"
-          :key="item.id"
-          :transaction="item"
-          @click="emit('selectTransaction', item)"
-          :class="{ 'border-t border-line': idx !== 0 }"
-      />
-    </div>
+    <!-- Arama/filtre değişince satırlar girer/çıkar, grup kartı da yumuşakça
+         uzar/kısalır. Yapışkan başlık dışarıda: AnimatedHeight'in
+         `overflow: hidden`ı onu bozmasın. -->
+    <animated-height>
+      <transition-group tag="div" name="list-row" class="relative py-1">
+        <TransactionListItem
+            v-for="(item, idx) in items"
+            :key="item.id"
+            :transaction="item"
+            @click="emit('selectTransaction', item)"
+            :class="{ 'border-t border-line': idx !== 0 }"
+        />
+      </transition-group>
+    </animated-height>
   </section>
 </template>

@@ -6,6 +6,8 @@ import { useI18n } from 'vue-i18n';
 import { Percentage } from "@/domain";
 import { getIconByName } from "@/shared/utils";
 import { TimeRange } from "@/shared/utils/date";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
+import CardHeaderLink from "@/components/CardHeaderLink.vue";
 
 interface CategoryRow {
   id: string
@@ -78,16 +80,27 @@ const timeRanges = computed(() => [
     <header class="flex items-center justify-between py-4">
       <div>
         <h3 class="text-[14px] font-semibold text-content">{{ $t('cards.categoriesTitle') }}</h3>
-        <p class="text-[11px] text-content-muted mt-0.5">{{ dateText }}</p>
+        <p class="text-[11px] text-content-muted mt-0.5">
+          <transition name="value-swap" mode="out-in">
+            <span :key="dateText" class="inline-block">{{ dateText }}</span>
+          </transition>
+        </p>
       </div>
 
-      <button
-          class="inline-flex items-center gap-1 px-2.5 h-7 rounded-full text-[11px] font-medium text-content-secondary border border-line-strong active:bg-surface-strong transition shrink-0"
-          @click="handleToggle"
-      >
-        <ion-icon :icon="swapHorizontalOutline" class="size-3" />
-        {{ mode === 'expense' ? $t('common.expense') : $t('common.income') }}
-      </button>
+      <div class="flex shrink-0 items-center gap-1">
+        <button
+            class="inline-flex items-center gap-1 px-2.5 h-7 rounded-full text-[11px] font-medium text-content-secondary border border-line-strong active:bg-surface-strong transition shrink-0"
+            @click="handleToggle"
+        >
+          <ion-icon :icon="swapHorizontalOutline" class="size-3" />
+          <transition name="value-swap" mode="out-in">
+            <span :key="mode" class="inline-block">
+              {{ mode === 'expense' ? $t('common.expense') : $t('common.income') }}
+            </span>
+          </transition>
+        </button>
+        <card-header-link to="/settings/categories" :label="$t('common.details')" />
+      </div>
     </header>
 
     <!-- Tarih pill switcher -->
@@ -108,50 +121,93 @@ const timeRanges = computed(() => [
       </div>
     </div>
 
-    <div v-if="categories.length" class="pb-2">
-      <div
-          v-for="(c, idx) in categories.slice(0, 5)"
-          :key="c.id"
-          class="py-3"
-          :class="{ 'border-t border-line': idx !== 0 }"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5 min-w-0">
+    <!-- Gelir/gider değişince liste bütün olarak kayarak yer değiştirir; aralık
+         değişince aynı mod içinde satırlar tek tek girer, çıkar, yeniden sıralanır. -->
+    <animated-height>
+      <transition :name="`mode-swap-${mode}`" mode="out-in">
+        <div :key="mode">
+          <transition-group v-if="categories.length" tag="div" name="list-row" class="relative pb-2">
             <div
-                class="size-9 rounded-full flex items-center justify-center shrink-0 text-white"
-                :class="c.icon.color"
+                v-for="(c, idx) in categories.slice(0, 5)"
+                :key="c.id"
+                class="py-3"
+                :class="{ 'border-t border-line': idx !== 0 }"
             >
-              <ion-icon :icon="getIconByName(c.icon.name)" class="size-[16px]" />
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div
+                      class="size-9 rounded-full flex items-center justify-center shrink-0 text-white"
+                      :class="c.icon.color"
+                  >
+                    <ion-icon :icon="getIconByName(c.icon.name)" class="size-[16px]" />
+                  </div>
+                  <span class="text-[13px] text-content truncate">{{ c.name }}</span>
+                </div>
+                <div class="text-right shrink-0">
+                  <transition name="value-swap" mode="out-in">
+                    <div :key="c.amount" class="text-[13px] font-medium text-content tabular-nums leading-tight">
+                      {{ c.amount }}
+                    </div>
+                  </transition>
+                  <transition name="value-swap" mode="out-in">
+                    <div :key="c.percentage.value.toFixed(0)" class="text-[11px] text-content-muted tabular-nums leading-tight">
+                      %{{ c.percentage.value.toFixed(0) }}
+                    </div>
+                  </transition>
+                </div>
+              </div>
+
+              <!-- Çizgi göstergesi -->
+              <div class="mt-2 h-[3px] bg-surface-sunken rounded-full overflow-hidden">
+                <div
+                    class="progress-bar h-full rounded-full"
+                    :style="{ width: `${c.percentage.value}%`, backgroundColor: barColor(c.icon.color) }"
+                />
+              </div>
             </div>
-            <span class="text-[13px] text-content truncate">{{ c.name }}</span>
-          </div>
-          <div class="text-right shrink-0">
-            <div class="text-[13px] font-medium text-content tabular-nums leading-tight">
-              {{ c.amount }}
-            </div>
-            <div class="text-[11px] text-content-muted tabular-nums leading-tight">
-              %{{ c.percentage.value.toFixed(0) }}
-            </div>
+          </transition-group>
+
+          <div v-else class="py-6 text-center text-[13px] text-content-muted">
+            {{ $t('common.noData') }}
           </div>
         </div>
-
-        <!-- Çizgi göstergesi -->
-        <div class="mt-2 h-[3px] bg-surface-sunken rounded-full overflow-hidden">
-          <div
-              class="h-full rounded-full"
-              :style="{ width: `${c.percentage.value}%`, backgroundColor: barColor(c.icon.color) }"
-          />
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="py-6 text-center text-[13px] text-content-muted">
-      {{ $t('common.noData') }}
-    </div>
+      </transition>
+    </animated-height>
   </section>
 </template>
 
 <style scoped>
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Mod değişimi: gelire geçerken liste sola kayar (yenisi sağdan gelir),
+   gidere dönerken tersi. İsim yeni moddan türediği için çıkış da yeni yönü
+   kullanır. */
+.mode-swap-expense-enter-active,
+.mode-swap-expense-leave-active,
+.mode-swap-income-enter-active,
+.mode-swap-income-leave-active {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.mode-swap-income-enter-from,
+.mode-swap-expense-leave-to {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.mode-swap-income-leave-to,
+.mode-swap-expense-enter-from {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-swap-expense-enter-active,
+  .mode-swap-expense-leave-active,
+  .mode-swap-income-enter-active,
+  .mode-swap-income-leave-active {
+    transition: none;
+  }
+}
 </style>

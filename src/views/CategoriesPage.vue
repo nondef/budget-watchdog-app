@@ -23,6 +23,7 @@ import { useCategoryBreakdown } from '@/composables/charts/useCategoryBreakdown'
 import { useCategoryChart } from '@/composables/charts/useCategoryChart'
 import { useMoney } from '@/composables/money/useMoney'
 import { getIconByName } from '@/shared/utils'
+import SwapText from '@/components/SwapText.vue'
 
 const categoriesStore = useCategoriesStore()
 const { formatMoney } = useMoney()
@@ -64,7 +65,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <ion-header class="ion-no-border">
       <ion-toolbar>
@@ -79,7 +80,7 @@ onMounted(async () => {
     <ion-content class="cat-content" :scroll-y="true">
       <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
        <!-- Ay seçici -->
-        <section class="category-controls overflow-hidden rounded-[22px] p-3">
+        <section class="app-hero category-controls overflow-hidden p-3">
           <div class="flex items-center justify-between">
           <ion-button
               fill="clear"
@@ -88,7 +89,7 @@ onMounted(async () => {
           >
             <ion-icon slot="icon-only" :icon="chevronBackOutline" />
           </ion-button>
-          <p class="text-[16px] font-extrabold text-content">{{ monthLabel }}</p>
+          <swap-text class="text-[16px] font-extrabold text-content" :text="monthLabel" />
           <ion-button
               fill="clear"
               class="month-button"
@@ -119,29 +120,31 @@ onMounted(async () => {
       <!-- Bölümler -->
       <div class="mt-4 space-y-4">
         <!-- Donut + merkez -->
-        <section class="category-card px-4 py-5">
+        <section class="app-card category-card px-4 py-5">
           <div class="relative h-64 flex items-center justify-center">
             <canvas ref="canvasRef" class="max-w-xs" />
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-content-muted">
-                {{ chartType === 'expense' ? $t('categoriesPage.totalExpense') : $t('categoriesPage.totalIncome') }}
-              </p>
-              <p
+              <swap-text
+                  class="text-[10px] font-bold uppercase tracking-wider text-content-muted"
+                  :text="chartType === 'expense' ? $t('categoriesPage.totalExpense') : $t('categoriesPage.totalIncome')"
+              />
+              <swap-text
                   class="mt-1 text-[26px] font-extrabold tabular-nums tracking-tight"
                   :class="chartType === 'expense' ? 'chart-total--expense' : 'chart-total--income'"
-              >
-                {{ formatMoney(activeTotal) }}
-              </p>
-              <p class="mt-2 text-[11px] text-content-muted tabular-nums">
-                {{ chartType === 'expense' ? $t('common.income') : $t('common.expense') }}:
-                <span class="text-content-tertiary font-medium">{{ formatMoney(passiveTotal) }}</span>
-              </p>
+                  :text="formatMoney(activeTotal)"
+              />
+              <swap-text
+                  class="mt-2 text-[11px] text-content-muted tabular-nums"
+                  :text="`${chartType === 'expense' ? $t('common.income') : $t('common.expense')}: ${formatMoney(passiveTotal)}`"
+              />
             </div>
           </div>
         </section>
 
-        <!-- Kategori listesi -->
-        <section v-if="categories.length > 0" class="category-card px-4">
+        <!-- Kategori listesi: ay/tip değişince satırlar girer, çıkar, kayar;
+             liste ↔ boş durum çapraz solar. -->
+        <transition name="fade" mode="out-in">
+        <transition-group v-if="categories.length > 0" tag="section" name="list-row" class="app-card category-card relative px-4">
           <div
               v-for="(c, i) in categories"
               :key="c.id"
@@ -159,7 +162,7 @@ onMounted(async () => {
               <p class="truncate text-[14px] font-bold text-content">{{ c.name }}</p>
               <div class="mt-1.5 h-1 bg-surface-sunken rounded-full overflow-hidden">
                 <div
-                    class="h-full rounded-full"
+                    class="progress-bar h-full rounded-full"
                     :class="c.icon.color"
                     :style="{ width: `${c.percentage}%` }"
                 />
@@ -167,14 +170,20 @@ onMounted(async () => {
             </div>
 
             <div class="text-right shrink-0">
-              <p class="text-[14px] font-semibold text-content tabular-nums">{{ formatMoney(c.amount) }}</p>
-              <p class="text-[11px] text-content-muted tabular-nums mt-0.5">%{{ c.percentage }}</p>
+              <swap-text
+                  class="block text-[14px] font-semibold text-content tabular-nums"
+                  :text="formatMoney(c.amount)"
+              />
+              <swap-text
+                  class="block text-[11px] text-content-muted tabular-nums mt-0.5"
+                  :text="`%${c.percentage}`"
+              />
             </div>
           </div>
-        </section>
+        </transition-group>
 
         <!-- Empty -->
-        <section v-else class="category-card px-4 py-10 text-center">
+        <section v-else class="app-card category-card px-4 py-10 text-center">
           <div class="size-14 rounded-2xl bg-surface-sunken flex items-center justify-center mx-auto">
             <ion-icon :icon="walletOutline" class="size-6 text-slate-400" />
           </div>
@@ -185,6 +194,7 @@ onMounted(async () => {
             {{ $t('categoriesPage.emptyDesc') }}
           </p>
         </section>
+        </transition>
       </div>
       </main>
     </ion-content>
@@ -194,29 +204,6 @@ onMounted(async () => {
 <style scoped>
 .cat-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.category-controls {
-  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
-}
-
-ion-button.month-button {
-  width: 42px;
-  height: 42px;
-  margin: 0;
-  --background: var(--c-surface);
-  --background-activated: var(--c-surface-strong);
-  --border-radius: 14px;
-  --box-shadow: none;
-  --color: var(--c-content);
-  --padding-start: 0;
-  --padding-end: 0;
 }
 
 .category-segment {
@@ -259,10 +246,6 @@ ion-button.month-button {
 
 .category-card {
   overflow: hidden;
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
 }
 
 .chart-total--expense {
@@ -273,7 +256,7 @@ ion-button.month-button {
   color: #15803d;
 }
 
-:global(.ion-palette-dark) .chart-total--income {
+:global(html.ion-palette-dark .chart-total--income) {
   color: #86efac;
 }
 </style>

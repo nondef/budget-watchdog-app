@@ -1,11 +1,6 @@
 <script lang="ts" setup>
-import {
-  IonPage, IonContent, IonIcon, IonInput, IonTextarea,
-} from '@ionic/vue';
-import {
-  chevronBackOutline,
-  lockClosedOutline,
-} from 'ionicons/icons';
+import { IonPage, IonContent, IonIcon, IonInput, IonTextarea, IonToolbar, IonButton, IonFooter } from '@ionic/vue';
+import { chevronBackOutline, lockClosedOutline } from 'ionicons/icons';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
@@ -14,26 +9,26 @@ import { useForm } from 'vee-validate';
 import { updateSavingGoalSchema } from "@/forms";
 import { useSavingGoalsStore } from "@/stores/saving-goals";
 import { useCurrenciesStore } from "@/stores/currencies";
-import { useToast } from "@/composables/ui/useToast";
 import { guardSubmit } from "@/composables/ui/guard-submit";
-import { logger } from "@/infrastructure/logging";
 import { getIconByName } from "@/shared/utils";
 import IconPickerModal from "@/components/IconPickerModal.vue";
 import DateField from "@/components/DateField.vue";
 import PickerField from "@/components/PickerField.vue";
 import AmountCard from "@/components/AmountCard.vue";
+import { useToast } from '@/composables/ui/useToast';
+import { useErrorHandler } from "@/composables";
 
 const { t } = useI18n();
 const { ionRouter, goBackOrFallback } = useAppNavigation();
+const { handle } = useErrorHandler()
+const toast = useToast()
 const route = useRoute();
 const savingGoalStore = useSavingGoalsStore();
 const currencyStore = useCurrenciesStore();
-const toast = useToast();
 
 const goalId = route.params.id as string;
 const goalCurrencyId = ref('');
 
-// Form — doğrulama kuralları @/forms/saving-goal.schema içinde.
 const { handleSubmit, defineField, errors, resetForm, isSubmitting } = useForm({
   validationSchema: updateSavingGoalSchema(),
   initialValues: {
@@ -52,8 +47,6 @@ const [goalNote] = defineField('description');
 // İkon/renk doğrulanmıyor: her ikisinin de geçerli bir varsayılanı var.
 const selectedIconName = ref<string>('walletOutline');
 const selectedColor = ref<string>('bg-indigo-500');
-const isSaving = ref(false);
-const submitError = ref<string | null>(null);
 
 // Modal state
 const showIconPicker = ref(false);
@@ -66,9 +59,6 @@ const handleIconPicker = (payload: { iconName: string, color: string }) => {
 };
 
 const submitGoal = handleSubmit(async (values) => {
-  submitError.value = null;
-
-  isSaving.value = true;
   try {
     await savingGoalStore.updateGoal({
       id: goalId,
@@ -80,15 +70,14 @@ const submitGoal = handleSubmit(async (values) => {
       iconColor: selectedColor.value,
     });
 
-    toast.success(t('savingGoals.updatedSuccess'));
+    toast.success(t('savingGoals.updatedSuccess'))
+
     goBackOrFallback('/settings/savings');
-  } catch (err: unknown) {
-    logger.error('Goal update error', { context: 'EditSavingGoal', error: err });
-    submitError.value = err instanceof Error
-        ? err.message
-        : t('savingGoals.errors.update');
-  } finally {
-    isSaving.value = false;
+  } catch (err) {
+    handle(err, {
+      context: 'EditSavingGoal',
+      fallback: t('savingGoals.errors.update'),
+    })
   }
 });
 
@@ -100,7 +89,7 @@ onMounted(async () => {
 
   const goal = await savingGoalStore.getGoalById(goalId);
   if (!goal) {
-    toast.error(t('savingGoals.notFound'));
+    toast.error(t('savingGoals.notFound'))
     // Geçersiz id: sayfa geçmişte iz bırakmasın, geri tuşu buraya dönmesin.
     ionRouter.navigate('/settings/savings', 'back', 'replace');
     return;
@@ -125,9 +114,9 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-content class="form-content" :scroll-y="true">
+    <ion-content :scroll-y="true">
       <div class="px-4 pt-[max(env(safe-area-inset-top),1rem)]">
-        <header class="flex items-center justify-between pt-2 px-1">
+        <header class="app-page-header flex items-center justify-between pt-2 px-1">
           <button
               class="size-9 rounded-full flex items-center justify-center text-content-secondary active:bg-surface-strong transition"
               @click="goBackOrFallback('/settings/savings')"
@@ -218,19 +207,20 @@ onMounted(async () => {
             :class="{ 'ion-touched ion-invalid': errors.description }"
         />
       </div>
+    </ion-content>
 
-      <div class="save-bar">
-        <p v-if="submitError" class="text-[12px] text-rose-600 dark:text-rose-400 text-center mb-2">{{ submitError }}</p>
-        <button
-            type="button"
-            class="w-full h-12 rounded-2xl bg-indigo-600 text-white text-[15px] font-semibold active:bg-indigo-700 disabled:bg-slate-300 transition"
-            :disabled="isSubmitting || isSaving"
+    <ion-footer class="ion-no-border">
+      <ion-toolbar>
+        <ion-button
+            expand="block"
+            class="app-button"
+            :disabled="isSubmitting"
             @click="saveGoal"
         >
-          {{ isSubmitting || isSaving ? $t('savingGoals.updating') : $t('savingGoals.update') }}
-        </button>
-      </div>
-    </ion-content>
+          {{ isSubmitting ? $t('savingGoals.updating') : $t('savingGoals.update') }}
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
 
     <!-- İkon picker -->
     <IconPickerModal
@@ -243,18 +233,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.form-content {
-  --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
 ion-item.plain-item {
   --background: transparent;
   --background-hover: transparent;
@@ -279,15 +257,5 @@ ion-item.plain-item [slot="start"] {
 
 ion-item.plain-item [slot="end"] {
   margin: 0 0 0 12px; /* gap-3 */
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
 }
 </style>

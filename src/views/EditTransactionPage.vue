@@ -28,6 +28,8 @@ import TransferAccountFlow from "@/components/TransferAccountFlow.vue";
 import ErrorChip from "@/components/ErrorChip.vue";
 import PickerField from "@/components/PickerField.vue";
 import CategoryPickerModal from "@/components/CategoryPickerModal.vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
 import { getIconByName } from "@/shared/utils";
 import { useMoney } from "@/composables/money/useMoney";
 import { useErrorHandler } from "@/composables/ui/useErrorHandler";
@@ -368,7 +370,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-buttons slot="start">
@@ -378,7 +380,7 @@ onMounted(async () => {
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="tx-form-content" :scroll-y="true">
+    <ion-content :scroll-y="true">
       <div class="px-4">
         <!-- Tip segmenti (düzenlemede tip değiştirilemez — salt görünüm) -->
         <TransactionTypeSegment class="mt-5 pointer-events-none" v-model="type" />
@@ -399,7 +401,7 @@ onMounted(async () => {
                 :currency-code="selectedCurrencyCode"
                 :minor-unit="selectedCurrencyMinorUnit"
                 :error-text="errors.amount"
-                class="tx-amount-input w-full"
+                class="w-full"
             />
             <span class="amount-currency-code">{{ selectedCurrencyCode }}</span>
           </div>
@@ -417,40 +419,50 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div v-if="errors.amount" class="mt-2 flex justify-center">
-            <ErrorChip :message="errors.amount"/>
-          </div>
+          <collapse-transition>
+            <div v-if="errors.amount" class="mt-2 flex justify-center">
+              <ErrorChip :message="errors.amount"/>
+            </div>
+          </collapse-transition>
         </section>
       </div>
 
       <!-- Form alanları -->
       <div class="mt-6 px-4 pb-32 space-y-3">
-        <TransferAccountFlow
-            v-if="values.type === 'transfer'"
-            v-model:source-account-id="accountId"
-            v-model:target-account-id="targetAccountId"
-            v-model:target-amount="targetAmount"
-            :source-accounts="sourceAccounts"
-            :target-accounts="availableTargetAccounts"
-            :source-error="errors.accountId"
-            :target-error="errors.targetAccountId"
-            :cross-currency="isCrossCurrencyTransfer"
-            :source-currency-code="selectedCurrencyCode"
-            :target-currency-code="targetCurrencyCode"
-            :target-currency-minor-unit="targetCurrencyMinorUnit"
-            :target-amount-error="targetAmountError"
-        />
+        <!-- Transfer ↔ gelir/gider: hesap alanı çapraz solar, aradaki yükseklik
+             farkı yumuşakça kapanır; alttaki alanlar zıplamaz. -->
+        <animated-height>
+          <transition name="fade" mode="out-in">
+            <TransferAccountFlow
+                v-if="values.type === 'transfer'"
+                v-model:source-account-id="accountId"
+                v-model:target-account-id="targetAccountId"
+                v-model:target-amount="targetAmount"
+                :source-accounts="sourceAccounts"
+                :target-accounts="availableTargetAccounts"
+                :source-error="errors.accountId"
+                :target-error="errors.targetAccountId"
+                :cross-currency="isCrossCurrencyTransfer"
+                :source-currency-code="selectedCurrencyCode"
+                :target-currency-code="targetCurrencyCode"
+                :target-currency-minor-unit="targetCurrencyMinorUnit"
+                :target-amount-error="targetAmountError"
+            />
 
-        <template v-else>
-          <AccountCarousel
-              v-model="accountId"
-              :accounts="sourceAccounts"
-              :label="$t('transactions.account')"
-          />
-          <div v-if="errors.accountId" class="mt-1 px-1">
-            <ErrorChip :message="errors.accountId"/>
-          </div>
-        </template>
+            <div v-else class="space-y-3">
+              <AccountCarousel
+                  v-model="accountId"
+                  :accounts="sourceAccounts"
+                  :label="$t('transactions.account')"
+              />
+              <collapse-transition>
+                <div v-if="errors.accountId" class="mt-1 px-1">
+                  <ErrorChip :message="errors.accountId"/>
+                </div>
+              </collapse-transition>
+            </div>
+          </transition>
+        </animated-height>
 
         <!-- İşlem adı — MD3 filled text field -->
         <ion-input
@@ -466,25 +478,27 @@ onMounted(async () => {
             @ion-change="titleAttr.onChange"
         />
 
-        <!-- Kategori — MD3 picker alanı -->
-        <picker-field
-            v-if="values.type !== 'transfer'"
-            :label="values.type === 'income' ? $t('transactions.incomeCategory') : $t('transactions.expenseCategory')"
-            :error="errors.categoryId"
-            :empty="!selectedCategory"
-            @click="categoryPicker = true"
-        >
-          <template #start>
-            <div
-                slot="start"
-                class="size-9 rounded-xl flex items-center justify-center text-white shrink-0"
-                :class="selectedCategory?.icon.color || 'bg-surface-strong'"
-            >
-              <ion-icon :icon="selectedCategory ? getIconByName(selectedCategory.icon.name) : pricetagOutline" class="size-5"/>
-            </div>
-          </template>
-          {{ selectedCategory?.name || 'Kategori seç' }}
-        </picker-field>
+        <!-- Kategori — MD3 picker alanı; transferde yerinde katlanır. -->
+        <collapse-transition>
+          <picker-field
+              v-if="values.type !== 'transfer'"
+              :label="values.type === 'income' ? $t('transactions.incomeCategory') : $t('transactions.expenseCategory')"
+              :error="errors.categoryId"
+              :empty="!selectedCategory"
+              @click="categoryPicker = true"
+          >
+            <template #start>
+              <div
+                  slot="start"
+                  class="size-9 rounded-xl flex items-center justify-center text-white shrink-0"
+                  :class="selectedCategory?.icon.color || 'bg-surface-strong'"
+              >
+                <ion-icon :icon="selectedCategory ? getIconByName(selectedCategory.icon.name) : pricetagOutline" class="size-5"/>
+              </div>
+            </template>
+            {{ selectedCategory?.name || 'Kategori seç' }}
+          </picker-field>
+        </collapse-transition>
 
         <!-- Tarih & Saat -->
         <DateTimeField v-model:date="date" v-model:time="time"/>
@@ -531,62 +545,3 @@ onMounted(async () => {
     />
   </ion-page>
 </template>
-
-<style scoped>
-.tx-form-content {
-  --background: var(--c-page);
-}
-
-.tx-form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-/* Rakam ve üst etiketi gerçek kart merkezinde kalır; para birimi sağdaki eşit
-   boşluk alanında sabitlenir. Simetrik padding kodun rakama binmesini önler. */
-.tx-amount-input {
-  --background: transparent;
-  --color: inherit;
-  --padding-start: 48px;
-  --padding-end: 48px;
-  font-size: clamp(26px, 8vw, 32px);
-  font-weight: 800;
-}
-
-.tx-amount-input :deep(input) {
-  font: inherit;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.amount-currency-code {
-  position: absolute;
-  inset-inline-end: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding-inline-start: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* Hızlı ekleme çipleri */
-.quick-chip {
-  height: 36px;
-  border-radius: 12px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  color: var(--c-content-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  transition: background 120ms ease;
-}
-
-.quick-chip:active {
-  background: var(--c-surface-sunken);
-}
-</style>

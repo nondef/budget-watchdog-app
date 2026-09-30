@@ -42,6 +42,8 @@ import { useMoney } from "@/composables/money/useMoney";
 import { useRangeTransactions } from "@/composables/data/useRangeTransactions";
 import { translateCategoryName } from "@/composables/features/useCategoryName";
 import { useI18n } from "vue-i18n";
+import { useAppStore } from "@/stores/app";
+import { PrivacySettings } from "@/domain/value-objects/privacy-settings";
 
 interface CategoryRow {
   id: string
@@ -85,10 +87,19 @@ const categoryDateText = computed(() => dateRangeText(categoryRange.value))
 const cashFlowTx = useRangeTransactions(() => dateRangeBounds(cashFlowRange.value))
 const categoryTx = useRangeTransactions(() => dateRangeBounds(categoryRange.value))
 
-const { formatMoney, sumInBase, convertToBase, maskText } = useMoney()
+const { formatMoney, sumInBase, convertToBase } = useMoney()
 const { t } = useI18n()
 
-const balanceHidden = ref(false)
+/**
+ * Göz ikonu, Görünüm'deki "Tutarları Gizle" ayarının kısayolu — ayrı bir sayfa
+ * durumu değil. Böylece gizleme kalıcı olur ve tüm uygulamadaki tutarları
+ * (maske formatter'da uygulanıyor) birlikte kapatır.
+ */
+const appStore = useAppStore()
+const balanceHidden = computed(() => appStore.hideAmounts)
+const toggleBalanceHidden = () => {
+  void appStore.updatePrivacy(PrivacySettings.create({ hideAmounts: !balanceHidden.value }))
+}
 
 /**
  * Logo dosyası temaya göre seçilir — ama TERS eşlemeyle.
@@ -169,9 +180,10 @@ const totals = computed(() => {
     else if (transaction.type === 'expense') expense += converted
   }
 
+  // Maske açıkken formatter zaten '••••' döner; '~' maskenin önüne eklenmez.
   const ftmt = (n: number, missing: boolean) => {
     const s = formatMoney(n)
-    return missing ? `~${s}` : s
+    return missing && !balanceHidden.value ? `~${s}` : s
   }
 
   const balanceMissing = totalBalance.missing.length > 0
@@ -278,57 +290,78 @@ onIonViewWillEnter(async () => {
     <ion-content class="home-content" :scroll-y="true">
       <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
         <!-- Bakiye + Hızlı işlemler tek kart -->
-        <section class="balance-card overflow-hidden rounded-[22px] px-5 py-5">
+        <section class="app-hero balance-card overflow-hidden px-5 py-5">
           <div class="flex items-center gap-2 font-semibold text-content">
             <p class="text-[12px]">{{ $t('home.totalBalance') }}</p>
             <ion-button
                 fill="clear"
                 class="balance-visibility"
-                @click="balanceHidden = !balanceHidden"
+                @click="toggleBalanceHidden"
                 :aria-label="$t('home.hideBalance')"
             >
-              <ion-icon slot="icon-only" :icon="balanceHidden ? eyeOffOutline : eyeOutline" />
+              <transition name="icon-swap" mode="out-in">
+                <ion-icon
+                    slot="icon-only"
+                    :key="String(balanceHidden)"
+                    :icon="balanceHidden ? eyeOffOutline : eyeOutline"
+                />
+              </transition>
             </ion-button>
           </div>
           <h2 class="mt-2 text-[38px] leading-none font-extrabold text-content tabular-nums tracking-tight">
-            {{ balanceHidden ? maskText : totals.totalBalance }}
+            <transition name="value-swap" mode="out-in">
+              <span :key="totals.totalBalance" class="inline-block">{{ totals.totalBalance }}</span>
+            </transition>
           </h2>
 
-          <!-- Uyarı ve çaresi aynı yerde: dokunmak kurları yeniden çeker. -->
-          <button
-              v-if="!balanceHidden && totals.balanceMissing"
-              class="mt-1 inline-flex items-center gap-1 text-[11px] text-amber-600 active:opacity-60 transition disabled:opacity-60"
-              :disabled="retryingRates"
-              @click="() => void retryRates()"
+          <!-- Uyarı ve çaresi aynı yerde: dokunmak kurları yeniden çeker.
+               Satır yüksekliği sıfırdan açılır/kapanır ki altındaki kart içeriği
+               zıplamasın; kapalıyken `inert` ile odak ve dokunma dışı kalır. -->
+          <div
+              class="collapse-row"
+              :class="{ 'collapse-row--open': !balanceHidden && totals.balanceMissing }"
+              :inert="balanceHidden || !totals.balanceMissing"
           >
-            <ion-icon
-                :icon="retryingRates ? refreshOutline : warningOutline"
-                class="size-3"
-                :class="{ 'animate-spin': retryingRates }"
-            />
-            <span>{{ retryingRates ? $t('common.loading') : $t('home.missingRates') }}</span>
-            <span v-if="!retryingRates" class="font-semibold underline underline-offset-2">
-              {{ $t('common.retry') }}
-            </span>
-          </button>
+            <div class="collapse-row-inner">
+              <button
+                  class="mt-1 inline-flex items-center gap-1 text-[11px] text-amber-600 active:opacity-60 transition disabled:opacity-60"
+                  :disabled="retryingRates"
+                  @click="() => void retryRates()"
+              >
+                <ion-icon
+                    :icon="retryingRates ? refreshOutline : warningOutline"
+                    class="size-3"
+                    :class="{ 'animate-spin': retryingRates }"
+                />
+                <span>{{ retryingRates ? $t('common.loading') : $t('home.missingRates') }}</span>
+                <span v-if="!retryingRates" class="font-semibold underline underline-offset-2">
+                  {{ $t('common.retry') }}
+                </span>
+              </button>
+            </div>
+          </div>
 
           <div class="mt-4 grid grid-cols-2 gap-2 text-[12px]">
             <div class="balance-stat flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5">
               <span class="size-1.5 rounded-full bg-emerald-500" />
               <div class="min-w-0">
                 <span class="block text-[10px] text-content-muted">{{ $t('home.income') }}</span>
-                <span class="block truncate font-bold text-content tabular-nums">
-                {{ balanceHidden ? maskText : totals.income }}
-                </span>
+                <transition name="value-swap" mode="out-in">
+                  <span :key="totals.income" class="block truncate font-bold text-content tabular-nums">
+                    {{ totals.income }}
+                  </span>
+                </transition>
               </div>
             </div>
             <div class="balance-stat flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5">
               <span class="size-1.5 rounded-full bg-rose-500" />
               <div class="min-w-0">
                 <span class="block text-[10px] text-content-muted">{{ $t('home.expense') }}</span>
-                <span class="block truncate font-bold text-content tabular-nums">
-                {{ balanceHidden ? maskText : totals.expense }}
-                </span>
+                <transition name="value-swap" mode="out-in">
+                  <span :key="totals.expense" class="block truncate font-bold text-content tabular-nums">
+                    {{ totals.expense }}
+                  </span>
+                </transition>
               </div>
             </div>
           </div>
@@ -350,7 +383,7 @@ onIonViewWillEnter(async () => {
             </router-link>
           </div>
         </section>
-        <div class="home-sections mt-4 space-y-4">
+        <div class="home-sections mt-4 -mb-4">
         <!-- Kartların en üstünde: bakiyeden hemen sonra görülür ama hiçbir
              şeyin üstünü örtmez ve kaydırınca gider. -->
         <BackupReminderCard class="dashboard-section" />
@@ -397,18 +430,8 @@ onIonViewWillEnter(async () => {
    derlenirken torun kısmını kaybedip `--background`i doğrudan <html>'e
    basıyordu; oradan da değeri okuyan her elemana miras kalıyordu. */
 
-ion-page {
-  overflow: hidden;
-}
-
 .home-content {
   --background: var(--c-page);
-}
-
-.balance-card {
-  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
 }
 
 ion-button.balance-visibility {
@@ -439,9 +462,14 @@ ion-button.balance-visibility ion-icon {
 }
 
 .quick-action-icon--income {
-  background: color-mix(in srgb, #16a34a 12%, var(--c-surface));
-  border-color: color-mix(in srgb, #16a34a 24%, var(--c-line));
-  color: #15803d;
+  --income-icon-color: #15803d;
+  background: color-mix(in srgb, var(--income-icon-color) 12%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--income-icon-color) 24%, var(--c-line));
+  color: var(--income-icon-color);
+}
+
+:global(.ion-palette-dark .quick-action-icon--income) {
+  --income-icon-color: #86efac;
 }
 
 .quick-action-icon--expense {
@@ -456,12 +484,22 @@ ion-button.balance-visibility ion-icon {
 }
 
 .quick-action-icon--goal {
-  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface));
-  border-color: color-mix(in srgb, #f59e0b 26%, var(--c-line));
-  color: #b45309;
+  --goal-icon-color: #92400e;
+  background: color-mix(in srgb, var(--goal-icon-color) 13%, var(--c-surface));
+  border-color: color-mix(in srgb, var(--goal-icon-color) 26%, var(--c-line));
+  color: var(--goal-icon-color);
 }
 
+:global(.ion-palette-dark .quick-action-icon--goal) {
+  --goal-icon-color: #fcd34d;
+}
+
+/* Kartlar arası boşluk kapsayıcının `space-y`si değil, her kartın kendi alt
+   boşluğu: kart kapanırken (CollapseTransition) boşluğunu da götürebilsin,
+   ilk/son kart değişince komşunun boşluğu zıplamasın. Son kartın fazlası
+   kapsayıcının negatif alt boşluğuyla sıfırlanıyor. */
 .dashboard-section {
+  margin-bottom: 1rem;
   border: 1px solid var(--c-line);
   border-radius: 18px;
   box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
@@ -509,10 +547,30 @@ ion-button.balance-visibility ion-icon {
   transform: translateY(-6px);
 }
 
+/* `height: auto`ya geçiş yapılamadığı için grid satırı 0fr ↔ 1fr arasında
+   animasyonlanıyor; iç kutu `min-height: 0` ile satıra sığacak kadar büzülüyor. */
+.collapse-row {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms ease, opacity 240ms ease;
+}
+
+.collapse-row--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.collapse-row-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Hareket hassasiyeti: geçiş animasyonsuz, anında olur. */
 @media (prefers-reduced-motion: reduce) {
   .welcome-swap-enter-active,
-  .welcome-swap-leave-active {
+  .welcome-swap-leave-active,
+  .collapse-row {
     transition: none;
   }
 

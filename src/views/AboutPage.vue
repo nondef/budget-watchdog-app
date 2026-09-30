@@ -29,7 +29,7 @@ const appInfo = {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar class="toolbar-plain">
         <ion-buttons slot="start">
@@ -62,7 +62,7 @@ const appInfo = {
             <h1 class="mt-4 text-[22px] font-bold tracking-tight text-content">
               {{ appInfo.name }}
             </h1>
-            <p class="mt-1 text-[12px] font-medium text-content-muted">
+            <p class="about-version mt-1 text-[12px] font-semibold">
               {{ $t('about.version') }} {{ appInfo.version }}
             </p>
             <p class="mt-4 max-w-sm text-[13px] leading-relaxed text-content-tertiary">
@@ -83,10 +83,10 @@ const appInfo = {
                 <ion-icon :icon="informationCircleOutline" class="size-[18px] text-content-secondary" />
               </div>
               <ion-label>
-                <p class="text-[14px] font-medium text-content">
+                <p class="about-version-label text-[14px] font-semibold">
                   {{ $t('about.versionLabel') }}
                 </p>
-                <p class="mt-0.5 text-[11px] text-content-muted">
+                <p class="about-version-number mt-0.5 text-[12px] font-medium">
                   {{ appInfo.version }}
                 </p>
               </ion-label>
@@ -122,10 +122,6 @@ const appInfo = {
 <style scoped>
 .about-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
 }
 
 .brand-mark {
@@ -195,5 +191,15 @@ html.ion-palette-dark .brand-logo--dark {
   border: 1px solid var(--c-line);
   border-radius: 12px;
   background: var(--c-surface-sunken);
+}
+
+.about-hero .about-version,
+.about-item ion-label .about-version-number {
+  color: var(--c-content-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.about-item ion-label .about-version-label {
+  color: var(--c-content);
 }
 </style>

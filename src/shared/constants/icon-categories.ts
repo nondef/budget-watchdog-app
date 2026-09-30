@@ -4,13 +4,13 @@ export interface IconDefinition {
 }
 
 export interface IconCategory {
-    name: string
+    nameKey: string
     icons: IconDefinition[]
 }
 
 export const ICON_CATEGORIES: IconCategory[] = [
     {
-        name: 'Eğlence',
+        nameKey: 'iconPicker.categories.entertainment',
         icons: [
             { name: 'Oyun', iconName: 'gameControllerOutline' },
             { name: 'Müzik', iconName: 'musicalNotesOutline' },
@@ -25,7 +25,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'İş',
+        nameKey: 'iconPicker.categories.work',
         icons: [
             { name: 'Çanta', iconName: 'briefcaseOutline' },
             { name: 'Eğitim', iconName: 'schoolOutline' },
@@ -38,7 +38,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Finans',
+        nameKey: 'iconPicker.categories.finance',
         icons: [
             { name: 'Cüzdan', iconName: 'walletOutline' },
             { name: 'Kart', iconName: 'cardOutline' },
@@ -52,7 +52,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Yemek & İçecek',
+        nameKey: 'iconPicker.categories.foodDrink',
         icons: [
             { name: 'Restoran', iconName: 'restaurantOutline' },
             { name: 'Fast Food', iconName: 'fastFoodOutline' },
@@ -65,7 +65,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Ulaşım',
+        nameKey: 'iconPicker.categories.transport',
         icons: [
             { name: 'Araba', iconName: 'carOutline' },
             { name: 'Uçak', iconName: 'airplaneOutline' },
@@ -78,7 +78,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Alışveriş',
+        nameKey: 'iconPicker.categories.shopping',
         icons: [
             { name: 'Alışveriş', iconName: 'bagOutline' },
             { name: 'Market', iconName: 'basketOutline' },
@@ -90,7 +90,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Sağlık',
+        nameKey: 'iconPicker.categories.health',
         icons: [
             { name: 'Sağlık', iconName: 'medicalOutline' },
             { name: 'Fitness', iconName: 'fitnessOutline' },
@@ -102,7 +102,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Ev',
+        nameKey: 'iconPicker.categories.home',
         icons: [
             { name: 'Ev', iconName: 'homeOutline' },
             { name: 'Yatak', iconName: 'bedOutline' },
@@ -115,7 +115,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Teknoloji',
+        nameKey: 'iconPicker.categories.technology',
         icons: [
             { name: 'Bilgisayar', iconName: 'laptopOutline' },
             { name: 'Telefon', iconName: 'phonePortraitOutline' },
@@ -129,7 +129,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Doğa & Seyahat',
+        nameKey: 'iconPicker.categories.natureTravel',
         icons: [
             { name: 'Yaprak', iconName: 'leafOutline' },
             { name: 'Çiçek', iconName: 'flowerOutline' },
@@ -143,7 +143,7 @@ export const ICON_CATEGORIES: IconCategory[] = [
         ]
     },
     {
-        name: 'Diğer',
+        nameKey: 'iconPicker.categories.other',
         icons: [
             { name: 'İnternet', iconName: 'globeOutline' },
             { name: 'Gece', iconName: 'moonOutline' },

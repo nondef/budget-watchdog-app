@@ -3,13 +3,14 @@ import { IonContent, IonPage } from '@ionic/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Haptics, NotificationType } from '@capacitor/haptics';
+import { useHaptics } from '@/composables/ui/useHaptics';
 import { useSecurityStore } from '@/stores/security';
 import PinKeypad from '@/components/PinKeypad.vue';
 
 const router = useRouter();
 const route = useRoute();
 const security = useSecurityStore();
+const haptics = useHaptics();
 const { t } = useI18n();
 
 const PIN_LENGTH = 4;
@@ -70,7 +71,7 @@ const verify = async () => {
 
   if (ok) {
     security.unlock();
-    void Haptics.notification({ type: NotificationType.Success }).catch(() => {});
+    haptics.success();
     goAfterUnlock();
     return;
   }
@@ -78,7 +79,7 @@ const verify = async () => {
   showWrongPin.value = true;
   syncLockout();
   shake.value = true;
-  void Haptics.notification({ type: NotificationType.Error }).catch(() => {});
+  haptics.error();
 
   setTimeout(() => {
     pin.value = '';

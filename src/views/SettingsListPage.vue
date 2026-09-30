@@ -52,7 +52,7 @@ const backupBadgeVisible = computed(
 
 interface MenuItem {
   icon: string
-  tone: 'primary' | 'violet' | 'success' | 'warning' | 'info' | 'danger' | 'neutral'
+  tone: 'accounts' | 'language' | 'theme' | 'feedback' | 'about' | 'categories' | 'appearance' | 'success' | 'warning' | 'info' | 'danger'
   key: string
   href: string
 }
@@ -60,13 +60,13 @@ interface MenuItem {
 const financialManagementMenus: MenuItem[] = [
   {
     icon: walletOutline,
-    tone: 'primary',
+    tone: 'accounts',
     key: 'accounts',
     href: '/settings/accounts'
   },
   {
     icon: appsOutline,
-    tone: 'violet',
+    tone: 'categories',
     key: 'categories',
     href: '/settings/categories'
   },
@@ -99,13 +99,13 @@ const financialManagementMenus: MenuItem[] = [
 const applicationMenus: MenuItem[] = [
   {
     icon: moonOutline,
-    tone: 'neutral',
+    tone: 'theme',
     key: 'theme',
     href: '/settings/theme'
   },
   {
     icon: languageOutline,
-    tone: 'primary',
+    tone: 'language',
     key: 'language',
     href: '/settings/language'
   },
@@ -117,7 +117,7 @@ const applicationMenus: MenuItem[] = [
   },
   {
     icon: eyeOffOutline,
-    tone: 'violet',
+    tone: 'appearance',
     key: 'appearance',
     href: '/settings/appearance'
   },
@@ -144,13 +144,13 @@ const accountSupportMenus: MenuItem[] = [
   },
   {
     icon: chatbubblesOutline,
-    tone: 'neutral',
+    tone: 'feedback',
     key: 'feedback',
     href: '/settings/feedback'
   },
   {
     icon: informationCircleOutline,
-    tone: 'neutral',
+    tone: 'about',
     key: 'about',
     href: '/settings/about'
   },
@@ -165,7 +165,7 @@ const sections = computed(() => [
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <ion-header class="ion-no-border">
       <ion-toolbar class="toolbar-plain">
@@ -196,19 +196,21 @@ const sections = computed(() => [
               <div slot="start" class="settings-icon" :class="`settings-icon--${item.tone}`">
                 <ion-icon :icon="item.icon"/>
               </div>
-              <ion-label>
+              <ion-label class="settings-item-label ion-text-wrap">
                 <h3>{{ $t(`settings.items.${item.key}.label`) }}</h3>
                 <p>{{ $t(`settings.items.${item.key}.description`) }}</p>
               </ion-label>
 
               <!-- Sekme çubuğundaki noktanın satır karşılığı: kullanıcı listeye
                    girdiğinde hangi satırın beklediğini görsün. -->
-              <span
-                  v-if="item.key === 'backup' && backupBadgeVisible"
-                  slot="end"
-                  class="settings-badge"
-                  :aria-label="$t('backup.reminder.action')"
-              />
+              <transition name="icon-swap">
+                <span
+                    v-if="item.key === 'backup' && backupBadgeVisible"
+                    slot="end"
+                    class="settings-badge"
+                    :aria-label="$t('backup.reminder.action')"
+                />
+              </transition>
             </ion-item>
           </ion-list>
         </ion-item-group>
@@ -235,30 +237,21 @@ const sections = computed(() => [
   flex-shrink: 0;
 }
 
-ion-label > h3 {
+.settings-item-label > h3 {
+  margin: 0;
   font-size: 14px;
   font-weight: 700;
+  line-height: 20px;
   color: var(--c-content);
 }
 
-ion-label > p {
-  margin-top: 3px;
+.settings-item-label > p {
+  margin: 3px 0 0;
   font-size: 11px;
   font-weight: 400;
+  line-height: 16px;
   color: var(--c-content-muted);
 }
-
-/*ion-item-divider {
-  --padding-start: 5px;
-}*/
-
-/*.settings-content {
-  --background: var(--c-page);
-}*/
-
-/*ion-page {
-  overflow: hidden;
-}*/
 
 /* ion-list'i tasarımdaki düz kart kabı gibi göstermek için
    Ionic'in varsayılan zemin/padding değerlerini sıfırla. */
@@ -291,8 +284,7 @@ ion-label > p {
   text-transform: uppercase;
 }
 
-/* ion-item'i orijinal router-link satırıyla birebir aynı yap:
-   tüm padding/min-height/zemin değerlerini iç div'e bırak. */
+/* Her grupta ikon, metin ve ok aynı dikey merkezde hizalanır. */
 .settings-item {
   --background: transparent;
   --background-activated: var(--c-surface-sunken);
@@ -304,19 +296,38 @@ ion-label > p {
   --padding-start: 14px;
   --padding-end: 10px;
   --inner-padding-start: 0;
-  --inner-padding-end: 0;
+  --inner-padding-end: 8px;
   --min-height: 68px;
   --border-color: var(--c-line);
   --detail-icon-color: var(--c-content-muted);
   --detail-icon-opacity: 0.8;
 }
 
+.settings-item::part(native) {
+  align-items: center;
+}
+
+.settings-item .settings-item-label {
+  flex: 1;
+  min-width: 0;
+  margin: 12px 0;
+  align-self: center;
+}
+
+.settings-item .settings-badge {
+  align-self: center;
+  margin-block: 0;
+}
+
 .settings-icon {
   display: flex;
   width: 40px;
   height: 40px;
+  margin-block: 0;
+  margin-inline-start: 0;
   margin-inline-end: 12px;
   flex-shrink: 0;
+  align-self: center;
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
@@ -324,18 +335,78 @@ ion-label > p {
 }
 
 .settings-icon ion-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
   font-size: 18px;
 }
 
-.settings-icon--primary {
-  background: var(--c-primary);
-  color: var(--c-on-primary);
+.settings-icon--accounts,
+.settings-icon--language,
+.settings-icon--theme,
+.settings-icon--feedback,
+.settings-icon--categories,
+.settings-icon--appearance,
+.settings-icon--about {
+  background: color-mix(in srgb, var(--settings-icon-accent) 12%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, var(--settings-icon-accent) 24%, var(--c-line));
+  color: var(--settings-icon-accent);
 }
 
-.settings-icon--violet {
-  background: color-mix(in srgb, #7c3aed 12%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, #7c3aed 24%, var(--c-line));
-  color: #7c3aed;
+.settings-icon--accounts {
+  --settings-icon-accent: #8a651d;
+}
+
+.settings-icon--language {
+  --settings-icon-accent: #0f766e;
+}
+
+.settings-icon--theme {
+  --settings-icon-accent: #4338ca;
+}
+
+.settings-icon--feedback {
+  --settings-icon-accent: #be185d;
+}
+
+.settings-icon--about {
+  --settings-icon-accent: #1d4ed8;
+}
+
+:global(.ion-palette-dark .settings-icon--accounts) {
+  --settings-icon-accent: #e3bc65;
+}
+
+:global(.ion-palette-dark .settings-icon--language) {
+  --settings-icon-accent: #5eead4;
+}
+
+:global(.ion-palette-dark .settings-icon--theme) {
+  --settings-icon-accent: #a5b4fc;
+}
+
+:global(.ion-palette-dark .settings-icon--feedback) {
+  --settings-icon-accent: #f9a8d4;
+}
+
+:global(.ion-palette-dark .settings-icon--about) {
+  --settings-icon-accent: #93c5fd;
+}
+
+.settings-icon--categories {
+  --settings-icon-accent: #7c3aed;
+}
+
+.settings-icon--appearance {
+  --settings-icon-accent: #c2410c;
+}
+
+:global(.ion-palette-dark .settings-icon--categories) {
+  --settings-icon-accent: #c4b5fd;
+}
+
+:global(.ion-palette-dark .settings-icon--appearance) {
+  --settings-icon-accent: #fdba74;
 }
 
 .settings-icon--success {
@@ -362,25 +433,15 @@ ion-label > p {
   color: var(--c-error);
 }
 
-.settings-icon--neutral {
-  background: var(--c-surface-sunken);
-  border-color: var(--c-line);
-  color: var(--c-content-secondary);
-}
-
-:global(.ion-palette-dark) .settings-icon--violet {
-  color: #c4b5fd;
-}
-
-:global(.ion-palette-dark) .settings-icon--success {
+:global(html.ion-palette-dark .settings-icon--success) {
   color: #86efac;
 }
 
-:global(.ion-palette-dark) .settings-icon--warning {
+:global(html.ion-palette-dark .settings-icon--warning) {
   color: #fcd34d;
 }
 
-:global(.ion-palette-dark) .settings-icon--info {
+:global(html.ion-palette-dark .settings-icon--info) {
   color: #7dd3fc;
 }
 </style>

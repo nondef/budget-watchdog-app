@@ -18,11 +18,12 @@ import {
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 import { useSecurityStore } from '@/stores/security';
 import { useToast } from '@/composables/ui/useToast';
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import CollapseTransition from '@/components/CollapseTransition.vue';
+import { Toast } from "@capacitor/toast";
 
 const router = useRouter();
 const security = useSecurityStore();
@@ -37,8 +38,6 @@ const biometricLabel = computed(() => {
   return t('security.biometric');
 });
 
-const haptic = () => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
-
 const biometryAvailable = ref(false);
 
 onMounted(async () => {
@@ -50,7 +49,6 @@ const navigateToPinSetup = () => router.push('/settings/security/pin');
 
 const toggleScreenLock = async () => {
   const enabled = !s.value.screenLock
-  haptic();
 
   if (enabled && !security.hasPin) {
     router.push('/settings/security/pin');
@@ -68,7 +66,7 @@ const toggleScreenLock = async () => {
           role: 'destructive',
           handler: async () => {
             await security.removePin();
-            toast.success(t('security.screenLockDisabled'));
+            Toast.show({ text: t('security.screenLockDisabled')})
           },
         },
       ],
@@ -82,7 +80,6 @@ const toggleScreenLock = async () => {
 
 const toggleBiometric = async () => {
   const enabled = !s.value.biometricEnabled
-  haptic();
 
   if (enabled && !security.hasPin) {
     toast.warning(t('security.setPinFirst'));
@@ -97,7 +94,6 @@ const toggleBiometric = async () => {
 };
 
 const toggleAutoLock = async () => {
-  haptic();
   await security.setAutoLock(!s.value.autoLock);
 };
 
@@ -109,12 +105,12 @@ const setTimeout = async (value: number) => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <sub-page-header :title="$t('security.title')"/>
 
     <ion-content :fullscreen="true" class="sec-content" :scroll-y="true">
       <main class="mx-auto w-full max-w-xl space-y-6 px-4 pb-12 pt-5">
-        <section class="security-hero flex items-start gap-4 rounded-[22px] p-5">
+        <section class="app-hero security-hero flex items-start gap-4 p-5">
           <div class="hero-icon flex size-12 shrink-0 items-center justify-center rounded-2xl">
             <ion-icon :icon="lockClosedOutline" class="text-[22px]" />
           </div>
@@ -129,10 +125,10 @@ const setTimeout = async (value: number) => {
         <!-- Uygulama Kilidi -->
         <section>
           <h2 class="section-label">{{ $t('security.accessControl') }}</h2>
-          <div class="security-card overflow-hidden rounded-[18px]">
+          <div class="app-card security-card overflow-hidden">
             <!-- Ekran kilidi -->
             <div class="security-row flex items-center gap-3 border-b border-line px-4 py-3">
-              <div class="security-icon security-icon--primary">
+              <div class="security-icon tone-primary">
                 <ion-icon :icon="eyeOutline" />
               </div>
               <div class="flex-1 min-w-0">
@@ -155,7 +151,7 @@ const setTimeout = async (value: number) => {
                 :disabled="!s.screenLock"
                 @click="navigateToPinSetup"
             >
-              <div slot="start" class="security-icon security-icon--warning">
+              <div slot="start" class="security-icon tone-warning">
                 <ion-icon :icon="keyOutline" />
               </div>
               <ion-label class="ion-text-wrap">
@@ -166,34 +162,37 @@ const setTimeout = async (value: number) => {
               </ion-label>
             </ion-item>
 
-            <!-- Biyometrik (yalnızca cihaz destekliyorsa) -->
-            <div
-                v-if="biometryAvailable"
-                class="security-row flex items-center gap-3 px-4 py-3 transition"
-                :class="{ 'opacity-40 pointer-events-none': !s.screenLock || !security.hasPin }"
-            >
-              <div class="security-icon security-icon--violet">
-                <ion-icon :icon="fingerPrintOutline" />
+            <!-- Biyometrik (yalnızca cihaz destekliyorsa); destek kontrolü
+                 asenkron bittiğinde satır zıplamadan açılır. -->
+            <collapse-transition>
+              <div
+                  v-if="biometryAvailable"
+                  class="security-row flex items-center gap-3 px-4 py-3 transition"
+                  :class="{ 'opacity-40 pointer-events-none': !s.screenLock || !security.hasPin }"
+              >
+                <div class="security-icon tone-violet">
+                  <ion-icon :icon="fingerPrintOutline" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[14px] font-bold text-content">{{ biometricLabel }}</p>
+                  <p class="text-[11px] text-content-muted mt-0.5">{{ $t('security.biometricDesc') }}</p>
+                </div>
+                <ion-toggle
+                    :checked="s.biometricEnabled"
+                    :aria-label="biometricLabel"
+                    @ion-change="toggleBiometric"
+                />
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[14px] font-bold text-content">{{ biometricLabel }}</p>
-                <p class="text-[11px] text-content-muted mt-0.5">{{ $t('security.biometricDesc') }}</p>
-              </div>
-              <ion-toggle
-                  :checked="s.biometricEnabled"
-                  :aria-label="biometricLabel"
-                  @ion-change="toggleBiometric"
-              />
-            </div>
+            </collapse-transition>
           </div>
         </section>
 
         <!-- Otomatik Kilit -->
         <section :class="{ 'opacity-40 pointer-events-none': !s.screenLock }">
           <h2 class="section-label">{{ $t('security.autoLock') }}</h2>
-          <div class="security-card overflow-hidden rounded-[18px]">
-            <div class="security-row flex items-center gap-3 px-4 py-3" :class="{ 'border-b border-line': s.autoLock }">
-              <div class="security-icon security-icon--info">
+          <div class="app-card security-card overflow-hidden">
+            <div class="security-row flex items-center gap-3 px-4 py-3">
+              <div class="security-icon tone-info">
                 <ion-icon :icon="timeOutline" />
               </div>
               <div class="flex-1 min-w-0">
@@ -207,23 +206,28 @@ const setTimeout = async (value: number) => {
               />
             </div>
 
-            <div v-if="s.autoLock" class="px-4 py-3">
-              <p class="text-[11px] text-content-muted mb-2">{{ $t('security.lockTimeout') }}</p>
-              <div class="timeout-grid grid grid-cols-4 gap-1.5 rounded-xl p-1">
-                <button
-                    v-for="opt in timeoutOptions"
-                    :key="opt"
-                    type="button"
-                    class="timeout-option rounded-lg py-2 text-[11px] font-bold transition"
-                    :class="s.lockTimeoutMinutes === opt
-                        ? 'timeout-option--active'
-                        : 'text-content-tertiary'"
-                    @click="setTimeout(opt)"
-                >
-                  {{ $t('security.minutes', { count: opt }) }}
-                </button>
+            <!-- Otomatik kilit açılınca süre seçici toggle'ın altında açılır.
+                 Ayırıcı çizgi önceden üst satırın `border-b`siydi ve anında
+                 beliriyordu; bloğun kendi üst kenarı olunca onunla katlanıyor. -->
+            <collapse-transition>
+              <div v-if="s.autoLock" class="border-t border-line px-4 py-3">
+                <p class="text-[11px] text-content-muted mb-2">{{ $t('security.lockTimeout') }}</p>
+                <div class="timeout-grid grid grid-cols-4 gap-1.5 rounded-xl p-1">
+                  <button
+                      v-for="opt in timeoutOptions"
+                      :key="opt"
+                      type="button"
+                      class="timeout-option rounded-lg py-2 text-[11px] font-bold transition"
+                      :class="s.lockTimeoutMinutes === opt
+                          ? 'timeout-option--active'
+                          : 'text-content-tertiary'"
+                      @click="setTimeout(opt)"
+                  >
+                    {{ $t('security.minutes', { count: opt }) }}
+                  </button>
+                </div>
               </div>
-            </div>
+            </collapse-transition>
           </div>
         </section>
 
@@ -253,32 +257,11 @@ const setTimeout = async (value: number) => {
   --background: var(--c-page);
 }
 
-ion-page {
-  overflow: hidden;
-}
-
-.security-hero {
-  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
-}
-
-.hero-icon,
-.security-icon--primary {
+.hero-icon {
   background: var(--c-primary);
   color: var(--c-on-primary);
 }
 
-.section-label {
-  margin: 0 4px 9px;
-  color: var(--c-content-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.security-card,
 .security-note {
   background: var(--c-surface);
   border: 1px solid var(--c-line);
@@ -292,30 +275,13 @@ ion-page {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
+  border-width: 1px;
+  border-style: solid;
   border-radius: 13px;
 }
 
 .security-icon ion-icon {
   font-size: 18px;
-}
-
-.security-icon--warning {
-  background: color-mix(in srgb, #f59e0b 13%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, #f59e0b 25%, var(--c-line));
-  color: #b45309;
-}
-
-.security-icon--violet {
-  background: color-mix(in srgb, #7c3aed 11%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, #7c3aed 23%, var(--c-line));
-  color: #7c3aed;
-}
-
-.security-icon--info {
-  background: color-mix(in srgb, #0284c7 11%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, #0284c7 23%, var(--c-line));
-  color: #0369a1;
 }
 
 .security-item {
@@ -357,17 +323,5 @@ ion-page {
   background: var(--c-primary);
   color: var(--c-on-primary);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--c-content) 16%, transparent);
-}
-
-:global(.ion-palette-dark) .security-icon--warning {
-  color: #fcd34d;
-}
-
-:global(.ion-palette-dark) .security-icon--violet {
-  color: #c4b5fd;
-}
-
-:global(.ion-palette-dark) .security-icon--info {
-  color: #7dd3fc;
 }
 </style>

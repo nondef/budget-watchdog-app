@@ -15,6 +15,7 @@ import { getIconByNameOrFallback } from "@/shared/utils/ui/icons";
 import { appConfig } from "@/shared/config/app-config";
 import OnboardingSteps from "@/components/OnboardingSteps.vue";
 import CurrencyInput from "@/components/CurrencyInput.vue";
+import SwapText from "@/components/SwapText.vue";
 import { createAccountOnboardingSchema } from "@/forms";
 import { COLOR_PRESETS } from "@/shared/constants";
 import { useMoney } from "@/composables";
@@ -103,7 +104,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
         </ion-buttons>
 
         <!-- Step indicator -->
-        <onboarding-steps :current="2" :total="2" class="step-abs" />
+        <onboarding-steps :current="2" :total="2" class="toolbar-center" />
       </ion-toolbar>
     </ion-header>
 
@@ -136,8 +137,13 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
                 <span class="text-[10px] uppercase tracking-widest opacity-80 font-semibold">
                   {{ appConfig.name }}
                 </span>
+                <!-- İkon seçilince önizlemede yerinde değişir. Ad ve bakiye
+                     bilerek animasyonsuz: her tuş vuruşunda solmak yazmayı
+                     gecikmeli hissettirirdi. -->
                 <div class="size-10 rounded-2xl bg-surface/20 backdrop-blur flex items-center justify-center">
-                  <ion-icon :icon="getIconByNameOrFallback(selectedIcon)" class="size-5 text-white" />
+                  <transition name="icon-swap" mode="out-in">
+                    <ion-icon :key="selectedIcon" :icon="getIconByNameOrFallback(selectedIcon)" class="size-5 text-white" />
+                  </transition>
                 </div>
               </div>
 
@@ -247,7 +253,7 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
             :disabled="isSubmitting"
             @click="onSaveClick"
         >
-          {{ isSubmitting ? $t('firstWallet.creatingShort') : $t('firstWallet.complete') }}
+          <swap-text :text="isSubmitting ? $t('firstWallet.creatingShort') : $t('firstWallet.complete')" />
           <ion-icon slot="end" :icon="chevronForwardOutline" class="size-4" />
         </ion-button>
       </ion-toolbar>
@@ -258,18 +264,6 @@ const onSaveClick = guardSubmit(isSubmitting, async () => {
 <style scoped>
 .wallet-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.step-abs {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 
 .loading-overlay {
@@ -294,4 +288,10 @@ ion-page {
   opacity: 0;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .overlay-fade-enter-active,
+  .overlay-fade-leave-active {
+    transition: none;
+  }
+}
 </style>

@@ -23,10 +23,11 @@ import { guardSubmit } from "@/composables/ui/guard-submit";
 import { getIconByName } from "@/shared/utils";
 import IconPickerModal from "@/components/IconPickerModal.vue";
 import DateField from "@/components/DateField.vue";
-import AmountCard from "@/components/AmountCard.vue";
+import CurrencyInput from "@/components/CurrencyInput.vue";
 import AccountCarousel from "@/components/AccountCarousel.vue";
 import ErrorChip from "@/components/ErrorChip.vue";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import CollapseTransition from "@/components/CollapseTransition.vue";
 
 const { t } = useI18n();
 const { goBackOrFallback } = useAppNavigation();
@@ -137,7 +138,7 @@ onMounted(async () => {
   <ion-page>
     <sub-page-header :title="$t('savingGoals.new')" default-href="/settings/savings"/>
 
-    <ion-content class="form-content" :scroll-y="true">
+    <ion-content :scroll-y="true">
       <div class="px-4">
         <!-- Hero: ikon -->
         <section class="mt-6 flex flex-col items-center">
@@ -175,30 +176,70 @@ onMounted(async () => {
             v-model="selectedAccountId"
         />
 
-        <p v-if="errors.accountId" class="field-error text-[11px] text-rose-600 px-1">
-          {{ errors.accountId }}
-        </p>
+        <collapse-transition>
+          <p v-if="errors.accountId" class="field-error text-[11px] text-rose-600 px-1">
+            {{ errors.accountId }}
+          </p>
+        </collapse-transition>
 
         <p class="px-1 text-[11px] text-content-muted">
           {{ $t('savingGoals.accountHint') }}
         </p>
 
         <!-- Tutarlar -->
-        <amount-card
-            :label="$t('savingGoals.initialAmount')"
-            v-model="initialAmount"
-            :currency-code="selectedCurrency?.code || 'TRY'"
-            :minor-unit="selectedCurrency?.minorUnit"
-            :error="errors.initialAmount"
-        />
+        <section>
+          <p class="text-center text-[13px] font-medium uppercase tracking-wider text-content-muted mb-2">
+            {{ $t('savingGoals.initialAmount') }}
+          </p>
+          <div
+              class="amount-card relative flex items-center justify-center rounded-2xl border border-line bg-surface px-3"
+              :class="{ 'amount-card-error': errors.initialAmount }"
+          >
+            <CurrencyInput
+                v-model="initialAmount"
+                variant="plain"
+                hide-currency
+                :label="$t('savingGoals.initialAmount')"
+                :currency-code="selectedCurrency?.code || 'TRY'"
+                :minor-unit="selectedCurrency?.minorUnit"
+                :error-text="errors.initialAmount"
+                class="w-full"
+            />
+            <span class="amount-currency-code">{{ selectedCurrency?.code || 'TRY' }}</span>
+          </div>
+          <collapse-transition>
+            <div v-if="errors.initialAmount" class="mt-2 flex justify-center">
+              <ErrorChip :message="errors.initialAmount" />
+            </div>
+          </collapse-transition>
+        </section>
 
-        <amount-card
-            :label="$t('savingGoals.targetAmount')"
-            v-model="targetAmount"
-            :currency-code="selectedCurrency?.code || 'TRY'"
-            :minor-unit="selectedCurrency?.minorUnit"
-            :error="errors.targetAmount"
-        />
+        <section>
+          <p class="text-center text-[13px] font-medium uppercase tracking-wider text-content-muted mb-2">
+            {{ $t('savingGoals.targetAmount') }}
+          </p>
+          <div
+              class="amount-card relative flex items-center justify-center rounded-2xl border border-line bg-surface px-3"
+              :class="{ 'amount-card-error': errors.targetAmount }"
+          >
+            <CurrencyInput
+                v-model="targetAmount"
+                variant="plain"
+                hide-currency
+                :label="$t('savingGoals.targetAmount')"
+                :currency-code="selectedCurrency?.code || 'TRY'"
+                :minor-unit="selectedCurrency?.minorUnit"
+                :error-text="errors.targetAmount"
+                class="w-full"
+            />
+            <span class="amount-currency-code">{{ selectedCurrency?.code || 'TRY' }}</span>
+          </div>
+          <collapse-transition>
+            <div v-if="errors.targetAmount" class="mt-2 flex justify-center">
+              <ErrorChip :message="errors.targetAmount" />
+            </div>
+          </collapse-transition>
+        </section>
 
         <!-- Tarih -->
         <DateField
@@ -224,28 +265,15 @@ onMounted(async () => {
             :class="{ 'ion-touched ion-invalid': errors.description }"
         />
       </div>
-
-      <!-- Sticky save -->
-<!--      <div class="save-bar">
-        <div v-if="submitError" class="flex justify-center mb-2">
-          <ErrorChip :message="submitError"/>
-        </div>
-        <button
-            type="button"
-            class="w-full h-12 rounded-2xl bg-indigo-600 text-white text-[15px] font-semibold active:bg-indigo-700 disabled:bg-slate-300 transition"
-            :disabled="isSubmitting || isSaving"
-            @click="saveGoal"
-        >
-          {{ isSubmitting || isSaving ? $t('savingGoals.saving') : $t('savingGoals.save') }}
-        </button>
-      </div>-->
     </ion-content>
 
     <ion-footer class="ion-no-border">
       <ion-toolbar>
-        <div v-if="submitError" class="flex justify-center mb-2">
-          <ErrorChip :message="submitError" />
-        </div>
+        <collapse-transition>
+          <div v-if="submitError" class="flex justify-center mb-2">
+            <ErrorChip :message="submitError" />
+          </div>
+        </collapse-transition>
         <ion-button
             expand="block"
             class="app-button"
@@ -268,25 +296,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.form-content {
-  --background: var(--c-page);
+.amount-card {
+  transition: border-color 150ms ease;
 }
 
-ion-page {
-  overflow: hidden;
-}
-
-.form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
+.amount-card.amount-card-error {
+  border-color: color-mix(in srgb, var(--c-error) 60%, var(--c-line));
 }
 </style>

@@ -28,6 +28,8 @@ import { WeekDay } from '@/domain/value-objects/week-day';
 import { PrivacySettings } from '@/domain/value-objects/privacy-settings';
 import type { ThemeMode } from '@/domain/value-objects/theme';
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import CollapseTransition from '@/components/CollapseTransition.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const app = useAppStore();
 const themeStore = useThemeStore();
@@ -110,29 +112,30 @@ const previewTx = computed(() => {
 
     <ion-content class="app-content" :scroll-y="true">
       <main class="mx-auto w-full max-w-xl space-y-6 px-4 pb-12 pt-5">
-        <section class="appearance-preview overflow-hidden rounded-[22px] p-5">
+        <section class="app-hero appearance-preview overflow-hidden p-5">
           <div class="flex items-start justify-between gap-4">
             <div>
               <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-content-muted">
                 {{ $t('appearance.preview') }}
               </p>
+              <!-- Önizleme her ayarla değişiyor; değişim yerinde kayarak görünsün. -->
               <p class="mt-2 text-[30px] font-extrabold leading-none tracking-tight text-content tabular-nums">
-                {{ previewBalance }}
+                <swap-text :text="previewBalance" />
               </p>
             </div>
             <div class="preview-mark flex size-11 items-center justify-center rounded-2xl">
-              <span class="text-lg font-extrabold">{{ currencySymbol }}</span>
+              <swap-text class="text-lg font-extrabold" :text="currencySymbol" />
             </div>
           </div>
           <div class="mt-5 flex items-center justify-between border-t border-line pt-4 text-[12px]">
             <span class="font-medium text-content-muted">{{ $t('appearance.lastTransaction') }}</span>
-            <span class="font-bold text-content tabular-nums">{{ previewTx }}</span>
+            <swap-text class="font-bold text-content tabular-nums" :text="previewTx" />
           </div>
         </section>
 
         <section>
           <h2 class="section-label">{{ $t('appearance.themeSection') }}</h2>
-          <div class="appearance-card p-2">
+          <div class="app-card appearance-card p-2">
             <ion-segment v-model="themeMode" class="appearance-segment theme-segment">
               <ion-segment-button
                   v-for="opt in themeOptions"
@@ -149,7 +152,7 @@ const previewTx = computed(() => {
 
         <section>
           <h2 class="section-label">{{ $t('appearance.privacySection') }}</h2>
-          <div class="appearance-card overflow-hidden">
+          <div class="app-card appearance-card overflow-hidden">
             <ion-item class="settings-row" lines="none" :button="false">
               <div slot="start" class="settings-icon">
                 <ion-icon :icon="eyeOffOutline" />
@@ -165,7 +168,7 @@ const previewTx = computed(() => {
 
         <section>
           <h2 class="section-label">{{ $t('appearance.currencyFormat') }}</h2>
-          <div class="appearance-card overflow-hidden">
+          <div class="app-card appearance-card overflow-hidden">
             <div class="settings-block border-b border-line">
               <p class="settings-title mb-3">{{ $t('appearance.symbolPosition') }}</p>
               <ion-segment v-model="currencyPosition" class="appearance-segment compact-segment">
@@ -197,37 +200,40 @@ const previewTx = computed(() => {
               <ion-toggle v-model="showDecimalPlaces" slot="end" :aria-label="$t('appearance.showDecimals')" />
             </ion-item>
 
-            <div v-if="showDecimalPlaces" class="settings-block">
-              <p class="settings-title mb-3">{{ $t('appearance.decimalCount') }}</p>
-              <div class="choice-grid grid grid-cols-3 gap-1 rounded-xl p-1">
-                <ion-button
-                    v-for="n in [0, 1, 2]"
-                    :key="n"
-                    fill="clear"
-                    class="choice-button m-0 tabular-nums"
-                    :class="{ 'choice-button--active': decimalPlaces === n }"
-                    @click="decimalPlaces = n as DecimalPlaces"
-                >
-                  {{ n }}
-                </ion-button>
+            <!-- Ondalık açılınca basamak seçici toggle'ın altında açılır. -->
+            <collapse-transition>
+              <div v-if="showDecimalPlaces" class="settings-block">
+                <p class="settings-title mb-3">{{ $t('appearance.decimalCount') }}</p>
+                <div class="choice-grid grid grid-cols-3 gap-1 rounded-xl p-1">
+                  <ion-button
+                      v-for="n in [0, 1, 2]"
+                      :key="n"
+                      fill="clear"
+                      class="choice-button m-0 tabular-nums"
+                      :class="{ 'choice-button--active': decimalPlaces === n }"
+                      @click="decimalPlaces = n as DecimalPlaces"
+                  >
+                    {{ n }}
+                  </ion-button>
+                </div>
               </div>
-            </div>
+            </collapse-transition>
           </div>
         </section>
 
         <section>
           <h2 class="section-label">{{ $t('appearance.calendar') }}</h2>
-          <div class="appearance-card overflow-hidden">
+          <div class="app-card appearance-card overflow-hidden">
             <ion-item class="settings-row week-trigger" lines="none" button :detail="false" @click="weekDayMenuOpen = true">
               <div slot="start" class="settings-icon">
                 <ion-icon :icon="calendarOutline" />
               </div>
               <ion-label>
                 <h3>{{ $t('appearance.weekStart') }}</h3>
-                <p>{{ $t(selectedWeekDayLabel) }}</p>
+                <p><swap-text :text="$t(selectedWeekDayLabel)" /></p>
               </ion-label>
               <div slot="end" class="flex items-center gap-2">
-                <span class="selected-day-chip">{{ $t(selectedWeekDayLabel) }}</span>
+                <swap-text class="selected-day-chip" :text="$t(selectedWeekDayLabel)" />
                 <ion-icon :icon="chevronForwardOutline" class="text-content-muted" />
               </div>
             </ion-item>
@@ -260,12 +266,14 @@ const previewTx = computed(() => {
               @click="selectWeekDay(day.value)"
           >
             <ion-label>{{ $t('weekDays.' + day.value) }}</ion-label>
-            <ion-icon
-                v-if="weekStartDay === day.value"
-                slot="end"
-                :icon="checkmarkCircle"
-                class="text-xl"
-            />
+            <transition name="icon-swap">
+              <ion-icon
+                  v-if="weekStartDay === day.value"
+                  slot="end"
+                  :icon="checkmarkCircle"
+                  class="text-xl"
+              />
+            </transition>
           </ion-item>
         </div>
       </div>
@@ -278,36 +286,10 @@ const previewTx = computed(() => {
   --background: var(--c-page);
 }
 
-ion-page {
-  overflow: hidden;
-}
-
-.appearance-preview {
-  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
-}
-
 .preview-mark,
 .settings-icon {
   background: var(--c-primary);
   color: var(--c-on-primary);
-}
-
-.appearance-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
-}
-
-.section-label {
-  margin: 0 4px 9px;
-  color: var(--c-content-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
 }
 
 .appearance-segment {

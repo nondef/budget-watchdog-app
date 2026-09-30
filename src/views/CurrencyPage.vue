@@ -3,7 +3,6 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  alertController,
   loadingController,
   IonSearchbar
 } from '@ionic/vue';
@@ -14,16 +13,21 @@ import { ref, computed, onMounted } from 'vue';
 import { useAppStore } from '@/stores/app';
 import { useCurrenciesStore } from "@/stores/currencies";
 import { CurrencyDTO } from "@/application";
-import { useToast } from "@/composables/ui/useToast";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import CurrencyList from "@/components/CurrencyList.vue";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import SwapText from '@/components/SwapText.vue';
+import { useAlert } from "@/composables";
+import { useI18n } from "vue-i18n";
+import { useToast } from '@/composables/ui/useToast';
 
 const selectedCurrency = ref<CurrencyDTO | null>(null);
 const searchText = ref('');
 
 const appStore = useAppStore()
 const currencyStore = useCurrenciesStore()
+const { t } = useI18n()
+const alert = useAlert()
 const toast = useToast()
 const { currencyName } = useCurrencyDisplay()
 
@@ -42,37 +46,34 @@ const handleSelect = async (currency: CurrencyDTO) => {
 
   if (current?.code === currency.code) return
 
-  const alert = await alertController.create({
-    header: 'Ana para birimi değiştirilsin mi?',
-    message: `Tüm toplamlar ve raporlar artık <b>${currencyName(currency)} (${currency.code})</b> üzerinden gösterilecek. Mevcut işlemleriniz kendi para birimlerinde kalır.`,
-    buttons: [
-      { text: 'Vazgeç', role: 'cancel' },
-      {
-        text: 'Değiştir',
-        role: 'confirm',
-        handler: async () => {
-          const loader = await loadingController.create({ message: 'Güncelleniyor…' })
-          await loader.present()
-          try {
-            const result = await appStore.assignBaseCurrency(currency)
-            selectedCurrency.value = currency
-
-            if (result.ratesRefreshed) {
-              toast.success('Ana para birimi güncellendi')
-            } else {
-              toast.warning('Para birimi değiştirildi. Güncel kurlar alınamadığı için kayıtlı son kurlar kullanılıyor.')
-            }
-          } catch (e) {
-            toast.error('Güncellenemedi')
-          } finally {
-            await loader.dismiss()
-          }
-        }
-      }
-    ]
+  const confirm = await alert.confirm({
+    header: t('settings.currencyChange.title'),
+    message: t('settings.currencyChange.message', {
+      currency: `${currencyName(currency)} (${currency.code})`,
+    }),
+    confirmText: t('common.change'),
+    cancelText: t('common.cancel'),
   })
 
-  await alert.present()
+  if (!confirm) return
+
+  const loader = await loadingController.create({ message: t('settings.currencyChange.updating') })
+  await loader.present()
+
+  try {
+    const result = await appStore.assignBaseCurrency(currency)
+    selectedCurrency.value = currency
+
+    if (result.ratesRefreshed) {
+      toast.success(t('settings.currencyChange.success'))
+    } else {
+      toast.warning(t('settings.currencyChange.ratesStale'))
+    }
+  } catch (e) {
+    toast.error(t('settings.currencyChange.error'))
+  } finally {
+    await loader.dismiss()
+  }
 }
 
 onMounted(async () => {
@@ -83,7 +84,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('nav.currency')"/>
 
@@ -103,14 +104,16 @@ onMounted(async () => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[11px] text-content-muted">{{ $t('settings.currencyActive') }}</p>
+            <!-- Yeni para birimi seçilince ad ve kod yerinde kayarak değişir. -->
             <p class="text-[14px] font-semibold text-content mt-0.5">
-              {{ currencyName(selectedCurrency) }}
-              <span class="text-content-muted font-normal ml-1">({{ selectedCurrency.symbol }})</span>
+              <swap-text :text="`${currencyName(selectedCurrency)}`" />
+              <swap-text class="text-content-muted font-normal ml-1" :text="`(${selectedCurrency.symbol})`" />
             </p>
           </div>
-          <span class="active-currency__code text-[12px] font-extrabold tabular-nums">
-            {{ selectedCurrency.code }}
-          </span>
+          <swap-text
+              class="active-currency__code text-[12px] font-extrabold tabular-nums"
+              :text="selectedCurrency.code"
+          />
         </div>
 
         <!-- Arama -->
@@ -124,18 +127,21 @@ onMounted(async () => {
       </div>
 
       <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-10">
-        <CurrencyList
-            v-if="filteredCurrencies.length"
-            class="currency-page-list"
-            :currencies="filteredCurrencies"
-            :selected-currency="selectedCurrency"
-            :search="searchText"
-            @select="handleSelect"
-        />
+        <!-- Arama sonuç vermeyince liste ↔ boş durum çapraz solar. -->
+        <transition name="fade" mode="out-in">
+          <CurrencyList
+              v-if="filteredCurrencies.length"
+              class="currency-page-list"
+              :currencies="filteredCurrencies"
+              :selected-currency="selectedCurrency"
+              :search="searchText"
+              @select="handleSelect"
+          />
 
-        <div v-else class="currency-empty px-4 py-10 text-center">
-          <p class="text-[13px] text-content-muted">{{ $t('settings.currencyNoMatch') }}</p>
-        </div>
+          <div v-else class="currency-empty px-4 py-10 text-center">
+            <p class="text-[13px] text-content-muted">{{ $t('settings.currencyNoMatch') }}</p>
+          </div>
+        </transition>
       </div>
     </ion-content>
   </ion-page>
@@ -144,10 +150,6 @@ onMounted(async () => {
 <style scoped>
 .currency-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
 }
 
 .currency-intro {

@@ -22,6 +22,7 @@ import { getIconByName } from "@/shared/utils";
 import { formatDateLocalized } from "@/i18n/format";
 import { SavingGoalDTO } from "@/application";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -78,12 +79,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('nav.savings')">
       <template #end>
-        <ion-button router-link="/savings/new" class="header-action" aria-label="Yeni birikim hedefi">
-          <ion-icon :icon="addOutline" class="size-[20px]"/>
+        <ion-button router-link="/savings/new" class="toolbar-add-button" :aria-label="$t('savingGoals.new')">
+          <ion-icon :icon="addOutline" class="size-[20px]" aria-hidden="true"/>
         </ion-button>
       </template>
     </sub-page-header>
@@ -101,15 +102,19 @@ onMounted(async () => {
           >
             <ion-label class="goal-segment__label">
               <span>{{ tab.label }}</span>
-              <span class="goal-count">{{ goalCounts[tab.id] }}</span>
+              <swap-text class="goal-count" :text="goalCounts[tab.id]" />
             </ion-label>
           </ion-segment-button>
         </ion-segment>
       </div>
 
       <!-- Liste -->
-      <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-10 space-y-3">
-        <template v-if="filteredGoals.length">
+      <!-- Sekme değişince liste bütün olarak çapraz solar; aynı sekmede
+           hedefler tek tek girer/çıkar (ör. tamamlanınca bu sekmeden gider). -->
+      <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-10">
+      <transition name="fade" mode="out-in">
+      <div :key="currentTab">
+        <transition-group v-if="filteredGoals.length" tag="div" name="list-row" class="relative space-y-3">
           <router-link
               v-for="goal in filteredGoals"
               :key="goal.id"
@@ -131,16 +136,17 @@ onMounted(async () => {
                 </p>
               </div>
               <div class="text-right shrink-0">
-                <p class="goal-progress text-[16px] font-bold tabular-nums">
-                  %{{ Math.round(calculateProgress(goal)) }}
-                </p>
+                <swap-text
+                    class="goal-progress text-[16px] font-bold tabular-nums"
+                    :text="`%${Math.round(calculateProgress(goal))}`"
+                />
               </div>
             </div>
 
             <!-- Progress bar -->
             <div class="h-1.5 bg-surface-sunken rounded-full overflow-hidden mb-3">
               <div
-                  class="h-full rounded-full transition-all"
+                  class="progress-bar h-full rounded-full"
                   :class="goal.status === 'completed' ? 'bg-emerald-500' : 'goal-progress-bar'"
                   :style="{ width: `${calculateProgress(goal)}%` }"
               />
@@ -150,9 +156,10 @@ onMounted(async () => {
             <div class="flex items-center justify-between text-[12px]">
               <div>
                 <p class="text-content-muted text-[10px]">{{ $t('savingGoals.saved') }}</p>
-                <p class="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                  {{ formatMoney(goal.savedAmount.amount, goal.savedAmount.currencyId) }}
-                </p>
+                <swap-text
+                    class="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums"
+                    :text="formatMoney(goal.savedAmount.amount, goal.savedAmount.currencyId)"
+                />
               </div>
               <div class="text-right">
                 <p class="text-content-muted text-[10px]">{{ $t('savingGoals.target') }}</p>
@@ -162,7 +169,7 @@ onMounted(async () => {
               </div>
             </div>
           </router-link>
-        </template>
+        </transition-group>
 
         <!-- Empty -->
         <div v-else class="empty-card px-4 py-10 text-center">
@@ -185,6 +192,8 @@ onMounted(async () => {
           </ion-button>
         </div>
       </div>
+      </transition>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -192,20 +201,6 @@ onMounted(async () => {
 <style scoped>
 .goals-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.header-action {
-  --background: var(--c-primary);
-  --color: var(--c-on-primary);
-  --border-radius: 999px;
-  --box-shadow: none;
-  width: 36px;
-  height: 36px;
-  margin: 0;
 }
 
 .goal-segment {
@@ -284,15 +279,5 @@ ion-page {
 
 .goal-progress-bar {
   background: var(--c-primary);
-}
-
-.empty-action {
-  --background: var(--c-primary);
-  --color: var(--c-on-primary);
-  --border-radius: 999px;
-  --box-shadow: none;
-  min-height: 38px;
-  font-size: 12px;
-  font-weight: 700;
 }
 </style>

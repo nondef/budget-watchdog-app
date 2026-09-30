@@ -149,7 +149,15 @@
     },
     "currencyHint": "Ana para birimini buradan değiştir.",
     "currencyActive": "Aktif",
-    "currencyNoMatch": "Eşleşen para birimi yok."
+    "currencyNoMatch": "Eşleşen para birimi yok.",
+    "currencyChange": {
+      "title": "Ana para birimi değiştirilsin mi?",
+      "message": "Tüm toplamlar ve raporlar artık {currency} üzerinden gösterilecek. Mevcut işlemleriniz kendi para birimlerinde kalır.",
+      "updating": "Güncelleniyor…",
+      "success": "Ana para birimi güncellendi",
+      "ratesStale": "Para birimi değiştirildi. Güncel kurlar alınamadığı için kayıtlı son kurlar kullanılıyor.",
+      "error": "Güncellenemedi"
+    }
   },
   "months": [
     "Ocak",
@@ -242,7 +250,23 @@
     }
   },
   "iconPicker": {
-    "title": "İkon Seçici"
+    "title": "İkon Seçici",
+    "preview": "Önizleme",
+    "hint": "Bir renk ve ikon seçerek kişiselleştir.",
+    "colors": "Renkler",
+    "categories": {
+      "entertainment": "Eğlence",
+      "work": "İş",
+      "finance": "Finans",
+      "foodDrink": "Yemek & İçecek",
+      "transport": "Ulaşım",
+      "shopping": "Alışveriş",
+      "health": "Sağlık",
+      "home": "Ev",
+      "technology": "Teknoloji",
+      "natureTravel": "Doğa & Seyahat",
+      "other": "Diğer"
+    }
   },
   "accountTypes": {
     "cash": "Nakit",
@@ -350,7 +374,17 @@
       "goal": "Hedef"
     },
     "welcomeFollowUp": "Hesabın kontrol altında",
-    "logoAlt": "Budget Watchdog logosu"
+    "logoAlt": "Budget Watchdog logosu",
+    "reminders": {
+      "settings": "Ayarlar",
+      "today": "Bugün {time}",
+      "tomorrow": "Yarın {time}",
+      "onDate": "{date} · {time}",
+      "off": "Kapalı",
+      "backupWeekly": "Haftada bir, yedek alınana kadar",
+      "disabled": "Bildirimler kapalı, hatırlatıcılar gönderilmiyor.",
+      "enable": "Aç"
+    }
   },
   "overview": {
     "title": "Genel Bakış",
@@ -864,6 +898,7 @@
     "remaining": "Kalan",
     "spent": "Harcanan",
     "over": "Aşılan",
+    "remainingOrOver": "Kalan / Aşılan",
     "empty": "Henüz bütçe yok",
     "emptyDesc": "Yeni bütçe eklemek için sağ üstteki butona dokun.",
     "emptyFiltered": "Bu filtreye uyan bütçe yok",
@@ -1103,6 +1138,7 @@
     "loading": "Yükleniyor...",
     "retry": "Yeniden dene",
     "all": "Tümü",
+    "details": "Detaylar",
     "none": "Yok",
     "income": "Gelir",
     "expense": "Gider",
@@ -1145,6 +1181,9 @@
   "language": {
     "title": "Dil",
     "heading": "Uygulama Dili",
+    "deviceLanguage": "Cihazın varsayılan dili: {language}",
+    "deviceLanguageUnknown": "Belirlenemedi",
+    "selectedHint": "Seçtiğiniz dil işaretli olandır.",
     "subtitle": "Uygulamanın görüntüleneceği dili seç.",
     "note": "Dil değiştirdiğinde bazı içerikler yeniden yüklenir, bu birkaç saniye sürebilir.",
     "names": {

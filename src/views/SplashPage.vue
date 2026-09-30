@@ -18,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
+import SwapText from '@/components/SwapText.vue';
 import {
   walletOutline,
   pieChartOutline,
@@ -99,9 +100,11 @@ const back = () => {
           </ion-button>
         </ion-buttons>
         <ion-buttons slot="end">
-          <ion-button shape="round" @click="skip" class="skip-button" v-if="!isLast()">
-            {{ $t('splash.skip') }}
-          </ion-button>
+          <transition name="fade">
+            <ion-button shape="round" @click="skip" class="skip-button" v-if="!isLast()">
+              {{ $t('splash.skip') }}
+            </ion-button>
+          </transition>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -173,7 +176,7 @@ const back = () => {
             class="app-button"
             @click="next"
         >
-          {{ isLast() ? $t('splash.start') : $t('splash.continue') }}
+          <swap-text :text="isLast() ? $t('splash.start') : $t('splash.continue')" />
           <ion-icon slot="end" :icon="chevronForwardOutline" class="size-4" />
         </ion-button>
       </ion-toolbar>
@@ -182,68 +185,21 @@ const back = () => {
 </template>
 
 <style scoped>
-.splash-content {
-  --background: #ffffff;
-}
+/* Header/footer şeffaflığı ve hairline'ların kaldırılması global
+   theme/patterns/splash.css'te; burada yalnızca sayfaya özgü kurallar var. */
 
-/* Header'ı içerikle aynı zemine oturt: aksi halde toolbar arka planı ile
-   content arka planı arasında keskin bir yatay çizgi (seam) görünüyor. */
-.splash-page ion-header {
-  background: #ffffff;
-}
-
-.splash-page ion-header::after {
-  display: none; /* Ionic'in header alt gölge/çizgisi */
-}
-
-.splash-page ion-header ion-toolbar {
-  --background: #ffffff;
-  --border-width: 0;
-  --border-color: transparent;
-}
-
-/* Footer stilleri theme/ionic/footer.css'teki global ion-footer kuralında.
-   Splash'a özgü şeffaflık ise theme/patterns/splash.css'teki
-   .splash-page ion-footer'da. */
-
-ion-page {
-  overflow: hidden;
-}
-
-:deep(.swiper) {
-  width: 100%;
-  height: 100%;
-}
-
-/* 1. Arka planı yalnızca ana kapsayıcıya veriyoruz.
-   Ekran görüntündeki gibi karanlık tema kullanıyorsan var(--ion-background-color)
-   temana otomatik uyum sağlayacaktır. */
+/* Zemin yalnızca ana kapsayıcıda; içerik şeffaf kalıp onu gösterir. */
 .splash-page {
   background: var(--ion-background-color, #ffffff);
 }
 
-/* 2. İçerik alanını şeffaf yapıyoruz ki altındaki .splash-page zemini görünsün */
 .splash-content {
   --background: transparent;
 }
 
-/* 3. Header ve Toolbar'ı tamamen şeffaf ve çizgisiz yapıyoruz */
-.splash-page ion-header,
-.splash-page ion-header ion-toolbar {
-  --background: transparent;
-  background: transparent;
-  --border-width: 0;
-  --border-color: transparent;
-  box-shadow: none; /* Ekstra güvenlik için gölgeleri sıfırlıyoruz */
-}
-
-/* 5. Ionic'in inject ettiği varsayılan alt/üst gölge ve çizgileri kesin olarak kaldırıyoruz */
-.splash-page ion-header::after {
-  display: none !important;
-}
-
-ion-page {
-  overflow: hidden;
+/* MD header'ın box-shadow'u (splash.css yalnızca ::after'ı kapatıyor). */
+.splash-page ion-header {
+  box-shadow: none;
 }
 
 :deep(.swiper) {

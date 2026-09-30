@@ -31,6 +31,9 @@ import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCategoryName } from "@/composables/features/useCategoryName";
 import { getIconByName } from "@/shared/utils";
 import AmountCard from "@/components/AmountCard.vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
+import SwapText from "@/components/SwapText.vue";
 import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 
 const { ionRouter, goBackOrFallback } = useAppNavigation()
@@ -218,11 +221,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
-    <ion-content class="form-content" :scroll-y="true">
+  <ion-page>
+    <ion-content :scroll-y="true">
       <div class="px-4 pt-[max(env(safe-area-inset-top),1rem)]">
         <!-- Üst bar -->
-        <header class="flex items-center justify-between pt-2 px-1">
+        <header class="app-page-header flex items-center justify-between pt-2 px-1">
           <button
               class="size-9 rounded-full flex items-center justify-center text-content-secondary active:bg-surface-strong transition"
               @click="goBackOrFallback('/settings/budget-goals')"
@@ -278,12 +281,15 @@ onMounted(async () => {
             :label="$t('budgets.startLabel')"
         />
 
-        <DateField
-            v-if="values.type === 'once'"
-            v-model="endDate"
-            :label="$t('budgets.endLabel')"
-            :placeholder="$t('budgets.endPlaceholder')"
-        />
+        <!-- Bitiş tarihi yalnız tek seferlik bütçede: tip değişince yerinde açılır/katlanır. -->
+        <collapse-transition>
+          <DateField
+              v-if="values.type === 'once'"
+              v-model="endDate"
+              :label="$t('budgets.endLabel')"
+              :placeholder="$t('budgets.endPlaceholder')"
+          />
+        </collapse-transition>
 
         <!-- Tutar -->
         <amount-card
@@ -308,7 +314,12 @@ onMounted(async () => {
               </ion-chip>
             </div>
 
-            <div v-if="selectedCategories.length" class="flex flex-wrap gap-1.5">
+            <!-- Çip eklenip çıkarıldıkça solar; kart yüksekliği satır sayısıyla
+                 yumuşakça değişir. Sarmalayan akışta çıkanı akıştan almak
+                 (list-row) yerleşimi bozar, bu yüzden fade. -->
+            <animated-height>
+            <transition name="fade" mode="out-in">
+            <transition-group v-if="selectedCategories.length" tag="div" name="fade" class="flex flex-wrap gap-1.5">
               <ion-chip
                   v-for="cat in selectedCategories"
                   :key="cat.id"
@@ -324,10 +335,14 @@ onMounted(async () => {
                 <span class="text-[12px] text-content-secondary">{{ categoryName(cat.name) }}</span>
                 <ion-icon :icon="closeOutline" class="size-3 text-slate-400" />
               </ion-chip>
-            </div>
+            </transition-group>
             <p v-else class="text-[12px] text-slate-400">{{ $t('budgets.noCategory') }}</p>
+            </transition>
+            </animated-height>
           </section>
-          <p v-if="errors.category" class="field-error text-[11px] text-rose-600 mt-1.5 px-1">{{ errors.category }}</p>
+          <collapse-transition>
+            <p v-if="errors.category" class="field-error text-[11px] text-rose-600 mt-1.5 px-1">{{ errors.category }}</p>
+          </collapse-transition>
         </div>
 
         <!-- Bildirim -->
@@ -350,12 +365,15 @@ onMounted(async () => {
             />
           </div>
 
+          <!-- Bildirim açılınca eşik ayarı toggle'ın altında açılır. -->
+          <collapse-transition>
           <div v-if="values.enableNotification" class="mt-3 pt-3 border-t border-line">
             <div class="flex items-center justify-between mb-2">
               <span class="text-[12px] text-content-tertiary">{{ $t('budgets.warningThreshold') }}</span>
-              <span class="text-[15px] font-bold text-indigo-700 tabular-nums">
-                %{{ values.warningPercentage }}
-              </span>
+              <swap-text
+                  class="text-[15px] font-bold text-indigo-700 tabular-nums"
+                  :text="`%${values.warningPercentage}`"
+              />
             </div>
             <div class="flex items-center gap-2">
               <ion-button
@@ -378,6 +396,7 @@ onMounted(async () => {
               </ion-button>
             </div>
           </div>
+          </collapse-transition>
         </section>
 
         <!-- Not — MD3 filled textarea -->
@@ -447,27 +466,3 @@ onMounted(async () => {
     />
   </ion-page>
 </template>
-
-<style scoped>
-.form-content {
-  --background: var(--c-page);
-}
-
-.form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
-}
-
-ion-page {
-  overflow: hidden;
-}
-</style>

@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import type { SavingGoalContributionDTO } from '@/application';
 import { useMoney } from '@/composables/money/useMoney';
 import { formatDateLocalized } from '@/i18n/format';
+import AnimatedHeight from '@/components/AnimatedHeight.vue';
 
 defineProps<{
   contributions: SavingGoalContributionDTO[];
@@ -39,6 +40,10 @@ const contributionTime = (date: Date) =>
             </p>
           </div>
 
+          <!-- Durumlar arası çapraz solma; yeni hareket listenin başına kayarak
+               girer, kart yüksekliği de yumuşakça uzar. -->
+          <animated-height>
+          <transition name="fade" mode="out-in">
           <div v-if="historyLoading" class="history-state" role="status">{{ $t('common.loading') }}</div>
           <div v-else-if="historyFailed" class="history-state history-state--error" role="alert">
             <p>{{ $t('savingGoals.history.loadError') }}</p>
@@ -51,7 +56,7 @@ const contributionTime = (date: Date) =>
             </p>
           </div>
 
-          <div v-else class="history-list">
+          <transition-group v-else tag="div" name="list-row" class="history-list relative">
             <div
                 v-for="entry in contributions"
                 :key="entry.id"
@@ -91,7 +96,9 @@ const contributionTime = (date: Date) =>
                 </p>
               </div>
             </div>
-          </div>
+          </transition-group>
+          </transition>
+          </animated-height>
         </section>
 </template>
 
@@ -194,12 +201,12 @@ const contributionTime = (date: Date) =>
   font-weight: 700;
 }
 
-:global(.ion-palette-dark) .history-entry__icon--deposit,
-:global(.ion-palette-dark) .history-amount--deposit { color: #4ade80; }
+:global(html.ion-palette-dark .history-entry__icon--deposit),
+:global(html.ion-palette-dark .history-amount--deposit) { color: #4ade80; }
 
-:global(.ion-palette-dark) .history-entry__icon--withdrawal,
-:global(.ion-palette-dark) .history-amount--withdrawal { color: #f87171; }
+:global(html.ion-palette-dark .history-entry__icon--withdrawal),
+:global(html.ion-palette-dark .history-amount--withdrawal) { color: #f87171; }
 
-:global(.ion-palette-dark) .history-entry__icon--refund,
-:global(.ion-palette-dark) .history-amount--refund { color: #fbbf24; }
+:global(html.ion-palette-dark .history-entry__icon--refund),
+:global(html.ion-palette-dark .history-amount--refund) { color: #fbbf24; }
 </style>

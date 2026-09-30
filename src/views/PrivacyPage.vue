@@ -3,18 +3,23 @@ import {
   IonPage,
   IonContent,
   IonIcon,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonNote,
+  IonBadge,
+  IonSpinner,
+  IonAccordion,
+  IonAccordionGroup,
   toastController
 } from '@ionic/vue'
 import {
   shieldCheckmarkOutline,
   cloudDownloadOutline,
   trashOutline,
-  chevronForwardOutline,
-  chevronDownOutline,
   lockClosedOutline,
   documentTextOutline
 } from 'ionicons/icons'
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useBackup } from '@/composables/features/useBackup'
 import { useBackupReminder } from '@/composables/features/useBackupReminder'
@@ -37,12 +42,6 @@ const {
 // tam bir kopya indirmiş olmasına rağmen sürüyordu.
 const { markExported } = useBackupReminder()
 const notifier = useNotifier()
-
-const expandedSection = ref<'privacy' | 'terms' | null>(null)
-
-const toggleSection = (section: 'privacy' | 'terms') => {
-  expandedSection.value = expandedSection.value === section ? null : section
-}
 
 async function showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
   const toast = await toastController.create({
@@ -100,166 +99,114 @@ async function handleDelete() {
   <ion-page>
     <sub-page-header :title="$t('privacy.title')"/>
 
-    <ion-content class="priv-content" :scroll-y="true">
-      <div class="px-4">
-
-        <!-- Garanti kartı -->
-        <section class="mt-5 bg-surface rounded-2xl px-4 py-4">
-          <div class="flex items-start gap-3">
-            <div class="size-11 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <ion-icon :icon="shieldCheckmarkOutline" class="size-5 text-emerald-600 dark:text-emerald-400" />
+    <ion-content :fullscreen="true" class="priv-content" :scroll-y="true">
+      <main class="mx-auto w-full max-w-xl space-y-6 px-4 pb-12 pt-5">
+        <section class="app-hero privacy-hero flex items-start gap-4 p-5">
+          <div class="hero-icon flex size-12 shrink-0 items-center justify-center rounded-2xl">
+            <ion-icon :icon="shieldCheckmarkOutline" class="text-[22px]" aria-hidden="true" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-[18px] font-extrabold text-content">{{ $t('privacy.localOnly') }}</h2>
+              <ion-badge class="privacy-badge">{{ $t('privacy.localBadge') }}</ion-badge>
             </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <p class="text-[14px] font-semibold text-content">{{ $t('privacy.localOnly') }}</p>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-500">
-                  {{ $t('privacy.localBadge') }}
-                </span>
-              </div>
-              <p class="text-[11px] text-content-muted mt-1 leading-snug">
-                {{ $t('privacy.localDesc') }}
-              </p>
-            </div>
+            <p class="mt-1 text-[12px] leading-relaxed text-content-muted">
+              {{ $t('privacy.localDesc') }}
+            </p>
           </div>
         </section>
-      </div>
 
-      <div class="mt-5 px-4 pb-10 space-y-5">
-
-        <!-- Veri yönetimi -->
-        <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-1 px-1">
-            {{ $t('privacy.dataManagement') }}
-          </p>
-          <p class="text-[12px] text-content-muted mb-2 px-1 leading-snug">
-            {{ $t('privacy.dataManagementDesc') }}
-          </p>
-
-          <div class="bg-surface rounded-2xl px-2">
-            <button
-                type="button"
-                class="w-full flex items-center gap-3 px-2 py-3 rounded-xl active:bg-surface-sunken transition disabled:opacity-40"
+        <section aria-labelledby="privacy-data-heading">
+          <h2 id="privacy-data-heading" class="section-label">{{ $t('privacy.dataManagement') }}</h2>
+          <ion-note class="section-description">{{ $t('privacy.dataManagementDesc') }}</ion-note>
+          <ion-list class="app-card privacy-card privacy-list overflow-hidden">
+            <ion-item
+                class="privacy-item"
+                lines="full"
+                button
+                :detail="!isExporting"
                 :disabled="isExporting || isWiping"
+                :aria-busy="isExporting"
                 @click="handleDownload"
             >
-              <div class="size-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                <ion-icon :icon="cloudDownloadOutline" class="size-[16px] text-indigo-600 dark:text-indigo-400" />
+              <div slot="start" class="privacy-icon privacy-icon--download">
+                <ion-icon :icon="cloudDownloadOutline" aria-hidden="true" />
               </div>
-              <div class="flex-1 text-left min-w-0">
-                <p class="text-[14px] font-medium text-content">{{ $t('privacy.downloadData') }}</p>
-                <p class="text-[11px] text-content-muted mt-0.5">{{ $t('privacy.downloadDataDesc') }}</p>
-              </div>
-              <ion-icon :icon="chevronForwardOutline" class="size-4 text-slate-400 dark:text-slate-600 shrink-0" />
-            </button>
-
-            <button
-                type="button"
-                class="w-full flex items-center gap-3 px-2 py-3 rounded-xl active:bg-rose-50 transition border-t border-line disabled:opacity-40"
+              <ion-label class="ion-text-wrap">
+                <h3>{{ $t('privacy.downloadData') }}</h3>
+                <p>{{ $t('privacy.downloadDataDesc') }}</p>
+              </ion-label>
+              <transition name="icon-swap">
+                <ion-spinner v-if="isExporting" slot="end" name="crescent" aria-hidden="true" />
+              </transition>
+            </ion-item>
+            <ion-item
+                class="privacy-item privacy-item--danger"
+                lines="none"
+                button
+                :detail="!isWiping"
                 :disabled="isExporting || isWiping"
+                :aria-busy="isWiping"
                 @click="handleDelete"
             >
-              <div class="size-9 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
-                <ion-icon :icon="trashOutline" class="size-[16px] text-rose-600 dark:text-rose-400" />
+              <div slot="start" class="privacy-icon privacy-icon--danger">
+                <ion-icon :icon="trashOutline" aria-hidden="true" />
               </div>
-              <div class="flex-1 text-left min-w-0">
-                <p class="text-[14px] font-medium text-rose-600">{{ $t('privacy.deleteData') }}</p>
-                <p class="text-[11px] text-rose-500 mt-0.5">{{ $t('privacy.deleteDataDesc') }}</p>
-              </div>
-              <ion-icon :icon="chevronForwardOutline" class="size-4 text-rose-400 shrink-0" />
-            </button>
-          </div>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ $t('privacy.deleteData') }}</h3>
+                <p>{{ $t('privacy.deleteDataDesc') }}</p>
+              </ion-label>
+              <transition name="icon-swap">
+                <ion-spinner v-if="isWiping" slot="end" name="crescent" aria-hidden="true" />
+              </transition>
+            </ion-item>
+          </ion-list>
         </section>
 
-        <!-- Yasal -->
-        <section>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-content-muted mb-2 px-1">
-            {{ $t('privacy.legal') }}
-          </p>
-          <div class="bg-surface rounded-2xl">
-            <!-- Gizlilik Politikası -->
-            <div :class="{ 'border-b border-line': expandedSection !== 'privacy' }">
-              <button
-                  type="button"
-                  class="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-sunken transition"
-                  @click="toggleSection('privacy')"
-              >
-                <div class="size-9 rounded-xl bg-surface-sunken flex items-center justify-center shrink-0">
-                  <ion-icon :icon="lockClosedOutline" class="size-[16px] text-content-secondary" />
+        <section aria-labelledby="privacy-legal-heading">
+          <h2 id="privacy-legal-heading" class="section-label">{{ $t('privacy.legal') }}</h2>
+          <ion-accordion-group class="app-card privacy-card overflow-hidden">
+            <ion-accordion value="privacy" class="privacy-accordion">
+              <ion-item slot="header" class="privacy-item" lines="none">
+                <div slot="start" class="privacy-icon privacy-icon--policy">
+                  <ion-icon :icon="lockClosedOutline" aria-hidden="true" />
                 </div>
-                <p class="flex-1 text-left text-[14px] font-medium text-content">
-                  {{ $t('privacy.privacyPolicy') }}
+                <ion-label class="ion-text-wrap"><h3>{{ $t('privacy.privacyPolicy') }}</h3></ion-label>
+              </ion-item>
+              <div slot="content" class="legal-content">
+                <p v-for="key in ['noCollect', 'noServer', 'noThirdParty', 'rights']" :key="key">
+                  <strong>{{ $t(`privacy.policy.${key}Title`) }}</strong>
+                  {{ $t(`privacy.policy.${key}Body`) }}
                 </p>
-                <ion-icon
-                    :icon="expandedSection === 'privacy' ? chevronDownOutline : chevronForwardOutline"
-                    class="size-4 text-slate-400 shrink-0"
-                />
-              </button>
-              <div v-if="expandedSection === 'privacy'" class="px-4 pb-4 text-[12px] text-content-tertiary leading-relaxed space-y-2 border-t border-line pt-3">
-                <p>
-                  <strong class="text-content">{{ $t('privacy.policy.noCollectTitle') }}</strong> {{ $t('privacy.policy.noCollectBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.policy.noServerTitle') }}</strong> {{ $t('privacy.policy.noServerBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.policy.noThirdPartyTitle') }}</strong> {{ $t('privacy.policy.noThirdPartyBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.policy.rightsTitle') }}</strong> {{ $t('privacy.policy.rightsBody') }}
-                </p>
-                <ul class="list-disc list-inside ml-2 space-y-0.5 text-[11px]">
+                <ul class="list-disc ps-5 space-y-1">
                   <li>{{ $t('privacy.policy.rightsDownload') }}</li>
                   <li>{{ $t('privacy.policy.rightsDelete') }}</li>
                 </ul>
-                <p class="text-[10px] text-slate-400 italic pt-1">
-                  {{ $t('privacy.disclaimer') }}
-                </p>
+                <ion-note class="legal-disclaimer">{{ $t('privacy.disclaimer') }}</ion-note>
               </div>
-            </div>
-
-            <!-- Kullanım Koşulları -->
-            <div>
-              <button
-                  type="button"
-                  class="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-sunken transition"
-                  @click="toggleSection('terms')"
-              >
-                <div class="size-9 rounded-xl bg-surface-sunken flex items-center justify-center shrink-0">
-                  <ion-icon :icon="documentTextOutline" class="size-[16px] text-content-secondary" />
+            </ion-accordion>
+            <ion-accordion value="terms" class="privacy-accordion">
+              <ion-item slot="header" class="privacy-item" lines="none">
+                <div slot="start" class="privacy-icon privacy-icon--terms">
+                  <ion-icon :icon="documentTextOutline" aria-hidden="true" />
                 </div>
-                <p class="flex-1 text-left text-[14px] font-medium text-content">
-                  {{ $t('privacy.terms') }}
+                <ion-label class="ion-text-wrap"><h3>{{ $t('privacy.terms') }}</h3></ion-label>
+              </ion-item>
+              <div slot="content" class="legal-content">
+                <p v-for="key in ['purpose', 'disclaimer', 'dataResp', 'content']" :key="key">
+                  <strong>{{ $t(`privacy.termsContent.${key}Title`) }}</strong>
+                  {{ $t(`privacy.termsContent.${key}Body`) }}
                 </p>
-                <ion-icon
-                    :icon="expandedSection === 'terms' ? chevronDownOutline : chevronForwardOutline"
-                    class="size-4 text-slate-400 shrink-0"
-                />
-              </button>
-              <div v-if="expandedSection === 'terms'" class="px-4 pb-4 text-[12px] text-content-tertiary leading-relaxed space-y-2 border-t border-line pt-3">
-                <p>
-                  <strong class="text-content">{{ $t('privacy.termsContent.purposeTitle') }}</strong> {{ $t('privacy.termsContent.purposeBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.termsContent.disclaimerTitle') }}</strong> {{ $t('privacy.termsContent.disclaimerBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.termsContent.dataRespTitle') }}</strong> {{ $t('privacy.termsContent.dataRespBody') }}
-                </p>
-                <p>
-                  <strong class="text-content">{{ $t('privacy.termsContent.contentTitle') }}</strong> {{ $t('privacy.termsContent.contentBody') }}
-                </p>
-                <p class="text-[10px] text-slate-400 italic pt-1">
-                  {{ $t('privacy.disclaimer') }}
-                </p>
+                <ion-note class="legal-disclaimer">{{ $t('privacy.disclaimer') }}</ion-note>
               </div>
-            </div>
-          </div>
+            </ion-accordion>
+          </ion-accordion-group>
         </section>
 
-        <p class="text-center text-[11px] text-slate-400">
+        <ion-note class="block text-center text-[11px] text-content-muted">
           {{ $t('privacy.lastUpdated') }}
-        </p>
-      </div>
+        </ion-note>
+      </main>
     </ion-content>
   </ion-page>
 </template>
@@ -269,7 +216,147 @@ async function handleDelete() {
   --background: var(--c-page);
 }
 
-ion-page {
-  overflow: hidden;
+.hero-icon {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.privacy-badge {
+  --background: var(--c-surface-sunken);
+  --color: var(--c-content-secondary);
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.section-description {
+  display: block;
+  margin: 0 4px 12px;
+  color: var(--c-content-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.privacy-list {
+  margin: 0;
+  padding: 0;
+}
+
+.privacy-item {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-hover: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --border-color: var(--c-line);
+  --min-height: 64px;
+  --padding-start: 14px;
+  --inner-padding-end: 12px;
+  --detail-icon-color: var(--c-content-muted);
+}
+
+.privacy-item h3 {
+  color: var(--c-content);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.privacy-item p {
+  margin-top: 3px;
+  color: var(--c-content-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.privacy-item--danger {
+  --background-activated: color-mix(in srgb, var(--c-error) 10%, var(--c-surface));
+  --detail-icon-color: var(--c-error);
+}
+
+.privacy-item--danger h3,
+.privacy-item--danger ion-spinner {
+  color: var(--c-error);
+}
+
+.privacy-icon {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  margin-inline-end: 12px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--privacy-icon-accent) 23%, var(--c-line));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--privacy-icon-accent) 11%, var(--c-surface-sunken));
+  color: var(--privacy-icon-accent);
+}
+
+.privacy-icon ion-icon {
+  font-size: 18px;
+}
+
+.privacy-icon--download {
+  --privacy-icon-accent: #4338ca;
+}
+
+.privacy-icon--danger {
+  --privacy-icon-accent: var(--c-error);
+}
+
+.privacy-icon--policy {
+  --privacy-icon-accent: #0f766e;
+}
+
+.privacy-icon--terms {
+  --privacy-icon-accent: #0369a1;
+}
+
+:global(.ion-palette-dark .privacy-icon--download) {
+  --privacy-icon-accent: #a5b4fc;
+}
+
+:global(.ion-palette-dark .privacy-icon--policy) {
+  --privacy-icon-accent: #5eead4;
+}
+
+:global(.ion-palette-dark .privacy-icon--terms) {
+  --privacy-icon-accent: #7dd3fc;
+}
+
+.privacy-accordion {
+  background: var(--c-surface);
+}
+
+.privacy-accordion + .privacy-accordion {
+  border-top: 1px solid var(--c-line);
+}
+
+.privacy-accordion :deep(.ion-accordion-toggle-icon) {
+  color: var(--c-content-muted);
+  font-size: 18px;
+}
+
+.legal-content {
+  padding: 16px;
+  border-top: 1px solid var(--c-line);
+  color: var(--c-content-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.legal-content > * + * {
+  margin-top: 10px;
+}
+
+.legal-content strong {
+  color: var(--c-content);
+}
+
+.legal-disclaimer {
+  display: block;
+  color: var(--c-content-muted);
+  font-size: 11px;
+  font-style: italic;
 }
 </style>

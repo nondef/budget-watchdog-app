@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { IonIcon } from '@ionic/vue';
-import { chevronForwardOutline, alertCircleOutline } from 'ionicons/icons';
+import { IonIcon, IonCard, IonCardHeader, IonList, IonItem, IonBadge, IonProgressBar } from '@ionic/vue';
+import { alertCircleOutline } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useBudgetStore } from '@/stores/budgets';
 import { useMoney } from '@/composables/money/useMoney';
 import { useEnrichedBudgets } from "@/composables";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
+import CardHeaderLink from "@/components/CardHeaderLink.vue";
 
 const budgetStore = useBudgetStore();
 const { formatMoney } = useMoney();
@@ -21,18 +23,15 @@ interface Row {
 }
 
 const stateColor = (s: Row['state']) => {
-  if (s === 'exceeded') return '#ef4444'   // rose-500
-  if (s === 'warning') return '#f59e0b'    // amber-500
-  return '#0f172a'                          // slate-900
+  if (s === 'exceeded') return 'var(--c-error)'
+  if (s === 'warning') return 'var(--budget-warning)'
+  return 'var(--c-primary)'
 }
 
 const rows = computed<Row[]>(() => {
   return budgetStore.activeBudgets
       .map(b => {
-        const progress = (b.spentAmount.amount / b.amount.amount) * 100
-        let state: Row['state'] = 'normal'
-        if (progress >= 100) state = 'exceeded'
-        else if (progress >= (b.warningPercentage ?? 80)) state = 'warning'
+        const state: Row['state'] = b.isExceeded ? 'exceeded' : b.isWarning ? 'warning' : 'normal'
 
         const enriched = enrichedBudgetById(b.id)
         const firstCat = enriched?.categories?.[0]
@@ -42,7 +41,7 @@ const rows = computed<Row[]>(() => {
           name: b.name,
           spent: formatMoney(b.spentAmount.amount, b.spentAmount.currencyId),
           total: formatMoney(b.amount.amount, b.amount.currencyId),
-          progress: Math.min(progress, 100),
+          progress: b.progress,
           state,
           categoryColor: firstCat?.icon?.color ?? 'bg-slate-500',
         }
@@ -55,64 +54,106 @@ const hasCritical = computed(() =>
     rows.value.some(r => r.state !== 'normal')
 )
 
-const hasMore = computed(() => budgetStore.activeBudgets.length > 3)
 </script>
 
 <template>
-  <section class="bg-surface rounded-2xl px-4">
-    <header class="flex items-center justify-between py-4">
-      <div class="flex items-center gap-2">
+  <ion-card class="budgets-widget">
+    <ion-card-header class="widget-header">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <h3 class="text-[14px] font-semibold text-content">{{ $t('cards.budgetsTitle') }}</h3>
-        <span
-            v-if="hasCritical"
-            class="inline-flex items-center gap-1 px-2 h-5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700"
-        >
-          <ion-icon :icon="alertCircleOutline" class="size-3" />
-          {{ $t('cards.attention') }}
-        </span>
+        <transition name="icon-swap">
+          <ion-badge
+              v-if="hasCritical"
+              class="attention-badge inline-flex items-center gap-1 px-2 h-5 rounded-full text-[10px] font-medium"
+          >
+            <ion-icon :icon="alertCircleOutline" class="size-3" />
+            {{ $t('cards.attention') }}
+          </ion-badge>
+        </transition>
       </div>
-      <router-link
-          v-if="hasMore"
-          to="/settings/budgets"
-          class="text-[12px] text-content-muted active:text-slate-900 inline-flex items-center gap-0.5"
-      >
-        {{ $t('common.all') }}
-        <ion-icon :icon="chevronForwardOutline" class="size-3.5" />
-      </router-link>
-    </header>
+      <card-header-link to="/settings/budget-goals" :label="$t('common.all')" />
+      </div>
+    </ion-card-header>
 
-    <div v-if="rows.length" class="pb-3">
-      <div
-          v-for="(r, idx) in rows"
-          :key="r.id"
-          class="py-3"
-          :class="{ 'border-t border-line': idx !== 0 }"
-      >
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <span
-                class="size-2 rounded-full shrink-0"
-                :style="{ backgroundColor: stateColor(r.state) }"
+    <animated-height>
+      <transition name="fade" mode="out-in">
+        <ion-list v-if="rows.length" class="widget-list">
+        <transition-group tag="div" name="list-row" class="relative">
+          <ion-item
+              v-for="(r, idx) in rows"
+              :key="r.id"
+              class="widget-row"
+              :lines="idx === rows.length - 1 ? 'none' : 'full'"
+              :router-link="`/budget/${r.id}/show`"
+              button
+              :detail="false"
+          >
+            <div class="w-full min-w-0 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span
+                    class="size-2 rounded-full shrink-0 transition-colors"
+                    :style="{ backgroundColor: stateColor(r.state) }"
+                />
+                <span class="text-[13px] text-content truncate font-medium">{{ r.name }}</span>
+              </div>
+              <div class="text-right shrink-0">
+                <transition name="value-swap" mode="out-in">
+                  <span :key="r.spent" class="inline-block text-[13px] font-semibold text-content tabular-nums">{{ r.spent }}</span>
+                </transition>
+                <span class="text-[11px] text-content-muted tabular-nums ml-1">/ {{ r.total }}</span>
+              </div>
+            </div>
+
+            <ion-progress-bar
+                class="widget-progress mt-3"
+                :value="r.progress / 100"
+                :style="{ '--progress-background': stateColor(r.state) }"
+                :aria-label="r.name"
             />
-            <span class="text-[13px] text-content truncate font-medium">{{ r.name }}</span>
-          </div>
-          <div class="text-right shrink-0">
-            <span class="text-[13px] font-semibold text-content tabular-nums">{{ r.spent }}</span>
-            <span class="text-[11px] text-content-muted tabular-nums ml-1">/ {{ r.total }}</span>
-          </div>
-        </div>
+            </div>
+          </ion-item>
+        </transition-group>
+        </ion-list>
 
-        <div class="mt-2 h-[3px] bg-surface-sunken rounded-full overflow-hidden">
-          <div
-              class="h-full rounded-full transition-all"
-              :style="{ width: `${r.progress}%`, backgroundColor: stateColor(r.state) }"
-          />
+        <div v-else class="py-6 text-center text-[13px] text-content-muted">
+          {{ $t('cards.budgetsEmpty') }}
         </div>
-      </div>
-    </div>
-
-    <div v-else class="py-6 text-center text-[13px] text-content-muted">
-      {{ $t('cards.budgetsEmpty') }}
-    </div>
-  </section>
+      </transition>
+    </animated-height>
+  </ion-card>
 </template>
+
+<style scoped>
+.budgets-widget {
+  --budget-warning: #92400e;
+  --background: var(--c-surface);
+  margin: 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+:global(.ion-palette-dark .budgets-widget) { --budget-warning: #fcd34d; }
+.widget-header { padding: 16px; }
+.widget-list { padding: 0; margin: 0; background: transparent; }
+.widget-row {
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --background-hover: var(--c-surface-sunken);
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  --border-color: var(--c-line);
+}
+.attention-badge {
+  --background: color-mix(in srgb, var(--budget-warning) 12%, var(--c-surface));
+  --color: var(--budget-warning);
+}
+.widget-progress {
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  --background: var(--c-surface-sunken);
+}
+</style>

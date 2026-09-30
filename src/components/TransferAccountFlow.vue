@@ -5,6 +5,7 @@ import type { AccountDTO } from '@/application'
 import AccountCarousel from '@/components/AccountCarousel.vue'
 import CurrencyInput from '@/components/CurrencyInput.vue'
 import ErrorChip from '@/components/ErrorChip.vue'
+import CollapseTransition from '@/components/CollapseTransition.vue'
 
 withDefaults(defineProps<{
   sourceAccounts: AccountDTO[]
@@ -52,9 +53,11 @@ const targetAmount = defineModel<number>('targetAmount', { required: true })
           :accounts="sourceAccounts"
           :label="$t('transactions.exitAccount')"
       />
-      <div v-if="sourceError" class="mt-1 px-1">
-        <ErrorChip :message="sourceError"/>
-      </div>
+      <collapse-transition>
+        <div v-if="sourceError" class="mt-1 px-1">
+          <ErrorChip :message="sourceError"/>
+        </div>
+      </collapse-transition>
     </div>
 
     <!-- Kaynak ve hedef kartlarını görsel olarak birbirine bağlayan akış çizgisi. -->
@@ -78,9 +81,11 @@ const targetAmount = defineModel<number>('targetAmount', { required: true })
           :label="$t('transactions.targetAccount')"
       />
 
-      <div v-if="targetError" class="mt-1 px-1">
-        <ErrorChip :message="targetError"/>
-      </div>
+      <collapse-transition>
+        <div v-if="targetError" class="mt-1 px-1">
+          <ErrorChip :message="targetError"/>
+        </div>
+      </collapse-transition>
 
       <div v-if="crossCurrency" class="mt-3 border-t border-line pt-3">
         <div class="mb-2 flex items-center justify-between px-1">
@@ -98,14 +103,16 @@ const targetAmount = defineModel<number>('targetAmount', { required: true })
               :label="$t('transactions.targetAmount')"
               :currency-code="targetCurrencyCode"
               :minor-unit="targetCurrencyMinorUnit"
-              class="transfer-flow__amount-input w-full"
+              class="w-full"
           />
           <span class="transfer-flow__amount-code">{{ targetCurrencyCode }}</span>
         </div>
 
-        <div v-if="targetAmountError" class="mt-2 flex justify-center">
-          <ErrorChip :message="targetAmountError"/>
-        </div>
+        <collapse-transition>
+          <div v-if="targetAmountError" class="mt-2 flex justify-center">
+            <ErrorChip :message="targetAmountError"/>
+          </div>
+        </collapse-transition>
       </div>
     </div>
   </section>
@@ -146,22 +153,6 @@ const targetAmount = defineModel<number>('targetAmount', { required: true })
 .transfer-flow__amount {
   background: var(--c-surface);
   box-shadow: inset 0 0 0 1px var(--c-line);
-}
-
-.transfer-flow__amount-input {
-  --background: transparent;
-  --color: inherit;
-  --padding-start: 48px;
-  --padding-end: 48px;
-  font-size: clamp(24px, 7vw, 30px);
-  font-weight: 800;
-}
-
-.transfer-flow__amount-input :deep(input) {
-  font: inherit;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
 }
 
 .transfer-flow__amount-code {

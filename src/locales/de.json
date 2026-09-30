@@ -172,7 +172,15 @@
     },
     "currencyHint": "Ändere hier deine Hauptwährung.",
     "currencyActive": "Aktiv",
-    "currencyNoMatch": "Keine passende Währung."
+    "currencyNoMatch": "Keine passende Währung.",
+    "currencyChange": {
+      "title": "Basiswährung ändern?",
+      "message": "Alle Summen und Berichte werden ab jetzt in {currency} angezeigt. Deine bestehenden Buchungen bleiben in ihrer eigenen Währung.",
+      "updating": "Wird aktualisiert…",
+      "success": "Basiswährung aktualisiert",
+      "ratesStale": "Währung geändert. Aktuelle Kurse konnten nicht abgerufen werden, daher werden die zuletzt gespeicherten Kurse verwendet.",
+      "error": "Aktualisierung fehlgeschlagen"
+    }
   },
   "months": [
     "Januar",
@@ -265,7 +273,23 @@
     }
   },
   "iconPicker": {
-    "title": "Symbolauswahl"
+    "title": "Symbolauswahl",
+    "preview": "Vorschau",
+    "hint": "Wähle eine Farbe und ein Symbol zur Personalisierung.",
+    "colors": "Farben",
+    "categories": {
+      "entertainment": "Unterhaltung",
+      "work": "Arbeit",
+      "finance": "Finanzen",
+      "foodDrink": "Essen & Trinken",
+      "transport": "Verkehr",
+      "shopping": "Einkaufen",
+      "health": "Gesundheit",
+      "home": "Zuhause",
+      "technology": "Technologie",
+      "natureTravel": "Natur & Reisen",
+      "other": "Sonstiges"
+    }
   },
   "accountTypes": {
     "cash": "Bargeld",
@@ -373,7 +397,17 @@
       "goal": "Ziel"
     },
     "welcomeFollowUp": "Alles im Griff",
-    "logoAlt": "Budget-Watchdog-Logo"
+    "logoAlt": "Budget-Watchdog-Logo",
+    "reminders": {
+      "settings": "Einstellungen",
+      "today": "Heute {time}",
+      "tomorrow": "Morgen {time}",
+      "onDate": "{date} · {time}",
+      "off": "Aus",
+      "backupWeekly": "Wöchentlich, bis du ein Backup erstellst",
+      "disabled": "Benachrichtigungen sind aus, es werden keine Erinnerungen gesendet.",
+      "enable": "Einschalten"
+    }
   },
   "overview": {
     "title": "Übersicht",
@@ -880,6 +914,7 @@
     "remaining": "Verbleibend",
     "spent": "Ausgegeben",
     "over": "Überschritten",
+    "remainingOrOver": "Verbleibend / Überschritten",
     "empty": "Noch keine Budgets",
     "emptyDesc": "Tippe oben rechts auf die Schaltfläche, um ein neues Budget hinzuzufügen.",
     "emptyFiltered": "Keine Budgets für diesen Filter",
@@ -1103,6 +1138,7 @@
     "loading": "Wird geladen...",
     "retry": "Erneut versuchen",
     "all": "Alle",
+    "details": "Details",
     "none": "Keine",
     "income": "Einnahmen",
     "expense": "Ausgaben",
@@ -1145,6 +1181,9 @@
   "language": {
     "title": "Sprache",
     "heading": "App-Sprache",
+    "deviceLanguage": "Standardsprache des Geräts: {language}",
+    "deviceLanguageUnknown": "Unbekannt",
+    "selectedHint": "Die markierte Sprache ist deine ausgewählte Sprache.",
     "subtitle": "Wähle die Sprache, in der die App angezeigt wird.",
     "note": "Wenn du die Sprache änderst, werden einige Inhalte neu geladen, das kann ein paar Sekunden dauern.",
     "names": {

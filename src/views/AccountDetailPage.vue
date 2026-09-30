@@ -49,6 +49,8 @@ import { useCategoryName } from '@/composables/features/useCategoryName';
 import { useErrorHandler } from '@/composables/ui/useErrorHandler';
 import { getIconByName } from '@/shared/utils';
 import { formatDateLocalized } from '@/i18n/format';
+import AnimatedHeight from '@/components/AnimatedHeight.vue';
+import SwapText from '@/components/SwapText.vue';
 import {
   AccountMovementDTO,
   GetAccountDetailOutput,
@@ -244,6 +246,8 @@ onIonViewWillEnter(load);
     </ion-header>
 
     <ion-content class="detail-content" :scroll-y="true">
+      <!-- İskelet → içerik (veya hata) çapraz solar. -->
+      <transition name="fade" mode="out-in">
       <!-- Yükleniyor -->
       <div v-if="isLoading" class="mt-5 px-4 space-y-3">
         <div class="bg-surface rounded-2xl p-5">
@@ -301,9 +305,10 @@ onIonViewWillEnter(load);
             <p class="text-[10px] uppercase tracking-wider text-content-faint">
               {{ $t('accounts.detail.currentBalance') }}
             </p>
-            <p class="mt-1 text-[26px] font-extrabold text-content tabular-nums">
-              {{ formatMoney(detail.account.balance.amount, detail.account.balance.currencyId) }}
-            </p>
+            <swap-text
+                class="block mt-1 text-[26px] font-extrabold text-content tabular-nums"
+                :text="formatMoney(detail.account.balance.amount, detail.account.balance.currencyId)"
+            />
           </div>
         </section>
 
@@ -315,22 +320,25 @@ onIonViewWillEnter(load);
           <div class="px-4 pb-4 grid grid-cols-2 gap-3">
             <div class="p-3 rounded-xl bg-surface-sunken">
               <p class="text-[10px] text-content-muted">{{ $t('accounts.detail.totalIncome') }}</p>
-              <p class="mt-1 text-[15px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {{ formatMoney(detail.totals.income.amount, detail.totals.income.currencyId) }}
-              </p>
+              <swap-text
+                  class="block mt-1 text-[15px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums"
+                  :text="formatMoney(detail.totals.income.amount, detail.totals.income.currencyId)"
+              />
             </div>
             <div class="p-3 rounded-xl bg-surface-sunken">
               <p class="text-[10px] text-content-muted">{{ $t('accounts.detail.totalExpense') }}</p>
-              <p class="mt-1 text-[15px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                {{ formatMoney(detail.totals.expense.amount, detail.totals.expense.currencyId) }}
-              </p>
+              <swap-text
+                  class="block mt-1 text-[15px] font-bold text-rose-600 dark:text-rose-400 tabular-nums"
+                  :text="formatMoney(detail.totals.expense.amount, detail.totals.expense.currencyId)"
+              />
             </div>
             <div class="col-span-2 p-3 rounded-xl bg-surface-sunken">
               <div class="flex items-baseline justify-between gap-2">
                 <p class="text-[10px] text-content-muted">{{ $t('accounts.detail.allocatedToGoals') }}</p>
-                <p class="text-[15px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">
-                  {{ formatMoney(detail.totals.allocatedToGoals.amount, detail.totals.allocatedToGoals.currencyId) }}
-                </p>
+                <swap-text
+                    class="text-[15px] font-bold text-indigo-600 dark:text-indigo-400 tabular-nums"
+                    :text="formatMoney(detail.totals.allocatedToGoals.amount, detail.totals.allocatedToGoals.currencyId)"
+                />
               </div>
               <p class="mt-1 text-[10px] text-content-faint leading-snug">
                 {{ $t('accounts.detail.allocatedHint') }}
@@ -367,6 +375,10 @@ onIonViewWillEnter(load);
             </div>
           </div>
 
+          <!-- Filtre değişince: kart yüksekliği yumuşakça değişir, liste ↔ boş
+               durum çapraz solar, günler ve hareketler tek tek girer/çıkar. -->
+          <animated-height>
+          <transition name="fade" mode="out-in">
           <!-- Boş -->
           <div v-if="movementDays.length === 0" class="px-4 pb-6 pt-2 text-center">
             <div class="size-12 rounded-2xl bg-surface-sunken flex items-center justify-center mx-auto">
@@ -381,11 +393,13 @@ onIonViewWillEnter(load);
           </div>
 
           <div v-else class="px-4 pb-3">
+            <transition-group tag="div" name="list-row" class="relative">
             <div v-for="day in movementDays" :key="day.key">
               <p class="pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-content-faint">
                 {{ dayLabel(day.date) }}
               </p>
 
+              <transition-group tag="div" name="list-row" class="relative">
               <button
                   v-for="movement in day.items"
                   :key="movement.id"
@@ -433,7 +447,9 @@ onIonViewWillEnter(load);
                   {{ movement.direction === 'in' ? '+' : '−' }}{{ formatMoney(movement.amount.amount, movement.amount.currencyId) }}
                 </p>
               </button>
+              </transition-group>
             </div>
+            </transition-group>
 
             <p
                 v-if="detail.hasMoreMovements"
@@ -442,6 +458,8 @@ onIonViewWillEnter(load);
               {{ $t('accounts.detail.hasMore', { count: detail.movements.length }) }}
             </p>
           </div>
+          </transition>
+          </animated-height>
         </section>
 
         <!-- Bağlı bütçeler -->
@@ -475,7 +493,7 @@ onIonViewWillEnter(load);
                 <p class="text-[13px] font-semibold text-content truncate">{{ budget.name }}</p>
                 <div class="mt-1.5 h-1.5 bg-surface-sunken rounded-full overflow-hidden">
                   <div
-                      class="h-full rounded-full transition-all"
+                      class="progress-bar h-full rounded-full"
                       :class="budget.isExceeded ? 'bg-rose-500' : budget.isWarning ? 'bg-amber-500' : 'bg-emerald-500'"
                       :style="{ width: `${budgetProgress(budget.spentAmount.amount, budget.amount.amount)}%` }"
                   />
@@ -523,7 +541,7 @@ onIonViewWillEnter(load);
                 <p class="text-[13px] font-semibold text-content truncate">{{ goal.name }}</p>
                 <div class="mt-1.5 h-1.5 bg-surface-sunken rounded-full overflow-hidden">
                   <div
-                      class="h-full rounded-full bg-indigo-600 transition-all"
+                      class="progress-bar h-full rounded-full bg-indigo-600"
                       :style="{ width: `${goalProgress(goal.savedAmount.amount, goal.targetAmount.amount)}%` }"
                   />
                 </div>
@@ -536,6 +554,7 @@ onIonViewWillEnter(load);
           </div>
         </section>
       </div>
+      </transition>
     </ion-content>
   </ion-page>
 </template>
@@ -543,9 +562,5 @@ onIonViewWillEnter(load);
 <style scoped>
 .detail-content {
   --background: var(--c-page);
-}
-
-ion-page {
-  overflow: hidden;
 }
 </style>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { walletOutline, warningOutline } from "ionicons/icons";
 import { IonIcon } from "@ionic/vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import SwapText from "@/components/SwapText.vue";
 
 interface Props {
   total: string
@@ -19,18 +21,20 @@ defineProps<Props>()
           {{ $t('accounts.totalBalance') }}
         </p>
         <p class="mt-2 text-[30px] leading-none font-extrabold text-content tabular-nums tracking-tight">
-          {{ total }}
+          <swap-text :text="total" />
         </p>
         <p class="mt-2 text-[11px] text-content-muted">
-          {{ $t('accounts.activeCount', { count: activeAccounts }) }}
+          <swap-text :text="$t('accounts.activeCount', { count: activeAccounts })" />
         </p>
-        <p
-            v-if="hasMissing"
-            class="mt-2 inline-flex items-center gap-1 text-[11px] text-amber-600"
-        >
-          <ion-icon :icon="warningOutline" class="size-3" />
-          {{ $t('accounts.ratesError') }}
-        </p>
+        <collapse-transition>
+          <p
+              v-if="hasMissing"
+              class="mt-2 flex items-center gap-1 text-[11px] text-amber-600"
+          >
+            <ion-icon :icon="warningOutline" class="size-3" />
+            {{ $t('accounts.ratesError') }}
+          </p>
+        </collapse-transition>
       </div>
       <div class="summary-icon flex size-12 items-center justify-center rounded-2xl">
         <ion-icon :icon="walletOutline" class="size-6" />

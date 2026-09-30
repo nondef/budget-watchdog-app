@@ -30,11 +30,13 @@ import { useMonthData } from "@/composables/data/useMonthData";
 import { useMoney } from "@/composables/money/useMoney";
 import { ChartTab, ChartTimeRange, useCashFlowChart } from "@/composables/charts/useCashFlowChart";
 import MissingRatesNotice from '@/components/MissingRatesNotice.vue';
+import CollapseTransition from '@/components/CollapseTransition.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const accountsStore = useAccountsStore();
 const budgetStore = useBudgetStore();
 
-const { formatMoney } = useMoney()
+const { formatMoney, hidden: amountsHidden, maskText } = useMoney()
 const { t, tm } = useI18n()
 
 const currentDate = ref(new Date());
@@ -107,6 +109,19 @@ const monthlyChangePercent = computed(() => {
   return ((currentMonthData.value.total - previousMonthData.value.total) / Math.abs(previousMonthData.value.total)) * 100
 })
 
+// Yön ikonu ve kutusunun tonu netin işaretini izler. Maskeliyken ikisi de
+// nötre döner ki işaret ele verilmesin.
+const netTrend = computed<'up' | 'down' | 'neutral'>(() => {
+  if (amountsHidden.value) return 'neutral'
+  return currentMonthData.value.total >= 0 ? 'up' : 'down'
+})
+
+const netTrendIcon = computed(() => ({
+  up: trendingUpOutline,
+  down: trendingDownOutline,
+  neutral: analyticsOutline,
+})[netTrend.value])
+
 const forecastNet = computed(() =>
     Math.round((currentMonthData.value.total + previousMonthData.value.total) / 2)
 )
@@ -117,7 +132,19 @@ const forecastExpense = computed(() =>
     Math.round((currentMonthData.value.expense + previousMonthData.value.expense) / 2)
 )
 
+/**
+ * Oranlar ve ipuçları maskeli tutarlardan türüyor: tasarruf oranı ya da
+ * "negatif nakit akışı" uyarısı netin yönünü ele verirdi. Gizleme açıkken
+ * oranlar maskelenir, ipuçları kartı hiç gösterilmez.
+ */
+const maskedRatio = (value: number | null, text: string) =>
+    value === null ? '—' : amountsHidden.value ? maskText : text
+
+const ratioClass = (value: number | null, colored: string) =>
+    value === null || amountsHidden.value ? 'text-slate-400' : colored
+
 const hasTips = computed(() => {
+  if (amountsHidden.value) return false
   const d = currentMonthData.value
   return d.total < 0 || (d.income > 0 && (d.expense / d.income) > 0.8) ||
       (d.total > 0 && d.income > 0 && (d.total / d.income) > 0.2)
@@ -160,14 +187,14 @@ onIonViewDidEnter(async () => {
 
     <ion-content class="overview-content" :scroll-y="true">
       <main class="mx-auto w-full max-w-xl space-y-4 px-4 pb-12 pt-5">
-        <section class="overview-hero overflow-hidden rounded-[22px] p-4">
+        <section class="app-hero overview-hero overflow-hidden p-4">
           <div class="flex items-center justify-between">
             <ion-button fill="clear" class="month-button" :aria-label="$t('overview.prevMonth')" @click="previousMonth">
               <ion-icon slot="icon-only" :icon="chevronBackOutline" />
             </ion-button>
             <div class="text-center">
               <p class="text-[11px] font-bold uppercase tracking-[0.12em] text-content-muted">{{ $t('overview.title') }}</p>
-              <p class="mt-1 text-[17px] font-extrabold text-content">{{ currentMonth }} {{ currentYear }}</p>
+              <swap-text class="mt-1 block text-[17px] font-extrabold text-content" :text="`${currentMonth} ${currentYear}`" />
             </div>
             <ion-button fill="clear" class="month-button" :aria-label="$t('overview.thisMonth')" @click="nextMonth">
               <ion-icon slot="icon-only" :icon="chevronForwardOutline" />
@@ -180,7 +207,7 @@ onIonViewDidEnter(async () => {
         <MissingRatesNotice />
 
         <!-- Özet: Gelir / Gider / Net -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <div class="grid grid-cols-2 gap-3">
             <div class="metric-card metric-card--income rounded-xl px-3 py-3">
               <div class="metric-label flex items-center gap-1.5">
@@ -188,7 +215,7 @@ onIonViewDidEnter(async () => {
                 <span class="text-[11px] font-bold">{{ $t('overview.income') }}</span>
               </div>
               <p class="metric-value mt-1.5 truncate text-[16px] font-extrabold tabular-nums">
-                {{ formatMoney(currentMonthData.income) }}
+                <swap-text :text="formatMoney(currentMonthData.income)" />
               </p>
             </div>
 
@@ -198,7 +225,7 @@ onIonViewDidEnter(async () => {
                 <span class="text-[11px] font-bold">{{ $t('overview.expense') }}</span>
               </div>
               <p class="metric-value mt-1.5 truncate text-[16px] font-extrabold tabular-nums">
-                {{ formatMoney(currentMonthData.expense) }}
+                <swap-text :text="formatMoney(currentMonthData.expense)" />
               </p>
             </div>
           </div>
@@ -207,20 +234,26 @@ onIonViewDidEnter(async () => {
             <div>
               <p class="text-[11px] font-bold text-content-muted">{{ $t('overview.netCashFlow') }}</p>
               <p class="mt-0.5 text-[22px] font-extrabold text-content tabular-nums">
-                {{ currentMonthData.total >= 0 ? '+' : '' }}{{ formatMoney(currentMonthData.total) }}
+                <swap-text :text="formatMoney(currentMonthData.total, undefined, { signDisplay: 'always' })" />
               </p>
             </div>
-            <div class="net-icon flex size-11 items-center justify-center rounded-2xl">
-              <ion-icon
-                  :icon="currentMonthData.total >= 0 ? trendingUpOutline : trendingDownOutline"
-                  class="size-5"
-              />
+            <div
+                class="net-icon flex size-11 items-center justify-center rounded-2xl"
+                :class="`net-icon--${netTrend}`"
+            >
+              <transition name="icon-swap" mode="out-in">
+                <ion-icon
+                    :key="netTrendIcon"
+                    :icon="netTrendIcon"
+                    class="size-6"
+                />
+              </transition>
             </div>
           </div>
         </section>
 
         <!-- Grafik -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <header class="mb-3 flex items-center justify-between gap-3">
             <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.flow') }}</h3>
             <ion-segment class="overview-segment range-segment" :value="timeRange">
@@ -255,51 +288,41 @@ onIonViewDidEnter(async () => {
         </section>
 
         <!-- Oranlar -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.ratios') }}</h3>
-          <p class="text-[11px] text-content-muted mt-0.5">{{ currentMonth }} {{ currentYear }}</p>
+          <swap-text class="block text-[11px] text-content-muted mt-0.5" :text="`${currentMonth} ${currentYear}`" />
 
           <div class="mt-3">
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.savingsRate') }}</span>
-              <span
+              <swap-text
                   class="text-[13px] font-semibold tabular-nums"
-                  :class="savingsRate === null
-                      ? 'text-slate-400'
-                      : savingsRate > 0 ? 'text-emerald-600' : 'text-rose-600'"
-              >
-                {{ savingsRate === null ? '—' : `${savingsRate}%` }}
-              </span>
+                  :class="ratioClass(savingsRate, savingsRate! > 0 ? 'overview-income' : 'overview-expense')"
+                  :text="maskedRatio(savingsRate, `${savingsRate}%`)"
+              />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.expenseIncome') }}</span>
-              <span
+              <swap-text
                   class="text-[13px] font-semibold tabular-nums"
-                  :class="expenseRate === null
-                      ? 'text-slate-400'
-                      : expenseRate < 80 ? 'text-emerald-600'
-                      : expenseRate < 100 ? 'text-amber-600' : 'text-rose-600'"
-              >
-                {{ expenseRate === null ? '—' : `${expenseRate}%` }}
-              </span>
+                  :class="ratioClass(expenseRate, expenseRate! < 80 ? 'overview-income'
+                      : expenseRate! < 100 ? 'overview-warning' : 'overview-expense')"
+                  :text="maskedRatio(expenseRate, `${expenseRate}%`)"
+              />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.dailyAvgIncome') }}</span>
-              <span class="text-[13px] font-semibold text-content tabular-nums">
-                {{ formatMoney(dailyAvgIncome) }}
-              </span>
+              <swap-text class="text-[13px] font-semibold text-content tabular-nums" :text="formatMoney(dailyAvgIncome)" />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.dailyAvgExpense') }}</span>
-              <span class="text-[13px] font-semibold text-content tabular-nums">
-                {{ formatMoney(dailyAvgExpense) }}
-              </span>
+              <swap-text class="text-[13px] font-semibold text-content tabular-nums" :text="formatMoney(dailyAvgExpense)" />
             </div>
           </div>
         </section>
 
         <!-- Trend -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.trend') }}</h3>
           <p class="text-[11px] text-content-muted mt-0.5">{{ $t('overview.vsPrevMonth') }}</p>
 
@@ -307,32 +330,36 @@ onIonViewDidEnter(async () => {
             <!-- Bu ay -->
             <div class="comparison-row flex items-center justify-between rounded-xl px-3 py-3">
               <div>
-                <p class="text-[12px] font-semibold text-content">{{ currentMonth }}</p>
+                <swap-text class="block text-[12px] font-semibold text-content" :text="currentMonth" />
                 <p class="text-[10px] text-content-muted mt-0.5">{{ $t('overview.thisMonth') }}</p>
               </div>
               <div class="text-right">
-                <p class="text-[14px] font-bold text-content tabular-nums">
-                  {{ currentMonthData.total >= 0 ? '+' : '' }}{{ formatMoney(currentMonthData.total) }}
-                </p>
-                <p class="text-[10px] text-content-muted mt-0.5 tabular-nums">
-                  {{ formatMoney(currentMonthData.income) }} · {{ formatMoney(currentMonthData.expense) }}
-                </p>
+                <swap-text
+                    class="block text-[14px] font-bold text-content tabular-nums"
+                    :text="formatMoney(currentMonthData.total, undefined, { signDisplay: 'always' })"
+                />
+                <swap-text
+                    class="block text-[10px] text-content-muted mt-0.5 tabular-nums"
+                    :text="`${formatMoney(currentMonthData.income)} · ${formatMoney(currentMonthData.expense)}`"
+                />
               </div>
             </div>
 
             <!-- Önceki ay -->
             <div class="comparison-row flex items-center justify-between rounded-xl px-3 py-3">
               <div>
-                <p class="text-[12px] font-semibold text-content-secondary">{{ prevMonthName }}</p>
+                <swap-text class="block text-[12px] font-semibold text-content-secondary" :text="prevMonthName" />
                 <p class="text-[10px] text-content-muted mt-0.5">{{ $t('overview.prevMonth') }}</p>
               </div>
               <div class="text-right">
-                <p class="text-[14px] font-bold text-content-secondary tabular-nums">
-                  {{ previousMonthData.total >= 0 ? '+' : '' }}{{ formatMoney(previousMonthData.total) }}
-                </p>
-                <p class="text-[10px] text-content-muted mt-0.5 tabular-nums">
-                  {{ formatMoney(previousMonthData.income) }} · {{ formatMoney(previousMonthData.expense) }}
-                </p>
+                <swap-text
+                    class="block text-[14px] font-bold text-content-secondary tabular-nums"
+                    :text="formatMoney(previousMonthData.total, undefined, { signDisplay: 'always' })"
+                />
+                <swap-text
+                    class="block text-[10px] text-content-muted mt-0.5 tabular-nums"
+                    :text="`${formatMoney(previousMonthData.income)} · ${formatMoney(previousMonthData.expense)}`"
+                />
               </div>
             </div>
           </div>
@@ -341,31 +368,26 @@ onIonViewDidEnter(async () => {
           <div class="mt-3 pt-3 border-t border-line grid grid-cols-2 gap-3">
             <div>
               <p class="text-[10px] text-content-muted">{{ $t('overview.change') }}</p>
-              <p
-                  class="text-[14px] font-bold tabular-nums mt-0.5"
-                  :class="monthlyChange > 0 ? 'text-emerald-600' : monthlyChange < 0 ? 'text-rose-600' : 'text-content-tertiary'"
-              >
-                {{ monthlyChange >= 0 ? '+' : '' }}{{ formatMoney(monthlyChange) }}
-              </p>
+              <swap-text
+                  class="block text-[14px] font-bold tabular-nums mt-0.5"
+                  :class="amountsHidden || monthlyChange === 0 ? 'text-content-tertiary' : monthlyChange > 0 ? 'overview-income' : 'overview-expense'"
+                  :text="formatMoney(monthlyChange, undefined, { signDisplay: 'always' })"
+              />
             </div>
             <div>
               <p class="text-[10px] text-content-muted">{{ $t('overview.percent') }}</p>
-              <p
-                  class="text-[14px] font-bold tabular-nums mt-0.5"
-                  :class="monthlyChangePercent === null
-                      ? 'text-slate-400'
-                      : monthlyChangePercent > 0 ? 'text-emerald-600' : 'text-rose-600'"
-              >
-                {{ monthlyChangePercent === null
-                  ? '—'
-                  : `${monthlyChangePercent >= 0 ? '+' : ''}${monthlyChangePercent.toFixed(1)}%` }}
-              </p>
+              <swap-text
+                  class="block text-[14px] font-bold tabular-nums mt-0.5"
+                  :class="ratioClass(monthlyChangePercent, monthlyChangePercent! > 0 ? 'overview-income' : 'overview-expense')"
+                  :text="maskedRatio(monthlyChangePercent,
+                      `${monthlyChangePercent! >= 0 ? '+' : ''}${monthlyChangePercent?.toFixed(1)}%`)"
+              />
             </div>
           </div>
         </section>
 
         <!-- Tahmin -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.forecastTitle') }}</h3>
@@ -379,28 +401,32 @@ onIonViewDidEnter(async () => {
           <div class="forecast-card mt-3 rounded-xl px-3 py-3">
             <p class="text-[11px] font-bold text-content-muted">{{ $t('overview.forecastNet') }}</p>
             <p class="mt-0.5 text-[20px] font-extrabold text-content tabular-nums">
-              {{ forecastNet >= 0 ? '+' : '' }}{{ formatMoney(forecastNet) }}
+              <swap-text :text="formatMoney(forecastNet, undefined, { signDisplay: 'always' })" />
             </p>
           </div>
 
           <div class="mt-3 grid grid-cols-2 gap-3">
             <div>
               <p class="text-[10px] text-content-muted">{{ $t('overview.forecastIncome') }}</p>
-              <p class="text-[13px] font-semibold text-emerald-600 tabular-nums mt-0.5">
-                {{ formatMoney(forecastIncome) }}
-              </p>
+              <swap-text
+                  class="block text-[13px] font-semibold overview-income tabular-nums mt-0.5"
+                  :text="formatMoney(forecastIncome)"
+              />
             </div>
             <div>
               <p class="text-[10px] text-content-muted">{{ $t('overview.forecastExpense') }}</p>
-              <p class="text-[13px] font-semibold text-rose-600 tabular-nums mt-0.5">
-                {{ formatMoney(forecastExpense) }}
-              </p>
+              <swap-text
+                  class="block text-[13px] font-semibold overview-expense tabular-nums mt-0.5"
+                  :text="formatMoney(forecastExpense)"
+              />
             </div>
           </div>
         </section>
 
-        <!-- İpuçları -->
-        <section v-if="hasTips" class="overview-card p-4">
+        <!-- İpuçları: ay değişince kart ve içindeki ipuçları yerinde açılıp
+             katlanır; her ipucu kendi koşuluna bağlı olduğundan ayrı sarılı. -->
+        <collapse-transition>
+        <section v-if="hasTips" class="app-card overview-card p-4">
           <div class="flex items-center gap-2">
             <div class="tip-icon flex size-8 items-center justify-center rounded-xl">
               <ion-icon :icon="bulbOutline" class="size-[15px]" />
@@ -409,99 +435,104 @@ onIonViewDidEnter(async () => {
           </div>
 
           <div class="mt-3 space-y-2">
-            <div v-if="currentMonthData.total < 0" class="tip-card tip-card--danger rounded-xl px-3 py-2.5">
-              <p class="text-[12px] font-bold">{{ $t('overview.negativeFlow') }}</p>
-              <p class="mt-1 text-[11px] leading-snug text-content-secondary">
-                {{ $t('overview.negativeFlowDesc') }}
-              </p>
-            </div>
+            <collapse-transition>
+              <div v-if="currentMonthData.total < 0" class="tip-card tip-card--danger rounded-xl px-3 py-2.5">
+                <p class="text-[12px] font-bold">{{ $t('overview.negativeFlow') }}</p>
+                <p class="mt-1 text-[11px] leading-snug text-content-secondary">
+                  {{ $t('overview.negativeFlowDesc') }}
+                </p>
+              </div>
+            </collapse-transition>
 
-            <div
-                v-if="currentMonthData.income > 0 && (currentMonthData.expense / currentMonthData.income) > 0.8"
-                class="tip-card tip-card--warning rounded-xl px-3 py-2.5"
-            >
-              <p class="text-[12px] font-bold">{{ $t('overview.highExpense') }}</p>
-              <p class="mt-1 text-[11px] leading-snug text-content-secondary">
-                {{ $t('overview.highExpenseDesc', { pct: Math.round((currentMonthData.expense / currentMonthData.income) * 100) }) }}
-              </p>
-            </div>
+            <collapse-transition>
+              <div
+                  v-if="currentMonthData.income > 0 && (currentMonthData.expense / currentMonthData.income) > 0.8"
+                  class="tip-card tip-card--warning rounded-xl px-3 py-2.5"
+              >
+                <p class="text-[12px] font-bold">{{ $t('overview.highExpense') }}</p>
+                <swap-text
+                    class="block mt-1 text-[11px] leading-snug text-content-secondary"
+                    :text="$t('overview.highExpenseDesc', { pct: Math.round((currentMonthData.expense / currentMonthData.income) * 100) })"
+                />
+              </div>
+            </collapse-transition>
 
-            <div
-                v-if="currentMonthData.total > 0 && currentMonthData.income > 0 && (currentMonthData.total / currentMonthData.income) > 0.2"
-                class="tip-card tip-card--success rounded-xl px-3 py-2.5"
-            >
-              <p class="text-[12px] font-bold">{{ $t('overview.goodSavings') }}</p>
-              <p class="mt-1 text-[11px] leading-snug text-content-secondary">
-                {{ $t('overview.goodSavingsDesc', { pct: Math.round((currentMonthData.total / currentMonthData.income) * 100) }) }}
-              </p>
-            </div>
+            <collapse-transition>
+              <div
+                  v-if="currentMonthData.total > 0 && currentMonthData.income > 0 && (currentMonthData.total / currentMonthData.income) > 0.2"
+                  class="tip-card tip-card--success rounded-xl px-3 py-2.5"
+              >
+                <p class="text-[12px] font-bold">{{ $t('overview.goodSavings') }}</p>
+                <swap-text
+                    class="block mt-1 text-[11px] leading-snug text-content-secondary"
+                    :text="$t('overview.goodSavingsDesc', { pct: Math.round((currentMonthData.total / currentMonthData.income) * 100) })"
+                />
+              </div>
+            </collapse-transition>
           </div>
         </section>
+        </collapse-transition>
 
         <!-- Hesap özeti -->
-        <section class="overview-card p-4">
+        <section class="app-card overview-card p-4">
           <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.accountSummary') }}</h3>
           <p class="text-[11px] text-content-muted mt-0.5">{{ $t('overview.activeAccounts') }}</p>
 
           <div class="mt-3">
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.totalBalance') }}</span>
-              <span class="text-[14px] font-bold text-content tabular-nums">
-                {{ formatMoney(accountsStore.totalBalance) }}
-              </span>
+              <swap-text class="text-[14px] font-bold text-content tabular-nums" :text="formatMoney(accountsStore.totalBalance)" />
             </div>
             <!-- Kuru bulunamayan hesaplar toplama girmiyor; sessiz kalmasın. -->
-            <p
-                v-if="accountsStore.totalBalanceHasMissing"
-                class="text-[11px] text-amber-600 pb-1"
-            >
-              {{ $t('accounts.ratesError') }}
-            </p>
+            <collapse-transition>
+              <p
+                  v-if="accountsStore.totalBalanceHasMissing"
+                  class="text-[11px] overview-warning pb-1"
+              >
+                {{ $t('accounts.ratesError') }}
+              </p>
+            </collapse-transition>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.activeAccountCount') }}</span>
-              <span class="text-[14px] font-semibold text-content tabular-nums">
-                {{ accountsStore.accounts.filter(a => a.isActive).length }}
-              </span>
+              <swap-text
+                  class="text-[14px] font-semibold text-content tabular-nums"
+                  :text="accountsStore.accounts.filter(a => a.isActive).length"
+              />
             </div>
           </div>
         </section>
 
         <!-- Bütçe durumu -->
-        <section v-if="budgetStore.activeBudgets.length > 0" class="overview-card p-4">
+        <collapse-transition>
+        <section v-if="budgetStore.activeBudgets.length > 0" class="app-card overview-card p-4">
           <h3 class="text-[14px] font-semibold text-content">{{ $t('overview.budgetStatus') }}</h3>
           <p class="text-[11px] text-content-muted mt-0.5">{{ $t('overview.activeBudgetsSub') }}</p>
 
           <div class="mt-3">
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.activeBudget') }}</span>
-              <span class="text-[14px] font-semibold text-content tabular-nums">
-                {{ budgetStore.activeBudgets.length }}
-              </span>
+              <swap-text class="text-[14px] font-semibold text-content tabular-nums" :text="budgetStore.activeBudgets.length" />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.totalBudget') }}</span>
-              <span class="text-[14px] font-semibold text-content tabular-nums">
-                {{ formatMoney(budgetStore.totalBudgetAmount) }}
-              </span>
+              <swap-text class="text-[14px] font-semibold text-content tabular-nums" :text="formatMoney(budgetStore.totalBudgetAmount)" />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.spent') }}</span>
-              <span class="text-[14px] font-semibold text-rose-600 tabular-nums">
-                {{ formatMoney(budgetStore.totalSpentAmount) }}
-              </span>
+              <swap-text class="text-[14px] font-semibold overview-expense tabular-nums" :text="formatMoney(budgetStore.totalSpentAmount)" />
             </div>
             <div class="overview-row flex items-center justify-between py-3">
               <span class="text-[13px] text-content-tertiary">{{ $t('overview.remaining') }}</span>
-              <span
+              <swap-text
                   class="text-[14px] font-semibold tabular-nums"
                   :class="(budgetStore.totalBudgetAmount - budgetStore.totalSpentAmount) > 0
-                      ? 'text-emerald-600' : 'text-rose-600'"
-              >
-                {{ formatMoney(budgetStore.totalBudgetAmount - budgetStore.totalSpentAmount) }}
-              </span>
+                      ? 'overview-income' : 'overview-expense'"
+                  :text="formatMoney(budgetStore.totalBudgetAmount - budgetStore.totalSpentAmount)"
+              />
             </div>
           </div>
         </section>
+        </collapse-transition>
       </main>
     </ion-content>
   </ion-page>
@@ -510,36 +541,23 @@ onIonViewDidEnter(async () => {
 <style scoped>
 .overview-content {
   --background: var(--c-page);
+  --overview-income: #15803d;
+  --overview-expense: #be123c;
+  --overview-warning: #92400e;
 }
 
-ion-page {
-  overflow: hidden;
+:global(.ion-palette-dark .overview-content) {
+  --overview-income: #86efac;
+  --overview-expense: #fda4af;
+  --overview-warning: #fcd34d;
 }
 
-.overview-hero {
-  background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
-  border: 1px solid var(--c-line);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--c-content) 8%, transparent);
-}
+.overview-income { color: var(--overview-income); }
+.overview-expense { color: var(--overview-expense); }
+.overview-warning { color: var(--overview-warning); }
 
-ion-button.month-button {
-  width: 42px;
-  height: 42px;
-  margin: 0;
-  --background: var(--c-surface);
-  --background-activated: var(--c-surface-strong);
-  --border-radius: 14px;
-  --box-shadow: none;
-  --color: var(--c-content);
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-.overview-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-  box-shadow: 0 5px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
+.tip-card--danger > p:first-child {
+  color: var(--overview-expense);
 }
 
 .metric-card {
@@ -547,28 +565,23 @@ ion-button.month-button {
 }
 
 .metric-card--income {
-  background: color-mix(in srgb, #16a34a 9%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, #16a34a 26%, var(--c-line));
+  background: color-mix(in srgb, var(--overview-income) 9%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, var(--overview-income) 26%, var(--c-line));
 }
 
 .metric-card--income .metric-label,
 .metric-card--income .metric-value {
-  color: #15803d;
+  color: var(--overview-income);
 }
 
 .metric-card--expense {
-  background: color-mix(in srgb, var(--c-error) 8%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, var(--c-error) 24%, var(--c-line));
+  background: color-mix(in srgb, var(--overview-expense) 8%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, var(--overview-expense) 24%, var(--c-line));
 }
 
 .metric-card--expense .metric-label,
 .metric-card--expense .metric-value {
-  color: var(--c-error);
-}
-
-:global(.ion-palette-dark) .metric-card--income .metric-label,
-:global(.ion-palette-dark) .metric-card--income .metric-value {
-  color: #86efac;
+  color: var(--overview-expense);
 }
 
 .net-card,
@@ -578,10 +591,32 @@ ion-button.month-button {
   border: 1px solid var(--c-line);
 }
 
-.net-icon,
 .section-icon {
   background: var(--c-primary);
   color: var(--c-on-primary);
+}
+
+/* Gelir/Gider kartlarıyla aynı dil: yumuşak tonlu zemin, güçlü renkli ikon.
+   Primary dolgu koyu temada neredeyse beyaz bir kutu olup ince ikonu
+   bastırıyordu; çizgi de 20px'te fazla ince kaldığı için kalınlaştırıldı. */
+.net-icon {
+  --net-tone: var(--c-content);
+  background: color-mix(in srgb, var(--net-tone) 12%, var(--c-surface));
+  border: 1px solid color-mix(in srgb, var(--net-tone) 28%, var(--c-line));
+  color: var(--net-tone);
+  --ionicon-stroke-width: 44px;
+}
+
+.net-icon--up {
+  --net-tone: #15803d;
+}
+
+.net-icon--down {
+  --net-tone: var(--c-error);
+}
+
+:global(html.ion-palette-dark .net-icon--up) {
+  --net-tone: #86efac;
 }
 
 .overview-segment {
@@ -641,8 +676,13 @@ ion-button.month-button {
 }
 
 .tip-icon {
-  background: color-mix(in srgb, #f59e0b 16%, var(--c-surface-strong));
-  color: #b45309;
+  --tip-icon-color: #92400e;
+  background: color-mix(in srgb, var(--tip-icon-color) 12%, var(--c-surface-sunken));
+  color: var(--tip-icon-color);
+}
+
+:global(.ion-palette-dark .tip-icon) {
+  --tip-icon-color: #fcd34d;
 }
 
 .tip-card {
@@ -650,9 +690,9 @@ ion-button.month-button {
 }
 
 .tip-card--danger {
-  background: color-mix(in srgb, var(--c-error) 7%, var(--c-surface-sunken));
-  border-color: color-mix(in srgb, var(--c-error) 22%, var(--c-line));
-  color: var(--c-error);
+  background: color-mix(in srgb, var(--overview-expense) 7%, var(--c-surface-sunken));
+  border-color: color-mix(in srgb, var(--overview-expense) 22%, var(--c-line));
+  color: var(--overview-expense);
 }
 
 .tip-card--warning {

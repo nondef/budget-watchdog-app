@@ -32,6 +32,7 @@ import { buildBackupFileName, saveBackupFile } from '@/infrastructure/services/b
 import { useBackup } from '@/composables/features/useBackup';
 import { useToast } from '@/composables/ui/useToast';
 import { logger } from '@/infrastructure/logging';
+import SwapText from '@/components/SwapText.vue';
 
 const { t } = useI18n();
 const toast = useToast();
@@ -258,7 +259,7 @@ async function reset() {
                 @click="exportData"
             >
               <ion-icon :icon="downloadOutline" class="size-[16px]" />
-              {{ isExportingData ? $t('backup.creating') : $t('recovery.actions.export') }}
+              <swap-text :text="isExportingData ? $t('backup.creating') : $t('recovery.actions.export')" />
             </button>
             <p class="mt-1.5 px-1 text-[11px] text-content-muted leading-snug">
               {{ $t('recovery.actions.exportHint') }}

@@ -134,11 +134,13 @@ const skip = () => proceed();
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <h2 class="text-[15px] font-semibold text-content">{{ t('permissions.notifications.title') }}</h2>
-                <ion-icon
-                  v-if="granted[item.key]"
-                  :icon="checkmarkCircle"
-                  class="size-4 text-emerald-500"
-                />
+                <transition name="icon-swap">
+                  <ion-icon
+                    v-if="granted[item.key]"
+                    :icon="checkmarkCircle"
+                    class="size-4 text-emerald-500"
+                  />
+                </transition>
               </div>
               <p class="text-[12px] text-content-muted mt-0.5 leading-relaxed">
                 {{ t('permissions.notifications.description') }}

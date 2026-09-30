@@ -21,6 +21,7 @@ import { useI18n } from 'vue-i18n'
 import { useAccountsStore } from '@/stores/accounts'
 import { useBackupReminder } from '@/composables/features/useBackupReminder'
 import { useNotifier } from '@/composables/features/useNotifier'
+import CollapseTransition from '@/components/CollapseTransition.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -56,32 +57,37 @@ const goToBackup = () => router.push('/settings/backup')
 </script>
 
 <template>
-  <section
-      v-if="visible"
-      class="bg-surface rounded-2xl px-4 py-3.5 flex items-start gap-3"
-  >
-    <div
-        class="size-9 shrink-0 rounded-full flex items-center justify-center bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+  <!-- Çarpıya basınca kart yerinde katlanır, alttaki kartlar yukarı kayar. -->
+  <collapse-transition>
+    <section
+        v-if="visible"
+        class="bg-surface rounded-2xl px-4 py-3.5 flex items-start gap-3"
     >
-      <ion-icon :icon="cloudUploadOutline" class="size-[18px]" />
-    </div>
-
-    <div class="min-w-0 flex-1">
-      <p class="text-[13px] leading-snug text-content">{{ message }}</p>
-      <button
-          class="mt-2 px-3 py-1.5 rounded-lg bg-surface-strong text-[12px] font-semibold text-content active:opacity-70 transition"
-          @click="goToBackup"
+      <div
+          class="size-9 shrink-0 rounded-full flex items-center justify-center bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
       >
-        {{ $t('backup.reminder.action') }}
-      </button>
-    </div>
+        <ion-icon :icon="cloudUploadOutline" class="size-[18px]" />
+      </div>
 
-    <button
-        class="size-7 shrink-0 -mr-1 rounded-full flex items-center justify-center text-content-tertiary active:bg-surface-strong transition"
-        :aria-label="$t('common.close')"
-        @click="() => void handleDismiss()"
-    >
-      <ion-icon :icon="closeOutline" class="size-[16px]" />
-    </button>
-  </section>
+      <div class="min-w-0 flex-1">
+        <transition name="value-swap" mode="out-in">
+          <p :key="message" class="text-[13px] leading-snug text-content">{{ message }}</p>
+        </transition>
+        <button
+            class="mt-2 px-3 py-1.5 rounded-lg bg-surface-strong text-[12px] font-semibold text-content active:opacity-70 transition"
+            @click="goToBackup"
+        >
+          {{ $t('backup.reminder.action') }}
+        </button>
+      </div>
+
+      <button
+          class="size-7 shrink-0 -mr-1 rounded-full flex items-center justify-center text-content-tertiary active:bg-surface-strong transition"
+          :aria-label="$t('common.close')"
+          @click="() => void handleDismiss()"
+      >
+        <ion-icon :icon="closeOutline" class="size-[16px]" />
+      </button>
+    </section>
+  </collapse-transition>
 </template>

@@ -49,6 +49,9 @@ import { BudgetType } from "@/domain";
 import { useAlert } from "@/composables";
 import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import CollapseTransition from "@/components/CollapseTransition.vue";
+import AnimatedHeight from "@/components/AnimatedHeight.vue";
+import SwapText from "@/components/SwapText.vue";
 
 const { goBackOrFallback } = useAppNavigation()
 const toast = useToast()
@@ -184,11 +187,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('budgets.new')" default-href="/settings/budget-goals"/>
 
-    <ion-content class="form-content" :scroll-y="true">
+    <ion-content :scroll-y="true">
       <div class="px-4">
         <!-- Hero: ikon -->
         <section class="mt-6 flex flex-col items-center">
@@ -233,7 +236,9 @@ onMounted(async () => {
         <section class="bg-surface rounded-2xl px-4 py-4">
           <p class="text-[12px] font-semibold text-content mb-3">{{ $t('budgets.type') }}</p>
           <BudgetTypeSegment v-model="type"/>
-          <p v-if="errors.type" class="field-error text-[11px] text-rose-600 mt-2">{{ errors.type }}</p>
+          <collapse-transition>
+            <p v-if="errors.type" class="field-error text-[11px] text-rose-600 mt-2">{{ errors.type }}</p>
+          </collapse-transition>
         </section>
 
         <picker-field
@@ -261,19 +266,22 @@ onMounted(async () => {
             :error="errors.startDate"
         />
 
-        <DateField
-            v-if="values.type === 'once'"
-            v-model="endDate"
-            :label="$t('budgets.endLabel')"
-            :placeholder="$t('budgets.endPlaceholder')"
-            :error="errors.endDate"
-        />
+        <!-- Bitiş tarihi yalnız tek seferlik bütçede: tip değişince yerinde açılır/katlanır. -->
+        <collapse-transition>
+          <DateField
+              v-if="values.type === 'once'"
+              v-model="endDate"
+              :label="$t('budgets.endLabel')"
+              :placeholder="$t('budgets.endPlaceholder')"
+              :error="errors.endDate"
+          />
+        </collapse-transition>
 
         <!-- Kategoriler -->
         <div>
           <section
               class="bg-surface rounded-2xl px-4 py-4"
-              :class="{ 'ring-1 ring-rose-600': errors.category }"
+              :class="{ 'category-field-invalid': errors.category }"
           >
             <div class="flex items-center justify-between mb-3">
               <p class="text-[12px] font-semibold text-content">{{ $t('budgets.categories') }}</p>
@@ -283,7 +291,12 @@ onMounted(async () => {
               </ion-chip>
             </div>
 
-            <div v-if="selectedCategories.length" class="flex flex-wrap gap-1.5">
+            <!-- Çip eklenip çıkarıldıkça solar; kart yüksekliği satır sayısıyla
+                 yumuşakça değişir. Sarmalayan akışta çıkanı akıştan almak
+                 (list-row) yerleşimi bozar, bu yüzden fade. -->
+            <animated-height>
+            <transition name="fade" mode="out-in">
+            <transition-group v-if="selectedCategories.length" tag="div" name="fade" class="flex flex-wrap gap-1.5">
               <ion-chip
                   v-for="cat in selectedCategories"
                   :key="cat.id"
@@ -299,10 +312,14 @@ onMounted(async () => {
                 <span class="text-[12px] text-content-secondary">{{ categoryName(cat.name) }}</span>
                 <ion-icon :icon="closeOutline" class="size-3 text-slate-400" />
               </ion-chip>
-            </div>
+            </transition-group>
             <p v-else class="text-[12px] text-slate-400">{{ $t('budgets.noCategory') }}</p>
+            </transition>
+            </animated-height>
           </section>
-          <p v-if="errors.category" class="field-error text-[11px] text-rose-600 mt-1.5 px-1">{{ errors.category }}</p>
+          <collapse-transition>
+            <p v-if="errors.category" class="field-error text-[11px] text-rose-600 mt-1.5 px-1">{{ errors.category }}</p>
+          </collapse-transition>
         </div>
 
         <!-- Bildirim -->
@@ -325,12 +342,15 @@ onMounted(async () => {
             />
           </div>
 
+          <!-- Bildirim açılınca eşik ayarı toggle'ın altında açılır. -->
+          <collapse-transition>
           <div v-if="values.enableNotification" class="mt-3 pt-3 border-t border-line">
             <div class="flex items-center justify-between mb-2">
               <span class="text-[12px] text-content-tertiary">{{ $t('budgets.warningThreshold') }}</span>
-              <span class="text-[15px] font-bold text-indigo-700 tabular-nums">
-                {{ $t('common.percentValue', { value: values.warningPercentage }) }}
-              </span>
+              <swap-text
+                  class="text-[15px] font-bold text-indigo-700 tabular-nums"
+                  :text="$t('common.percentValue', { value: values.warningPercentage })"
+              />
             </div>
             <div class="flex items-center gap-2">
               <ion-button
@@ -353,6 +373,7 @@ onMounted(async () => {
               </ion-button>
             </div>
           </div>
+          </collapse-transition>
         </section>
 
         <!-- Not — MD3 filled textarea -->
@@ -474,29 +495,10 @@ ion-modal.account-picker-modal ion-footer ion-toolbar {
 ion-modal.account-picker-modal ion-list.category-list {
   background: transparent;
 }
-
 </style>
 
 <style scoped>
-.form-content {
-  --background: var(--c-page);
-}
-
-.form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  background: linear-gradient(180deg, rgba(244, 244, 245, 0) 0%, #f4f4f5 30%);
-  z-index: 10;
-}
-
-ion-page {
-  overflow: hidden;
+.category-field-invalid {
+  box-shadow: inset 0 0 0 1.5px var(--md-error);
 }
 </style>

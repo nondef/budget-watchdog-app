@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TimeRange } from "@/shared/utils/date";
+import CardHeaderLink from "@/components/CardHeaderLink.vue";
 
 interface TimeRangeOption {
   id: TimeRange
@@ -40,8 +41,13 @@ const selectTimeRange = (rangeId: TimeRange) => {
     <header class="flex items-start justify-between py-4">
       <div>
         <h3 class="text-[14px] font-semibold text-content">{{ $t('cards.cashFlowTitle') }}</h3>
-        <p class="text-[11px] text-content-muted mt-0.5">{{ dateText }}</p>
+        <p class="text-[11px] text-content-muted mt-0.5">
+          <transition name="value-swap" mode="out-in">
+            <span :key="dateText" class="inline-block">{{ dateText }}</span>
+          </transition>
+        </p>
       </div>
+      <card-header-link to="/tabs/overview" :label="$t('common.details')" />
     </header>
 
     <!-- Yatay pill switcher -->
@@ -68,7 +74,9 @@ const selectTimeRange = (rangeId: TimeRange) => {
           <span class="size-1.5 rounded-full bg-emerald-500" />
           <span class="text-[13px] text-content-tertiary">{{ $t('common.income') }}</span>
         </div>
-        <span class="text-[14px] font-medium text-content tabular-nums">{{ income }}</span>
+        <transition name="value-swap" mode="out-in">
+          <span :key="income" class="inline-block text-[14px] font-medium text-content tabular-nums">{{ income }}</span>
+        </transition>
       </div>
 
       <div class="flex items-center justify-between py-2 border-t border-line">
@@ -76,12 +84,16 @@ const selectTimeRange = (rangeId: TimeRange) => {
           <span class="size-1.5 rounded-full bg-rose-500" />
           <span class="text-[13px] text-content-tertiary">{{ $t('common.expense') }}</span>
         </div>
-        <span class="text-[14px] font-medium text-content tabular-nums">{{ expense }}</span>
+        <transition name="value-swap" mode="out-in">
+          <span :key="expense" class="inline-block text-[14px] font-medium text-content tabular-nums">{{ expense }}</span>
+        </transition>
       </div>
 
       <div class="flex items-center justify-between py-3 px-3 mt-2 rounded-xl bg-indigo-50 dark:bg-gray-100/10">
         <span class="text-[13px] font-medium text-indigo-900 dark:text-white">{{ $t('common.net') }}</span>
-        <span class="text-[15px] font-bold text-indigo-700 tabular-nums dark:text-white">{{ total }}</span>
+        <transition name="value-swap" mode="out-in">
+          <span :key="total" class="inline-block text-[15px] font-bold text-indigo-700 tabular-nums dark:text-white">{{ total }}</span>
+        </transition>
       </div>
     </div>
   </section>

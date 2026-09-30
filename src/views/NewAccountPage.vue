@@ -175,7 +175,7 @@ onMounted(async () => {
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="form-content" :scroll-y="true">
+    <ion-content :scroll-y="true">
       <div class="px-4 pt-3">
         <!-- Önizleme kartı -->
         <button
@@ -323,78 +323,3 @@ onMounted(async () => {
         />
   </ion-page>
 </template>
-
-<style scoped>
-.form-content {
-  --background: var(--c-page);
-}
-
-.save-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 20px;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  z-index: 10;
-}
-
-ion-page {
-  overflow: hidden;
-}
-
-.form-content ion-textarea :deep(textarea) {
-  resize: none;
-}
-
-/* Hesap tipi segmenti — görseller host'taki Tailwind sınıflarından gelir */
-ion-segment.account-type-segment {
-  width: auto;
-  border-radius: 0;
-  background: transparent;
-  --background: transparent;
-}
-
-ion-segment.account-type-segment ion-segment-button {
-  min-width: 0;
-  min-height: 0;
-  height: auto;
-  margin: 0;
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: inherit;
-  font-weight: inherit;
-  --background: transparent;
-  --background-checked: transparent;
-  --background-hover: transparent;
-  --background-focused: transparent;
-  --indicator-color: transparent;
-  --indicator-box-shadow: none;
-  --border-radius: 0.75rem;
-  --border-width: 0;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --margin-start: 0;
-  --margin-end: 0;
-  --margin-top: 0;
-  --margin-bottom: 0;
-  --ripple-color: transparent;
-}
-
-ion-segment.account-type-segment ion-segment-button::part(indicator) {
-  display: none;
-}
-
-ion-segment.account-type-segment ion-segment-button::part(native) {
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: inherit;
-}
-</style>

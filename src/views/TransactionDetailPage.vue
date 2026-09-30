@@ -172,7 +172,7 @@ onIonViewWillEnter(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar class="detail-toolbar">
         <ion-buttons slot="start">
@@ -350,29 +350,5 @@ onIonViewWillEnter(async () => {
 .detail-toolbar {
   --background: var(--c-page);
   --border-width: 0;
-}
-
-/* Sil butonu: koyu değil — hem light hem dark'a uygun kırmızı outline */
-.delete-button {
-  --background: transparent;
-  --background-activated: rgba(244, 63, 94, 0.12); /* rose-500 */
-  --background-hover: rgba(244, 63, 94, 0.08);
-  --color: theme('colors.rose.500');
-  --border-color: rgba(244, 63, 94, 0.45);
-  --border-radius: 1rem;
-  --box-shadow: none;
-  height: 52px;
-  font-size: 15px;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: normal;
-  margin: 0;
-}
-
-html.ion-palette-dark .delete-button {
-  --background-activated: rgba(251, 113, 133, 0.16); /* rose-400 */
-  --background-hover: rgba(251, 113, 133, 0.12);
-  --color: theme('colors.rose.400');
-  --border-color: rgba(251, 113, 133, 0.45);
 }
 </style>

@@ -3,7 +3,10 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  IonButton
+  IonButton,
+  IonCard,
+  IonList,
+  IonProgressBar
 } from '@ionic/vue';
 import { addOutline, walletOutline, swapVerticalOutline } from 'ionicons/icons';
 import { computed, onMounted } from 'vue';
@@ -18,6 +21,7 @@ import { useBudgetFilters } from "@/composables/features/useBudgetFilters";
 import BudgetCard from "@/components/BudgetCard.vue";
 import { useEnrichedBudgets } from "@/composables/data/useEnrichedBudgets";
 import SubPageHeader from '@/components/SubPageHeader.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -47,9 +51,9 @@ const sorts = computed(() => [
 const isFiltered = computed(() => selectedFilter.value !== 'all')
 
 const progressColor = computed(() => {
-  if (overallProgress.value >= 100) return 'bg-rose-500'
-  if (overallProgress.value >= 80) return 'bg-amber-500'
-  return 'bg-emerald-500'
+  if (overallProgress.value >= 100) return 'var(--c-error)'
+  if (overallProgress.value >= 80) return 'var(--budget-warning)'
+  return 'var(--budget-positive)'
 })
 
 onMounted(async () => {
@@ -63,12 +67,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ion-page class="design-page">
+  <ion-page>
     <!-- Üst bar -->
     <sub-page-header :title="$t('nav.budgets')">
       <template #end>
-        <ion-button router-link="/budget/new" class="header-action" aria-label="Yeni bütçe">
-          <ion-icon :icon="addOutline" class="size-[20px]"/>
+        <ion-button router-link="/budget/new" class="toolbar-add-button" :aria-label="$t('budgets.new')">
+          <ion-icon :icon="addOutline" class="size-[20px]" aria-hidden="true"/>
         </ion-button>
       </template>
     </sub-page-header>
@@ -76,78 +80,81 @@ onMounted(async () => {
     <ion-content class="budgets-content" :scroll-y="true">
       <div class="mx-auto w-full max-w-xl px-4">
         <!-- Özet -->
-        <section class="budget-summary mt-5 px-4 py-4">
-          <div class="flex items-end justify-between mb-3">
+        <ion-card class="budget-summary mt-5 px-4 py-4">
+          <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
             <div>
               <p class="text-[11px] font-medium uppercase tracking-wider text-content-muted">
                 {{ $t('budgets.totalBudget') }}
               </p>
               <p class="mt-1 text-[28px] leading-none font-extrabold text-content tabular-nums tracking-tight">
-                {{ totalBudget }}
+                <swap-text :text="totalBudget" />
               </p>
             </div>
             <div class="text-right">
               <p class="text-[10px] text-content-muted">{{ $t('budgets.remaining') }}</p>
-              <p class="text-[13px] font-bold text-emerald-600 tabular-nums">{{ totalRemaining }}</p>
+              <p class="text-[13px] font-bold text-emerald-600 tabular-nums"><swap-text :text="totalRemaining" /></p>
             </div>
           </div>
 
-          <div class="h-1.5 bg-surface-sunken rounded-full overflow-hidden">
-            <div
-                class="h-full rounded-full transition-all"
-                :class="progressColor"
-                :style="{ width: `${Math.min(overallProgress, 100)}%` }"
-            />
-          </div>
+          <ion-progress-bar class="summary-progress" :value="Math.max(0, Math.min(overallProgress, 100)) / 100" :style="{ '--progress-background': progressColor }" :aria-label="$t('budgets.totalBudget')" />
 
           <div class="flex justify-between mt-2 text-[11px]">
             <span class="text-content-muted">
               {{ $t('budgets.spent') }}
-              <span class="font-medium text-content-secondary tabular-nums ml-1">{{ totalSpent }}</span>
+              <swap-text class="font-medium text-content-secondary tabular-nums ml-1" :text="totalSpent" />
             </span>
-            <span
+            <swap-text
                 class="font-semibold tabular-nums"
                 :class="overallProgress >= 100 ? 'text-rose-600' : 'text-content-secondary'"
-            >
-              %{{ Math.round(overallProgress) }}
-            </span>
+                :text="`%${Math.round(overallProgress)}`"
+            />
           </div>
-        </section>
+        </ion-card>
 
         <!-- Filtre + sıralama -->
         <div class="budget-controls mt-4">
-          <div class="flex gap-1 overflow-x-auto px-1 pb-1 no-scrollbar">
-            <button
+          <div class="overflow-x-auto px-1 pb-1 no-scrollbar">
+          <div class="mx-auto flex w-max min-w-full items-center justify-center gap-1">
+            <ion-button
                 v-for="f in filters"
                 :key="f.id"
                 class="filter-chip"
                 :class="{ 'filter-chip--active': selectedFilter === f.id }"
+                :aria-pressed="selectedFilter === f.id"
+                fill="clear"
                 @click="selectedFilter = f.id"
             >
               {{ f.label }}
-            </button>
+            </ion-button>
 
             <div class="control-divider" />
 
-            <button
+            <ion-button
                 v-for="s in sorts"
                 :key="s.id"
                 class="filter-chip filter-chip--sort"
                 :class="{ 'filter-chip--active': selectedSort === s.id }"
+                :aria-pressed="selectedSort === s.id"
+                fill="clear"
                 @click="selectedSort = s.id"
             >
-              <ion-icon :icon="swapVerticalOutline" class="size-3" />
+              <ion-icon slot="start" :icon="swapVerticalOutline" class="size-3" />
               {{ s.label }}
-            </button>
+            </ion-button>
+          </div>
           </div>
         </div>
       </div>
 
       <!-- Liste -->
       <div class="mx-auto mt-3 w-full max-w-xl px-4 pb-24">
-        <div v-if="filteredBudgets.length" class="space-y-3">
+        <!-- Filtre/sıralama değişince kartlar girer, çıkar, yeni sıralarına kayar. -->
+        <transition name="fade" mode="out-in">
+        <ion-list v-if="filteredBudgets.length" class="budget-list">
+        <transition-group tag="div" name="list-row" class="relative space-y-3">
           <BudgetCard v-for="budget in filteredBudgets" :key="budget.id" :budget="budget" class="budget-card-shell" />
-        </div>
+        </transition-group>
+        </ion-list>
 
         <!-- Empty -->
         <div v-else class="empty-card px-4 py-10 text-center">
@@ -169,6 +176,7 @@ onMounted(async () => {
             {{ $t('budgets.new') }}
           </ion-button>
         </div>
+        </transition>
       </div>
     </ion-content>
   </ion-page>
@@ -177,24 +185,21 @@ onMounted(async () => {
 <style scoped>
 .budgets-content {
   --background: var(--c-page);
+  --budget-positive: #15803d;
+  --budget-warning: #92400e;
 }
+
+:global(.ion-palette-dark .budgets-content) {
+  --budget-positive: #86efac;
+  --budget-warning: #fcd34d;
+}
+.text-emerald-600 { color: var(--budget-positive); }
+.text-rose-600 { color: var(--c-error); }
+.budget-list { margin: 0; padding: 0; background: transparent; }
+.summary-progress { height: 6px; border-radius: 999px; overflow: hidden; --background: var(--c-surface-sunken); }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-
-ion-page {
-  overflow: hidden;
-}
-
-.header-action {
-  --background: var(--c-primary);
-  --color: var(--c-on-primary);
-  --border-radius: 999px;
-  --box-shadow: none;
-  width: 36px;
-  height: 36px;
-  margin: 0;
-}
 
 .budget-summary,
 .budget-controls,
@@ -206,6 +211,8 @@ ion-page {
 }
 
 .budget-summary {
+  margin-inline: 0;
+  margin-bottom: 0;
   background: linear-gradient(145deg, var(--c-surface), var(--c-surface-sunken));
 }
 
@@ -215,26 +222,25 @@ ion-page {
 
 .filter-chip {
   flex: 0 0 auto;
-  height: 34px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--c-content-muted);
+  height: 44px;
+  margin: 0;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 12px;
+  --background: transparent;
+  --background-activated: var(--c-surface-sunken);
+  --color: var(--c-content-secondary);
+  --box-shadow: none;
   font-size: 12px;
   font-weight: 700;
+  text-transform: none;
   transition: 160ms ease;
 }
 
-.filter-chip:active {
-  background: var(--c-surface-sunken);
-}
-
 .filter-chip--active {
-  border-color: var(--c-primary);
-  background: var(--c-primary);
-  color: var(--c-on-primary);
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--c-primary) 24%, transparent);
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --color: var(--c-on-primary);
 }
 
 .filter-chip--sort {
@@ -251,17 +257,6 @@ ion-page {
 }
 
 .budget-card-shell {
-  border: 1px solid var(--c-line);
   box-shadow: 0 6px 18px color-mix(in srgb, var(--c-content) 5%, transparent);
-}
-
-.empty-action {
-  --background: var(--c-primary);
-  --color: var(--c-on-primary);
-  --border-radius: 999px;
-  --box-shadow: none;
-  min-height: 38px;
-  font-size: 12px;
-  font-weight: 700;
 }
 </style>

@@ -78,8 +78,13 @@ const openExternalLink = openExternalUrl;
         ></ion-searchbar>
       </div>
 
-      <ion-accordion-group>
-        <ion-accordion v-for="(faq, index) in filteredFaqs" :key="index" :value="index.toString()">
+      <!-- Aramada sorular solarak girer/çıkar, kalanlar yerine kayar. Anahtar
+           sorunun kendisi: dizin olsaydı filtrelenince yanlış satır "değişmiş"
+           sayılır, animasyon yanlış soruya oynardı. `value` dizinden kalıyor
+           (açık akordeon filtrede kapanır — önceki davranış). -->
+      <ion-accordion-group class="relative">
+        <transition-group name="list-row">
+        <ion-accordion v-for="(faq, index) in filteredFaqs" :key="faq.question" :value="index.toString()">
           <ion-item slot="header" lines="none" class="py-2">
             <ion-icon :icon="helpOutline" slot="start" class="text-content-secondary"></ion-icon>
             <ion-label>
@@ -90,12 +95,15 @@ const openExternalLink = openExternalUrl;
             {{ faq.answer }}
           </div>
         </ion-accordion>
+        </transition-group>
       </ion-accordion-group>
 
-      <div v-if="filteredFaqs.length === 0" class="text-center py-8">
-        <ion-icon :icon="helpOutline" class="text-5xl text-gray-300 mb-2"></ion-icon>
-        <p class="text-content-secondary">{{ $t('help.noResults') }}</p>
-      </div>
+      <transition name="fade">
+        <div v-if="filteredFaqs.length === 0" class="text-center py-8">
+          <ion-icon :icon="helpOutline" class="text-5xl text-gray-300 mb-2"></ion-icon>
+          <p class="text-content-secondary">{{ $t('help.noResults') }}</p>
+        </div>
+      </transition>
     </ion-content>
   </ion-page>
 </template>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import CurrencyInput from '@/components/CurrencyInput.vue'
+import CollapseTransition from '@/components/CollapseTransition.vue'
+import SwapText from '@/components/SwapText.vue'
 
 /**
  * Büyük, ortalanmış tutar kartı: üstte ortalı etiket, kart içinde ortalı tutar,
@@ -44,11 +46,17 @@ const model = defineModel<number>({ required: true })
       </span>
     </div>
 
-    <p v-if="error" class="field-error text-[11px] text-rose-600 mt-2 text-center">{{ error }}</p>
+    <collapse-transition>
+      <p v-if="error" class="field-error text-[11px] text-rose-600 mt-2 text-center"><swap-text :text="error" /></p>
+    </collapse-transition>
   </section>
 </template>
 
 <style scoped>
+.amount-card {
+  transition: border-color 180ms ease;
+}
+
 .amount-card--error {
   border-color: #e11d48; /* rose-600 */
 }

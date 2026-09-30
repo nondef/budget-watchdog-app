@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonButton, IonContent, IonFooter, IonIcon, IonModal, IonToolbar, IonList, IonItem, IonItemGroup, IonItemDivider, IonLabel, IonTitle, IonButtons, IonHeader } from "@ionic/vue";
+import { IonButton, IonContent, IonFooter, IonIcon, IonModal, IonToolbar, IonItemGroup, IonItemDivider, IonLabel, IonTitle, IonButtons, IonHeader } from "@ionic/vue";
 import { ref, watch, computed } from "vue";
 import { COLOR_COLUMNS, ICON_CATEGORIES } from "@/shared/constants";
 import { getIconByName } from "@/shared/utils";
@@ -28,6 +28,13 @@ const selectedColor = ref(props.color)
 
 watch(() => props.iconName, (val) => selectedIconName.value = val)
 watch(() => props.color, (val) => selectedColor.value = val)
+
+watch(isOpen, (open) => {
+  if (open) {
+    selectedIconName.value = props.iconName
+    selectedColor.value = props.color
+  }
+})
 
 const selectedIcon = (iconName: string) => {
   selectedIconName.value = iconName
@@ -60,80 +67,79 @@ const save = () => {
 </script>
 
 <template>
-  <ion-modal :is-open="isOpen"
-             class="icon-picker-modal"
-             @did-dismiss="closeModal">
-
+  <ion-modal :is-open="isOpen" class="icon-picker-modal" @did-dismiss="closeModal">
     <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-title>{{ $t('iconPicker.title') }}</ion-title>
-
         <ion-buttons slot="end">
-          <ion-button size="large" @click="closeModal">
-            <ion-icon :icon="closeOutline" />
+          <ion-button class="picker-close" :aria-label="$t('common.close')" @click="closeModal">
+            <ion-icon slot="icon-only" :icon="closeOutline" aria-hidden="true" />
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
     <ion-content>
-      <div class="p-8">
-        <!-- Seçili İkon -->
-        <div class="flex justify-center mb-8">
-          <div :class="[selectedColor, 'icon-preview size-20 rounded-2xl flex items-center justify-center text-white']">
-            <IonIcon :icon="getIconByName(selectedIconName)" class="size-10 font-semibold"/>
+      <main class="mx-auto w-full max-w-xl space-y-6 px-4 py-5">
+        <section class="picker-preview sticky top-0 z-20 -mx-4 flex items-center gap-4 p-4">
+          <div :class="[selectedColor, 'icon-preview flex size-16 shrink-0 items-center justify-center rounded-2xl text-white']">
+            <ion-icon :icon="getIconByName(selectedIconName)" class="size-8" aria-hidden="true" />
           </div>
-        </div>
+          <div class="min-w-0">
+            <h2 class="text-sm font-bold text-content">{{ $t('iconPicker.preview') }}</h2>
+            <p class="mt-1 text-xs leading-relaxed text-content-secondary">{{ $t('iconPicker.hint') }}</p>
+          </div>
+        </section>
 
-        <!-- Renk Seçici -->
-        <div class="mb-8">
-          <ion-list lines="none" class="color-list grid grid-cols-8 gap-2">
-            <ion-item
+        <section :aria-label="$t('iconPicker.colors')">
+          <h2 class="mb-3 px-1 text-xs font-bold text-content-secondary">{{ $t('iconPicker.colors') }}</h2>
+          <div class="picker-grid color-grid rounded-2xl border border-line p-3" role="group" :aria-label="$t('iconPicker.colors')">
+            <ion-button
                 v-for="c in colorList"
                 :key="c.bg"
-                button
-                :detail="false"
+                fill="clear"
+                class="color-button"
+                :class="{ 'color-button--active': selectedColor === c.bg }"
+                :aria-label="c.label"
+                :aria-pressed="selectedColor === c.bg"
                 @click="selectColor(c.bg)"
             >
-              <span :class="[c.bg, 'color-swatch size-9 rounded-full flex items-center justify-center', selectedColor === c.bg && 'color-swatch--active']">
-                <ion-icon v-if="selectedColor === c.bg" :icon="checkmarkOutline" class="size-4 text-white" />
+              <span :class="[c.bg, 'color-swatch flex size-8 items-center justify-center rounded-full']">
+                <span v-if="selectedColor === c.bg" class="swatch-check flex size-5 items-center justify-center rounded-full">
+                  <ion-icon :icon="checkmarkOutline" class="size-4" aria-hidden="true" />
+                </span>
               </span>
-            </ion-item>
-          </ion-list>
-        </div>
+            </ion-button>
+          </div>
+        </section>
 
-        <!-- İkon Listesi -->
-        <ion-list class="icon-list mb-8">
-          <ion-item-group v-for="category in ICON_CATEGORIES" :key="category.name">
+        <div class="space-y-5">
+          <ion-item-group v-for="category in ICON_CATEGORIES" :key="category.nameKey">
             <ion-item-divider class="icon-divider">
-              <ion-label>{{ category.name }}</ion-label>
+              <ion-label>{{ $t(category.nameKey) }}</ion-label>
             </ion-item-divider>
-            <ion-item lines="none">
-              <div class="grid grid-cols-6 gap-2 w-full py-2">
-                <ion-button
-                    v-for="icon in category.icons"
-                    :key="icon.name"
-                    class="icon-button"
-                    expand="block"
-                    :class="{ 'icon-button--active': selectedIconName === icon.iconName }"
-                    @click="selectedIcon(icon.iconName)"
-                >
-                  <IonIcon :icon="getIconByName(icon.iconName)" class="size-6" />
-                </ion-button>
-              </div>
-            </ion-item>
+            <div class="picker-grid" role="group" :aria-label="$t(category.nameKey)">
+              <ion-button
+                  v-for="icon in category.icons"
+                  :key="icon.iconName"
+                  class="icon-button"
+                  :class="{ 'icon-button--active': selectedIconName === icon.iconName }"
+                  :aria-label="icon.name"
+                  :aria-pressed="selectedIconName === icon.iconName"
+                  @click="selectedIcon(icon.iconName)"
+              >
+                <ion-icon slot="icon-only" :icon="getIconByName(icon.iconName)" class="size-6" aria-hidden="true" />
+              </ion-button>
+            </div>
           </ion-item-group>
-        </ion-list>
-      </div>
+        </div>
+      </main>
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <ion-toolbar>
-        <ion-button
-            expand="block"
-            class="app-button"
-            @click="save"
-        >
+      <ion-toolbar class="picker-footer">
+        <ion-button expand="block" class="picker-save" :disabled="!selectedIconName" @click="save">
+          <ion-icon slot="start" :icon="checkmarkOutline" aria-hidden="true" />
           {{ $t('common.save') }}
         </ion-button>
       </ion-toolbar>
@@ -142,104 +148,145 @@ const save = () => {
 </template>
 
 <style>
-/* Modal teleport edildiği için global. Header / içerik / footer aynı tema
-   yüzeyini (MD3 surface-container-high — uygulama geneli modal zemini)
-   kullanır; böylece dark mode'da buton etrafı beyaz,
-   light mode'da toolbar ile içerik arası iki tonlu kalmaz. */
+/* Overlay uygulama köküne taşındığı için kurallar bu modal sınıfıyla sınırlı. */
 ion-modal.icon-picker-modal {
   --background: var(--md-surface-container-high);
+  --border-radius: 0;
 }
-ion-modal.icon-picker-modal::part(content) {
-  background: var(--md-surface-container-high);
+
+@media (min-width: 768px) and (min-height: 600px) {
+  ion-modal.icon-picker-modal {
+    --width: 540px;
+    --height: min(780px, 90vh);
+    --border-radius: 24px;
+  }
 }
+
 ion-modal.icon-picker-modal ion-content {
   --background: var(--md-surface-container-high) !important;
 }
-ion-modal.icon-picker-modal ion-header ion-toolbar,
-ion-modal.icon-picker-modal ion-footer ion-toolbar {
-  --background: var(--md-surface-container-high);
+
+ion-modal.icon-picker-modal ion-toolbar {
   --color: var(--c-content);
-  --border-color: transparent;
 }
 
-/* Seçili ikon önizlemesi: renk dairesi her iki temada da zeminden ayrılsın. */
+ion-modal.icon-picker-modal .picker-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+ion-modal.icon-picker-modal .picker-preview {
+  background: color-mix(in srgb, var(--c-surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+ion-modal.icon-picker-modal .color-grid {
+  background: var(--c-surface);
+}
+
 ion-modal.icon-picker-modal .icon-preview {
-  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--c-content) 15%, transparent);
 }
 
-/* Renk listesi: ion-item'lar grid hücresi olarak yan yana dizilsin; her hücre
-   yalnızca renk dairesi kadar yer kaplasın (Ionic'in varsayılan padding/min-height'i sıfır). */
-ion-modal.icon-picker-modal ion-list.color-list {
-  background: transparent;
-  padding: 0;
-}
-ion-modal.icon-picker-modal ion-list.color-list ion-item {
-  --background: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  --min-height: 0;
-  --ripple-color: transparent;
-}
-ion-modal.icon-picker-modal ion-list.color-list ion-item::part(native) {
-  padding: 0;
-  min-height: 0;
+ion-modal.icon-picker-modal .picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 8px;
 }
 
-ion-modal.icon-picker-modal .color-swatch--active {
-  border-color: var(--md-surface-container-high);
-  box-shadow: inset 0 0 0 2px var(--c-primary);
-}
-
-/* İkon listesi: ion-item-group + divider başlık. Zemin modal yüzeyiyle aynı,
-   item padding'i sıfır (içerideki grid kenarlara dayansın). */
-ion-modal.icon-picker-modal ion-list.icon-list {
-  background: transparent;
-  padding: 0;
-}
-ion-modal.icon-picker-modal ion-list.icon-list ion-item-divider.icon-divider {
-  --background: transparent;
-  --color: var(--c-content-secondary);
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  min-height: 34px;
-  font-size: 14px;
-  font-weight: 500;
-}
-ion-modal.icon-picker-modal ion-list.icon-list ion-item {
-  --background: transparent;
-  --padding-start: 0;
-  --padding-end: 0;
-  --inner-padding-start: 0;
-  --inner-padding-end: 0;
-  --min-height: 0;
-}
-
-/* İkon seçim butonları: kare, surface-container-lowest zemin. Light'ta modal
-   zemininden bir ton açık (kağıt), dark'ta bir ton koyu olduğu için iki temada da kutu
-   olarak okunur; hairline halka sınırını netleştirir. */
-ion-modal.icon-picker-modal ion-list.icon-list .icon-button {
-  --background: var(--md-surface-container);
-  --background-hover: var(--md-surface-container-highest);
-  --background-activated: var(--md-surface-container-highest);
-  --background-focused: var(--md-surface-container-highest);
-  --color: var(--c-content-tertiary);
-  --border-radius: 14px;
-  --box-shadow: inset 0 0 0 1px var(--c-line);
+ion-modal.icon-picker-modal .color-button,
+ion-modal.icon-picker-modal .icon-button {
+  width: 100%;
+  min-width: 44px;
+  height: 48px;
+  margin: 0;
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 0;
   --padding-bottom: 0;
-  height: 48px;
+  --border-radius: 12px;
+  --box-shadow: none;
+}
+
+ion-modal.icon-picker-modal .color-button {
+  --background: transparent;
+  --background-hover: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --background-activated: var(--c-surface-sunken);
+}
+
+ion-modal.icon-picker-modal .color-button--active {
+  --background: var(--c-surface-sunken);
+  --box-shadow: inset 0 0 0 2px var(--c-primary);
+}
+
+ion-modal.icon-picker-modal .color-swatch {
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+}
+
+ion-modal.icon-picker-modal .swatch-check {
+  background: #ffffff;
+  color: #171717;
+}
+
+ion-modal.icon-picker-modal .icon-divider {
+  --background: transparent;
+  --color: var(--c-content-secondary);
+  --padding-start: 4px;
+  --inner-padding-end: 0;
+  min-height: 32px;
+  margin-bottom: 8px;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+ion-modal.icon-picker-modal .icon-divider ion-label {
   margin: 0;
 }
-ion-modal.icon-picker-modal ion-list.icon-list .icon-button.icon-button--active {
-  /* inset box-shadow halkası: border-radius'u takip eder (buton ile aynı
-     yuvarlaklık) ve buton içinde kaldığı için ion-item overflow'u soldan
-     kesmez. */
-  --background: var(--md-surface-container-highest);
-  --color: var(--c-content);
-  --box-shadow: inset 0 0 0 2px var(--c-primary);
+
+ion-modal.icon-picker-modal .icon-button {
+  --background: var(--c-surface);
+  --background-hover: var(--c-surface-sunken);
+  --background-focused: var(--c-surface-sunken);
+  --background-activated: var(--c-surface-sunken);
+  --color: var(--c-content-secondary);
+  --box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+ion-modal.icon-picker-modal .icon-button--active {
+  --background: var(--c-primary);
+  --background-hover: var(--c-primary-strong);
+  --background-focused: var(--c-primary-strong);
+  --background-activated: var(--c-primary-strong);
+  --color: var(--c-on-primary);
+  --box-shadow: none;
+}
+
+ion-modal.icon-picker-modal .color-button::part(native):focus-visible,
+ion-modal.icon-picker-modal .icon-button::part(native):focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: -2px;
+}
+
+ion-modal.icon-picker-modal .picker-footer {
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-modal.icon-picker-modal .picker-save {
+  min-height: 48px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: none;
+  --border-radius: 14px;
+  --background: var(--c-primary);
+  --background-activated: var(--c-primary-strong);
+  --color: var(--c-on-primary);
+  --box-shadow: none;
 }
 </style>

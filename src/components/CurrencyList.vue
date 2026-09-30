@@ -58,7 +58,9 @@ const pickCurrency = (currency: CurrencyDTO) => {
 
       <!-- check indicator -->
       <div slot="end" class="currency-check" :class="{ 'is-on': selectedCurrency?.id === c.id }">
-        <ion-icon v-if="selectedCurrency?.id === c.id" :icon="checkmarkOutline" class="size-[14px]" />
+        <transition name="icon-swap">
+          <ion-icon v-if="selectedCurrency?.id === c.id" :icon="checkmarkOutline" class="size-[14px]" />
+        </transition>
       </div>
     </ion-item>
 

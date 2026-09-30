@@ -15,6 +15,7 @@ import { useCurrenciesStore } from "@/stores/currencies";
 import { useAppStore } from "@/stores/app";
 import OnboardingSteps from "@/components/OnboardingSteps.vue";
 import CurrencyPickerModal from "@/components/CurrencyPickerModal.vue";
+import SwapText from "@/components/SwapText.vue";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import { CurrencyDTO } from "@/application";
 import { useI18n } from "vue-i18n";
@@ -72,7 +73,7 @@ onMounted(async () => {
           <ion-back-button :icon="chevronBackOutline" default-href="/splash"/>
         </ion-buttons>
 
-        <onboarding-steps :current="1" :total="2" class="step-abs" />
+        <onboarding-steps :current="1" :total="2" class="toolbar-center" />
       </ion-toolbar>
     </ion-header>
 
@@ -108,18 +109,16 @@ onMounted(async () => {
                 slot="start"
                 class="currency-select-symbol size-11 rounded-2xl flex items-center justify-center shrink-0"
             >
-              <span class="text-[16px] font-bold"
-              >
-                {{ selectedCurrency?.symbol || '$' }}
-              </span>
+              <!-- Seçim yapılınca sembol ve ad yerinde kayarak değişir. -->
+              <swap-text class="text-[16px] font-bold" :text="selectedCurrency?.symbol || '$'" />
             </div>
             <ion-label class="min-w-0">
               <h2 class="text-content-muted">{{ t('baseCurrencySelection.currencyLabel') }}</h2>
               <p
-                  class="text-[15px] font-semibold mt-1 truncate"
+                  class="text-[15px] font-semibold mt-1 truncate transition-colors"
                   :class="selectedCurrency ? 'text-content' : 'text-content-muted'"
               >
-                {{ selectedCurrency ? `${selectedCurrency.code} — ${currencyName(selectedCurrency)}` : t('baseCurrencySelection.selectCurrency') }}
+                <swap-text :text="selectedCurrency ? `${selectedCurrency.code} — ${currencyName(selectedCurrency)}` : t('baseCurrencySelection.selectCurrency')" />
               </p>
             </ion-label>
             <ion-icon slot="end" :icon="chevronForwardOutline" class="size-5 text-content-muted shrink-0" />
@@ -158,22 +157,10 @@ onMounted(async () => {
   --background: var(--c-page);
 }
 
-ion-page {
-  overflow: hidden;
-}
-
 /* Adım göstergesini start'taki geri butonundan bağımsız, toolbar'da tam
    ortalar. pointer-events:none → altındaki geri butonu tıklanır kalır. */
 ion-toolbar {
   position: relative;
-}
-
-.step-abs {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 
 .currency-hero-glow {

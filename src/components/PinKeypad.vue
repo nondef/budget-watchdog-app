@@ -14,7 +14,9 @@
 import { computed, watch } from 'vue';
 import { IonButton, IonIcon } from '@ionic/vue';
 import { backspaceOutline, fingerPrintOutline, lockClosedOutline } from 'ionicons/icons';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { useHaptics } from '@/composables/ui/useHaptics';
+import CollapseTransition from '@/components/CollapseTransition.vue';
+import SwapText from '@/components/SwapText.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -41,7 +43,7 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 const dots = computed(() => Array.from({ length: props.length }, (_, i) => i < props.modelValue.length));
 
-const tap = () => { void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); };
+const { tap } = useHaptics();
 
 const press = (digit: string) => {
   if (props.disabled || props.modelValue.length >= props.length) return;
@@ -72,11 +74,17 @@ watch(
         <ion-icon :icon="lockClosedOutline" aria-hidden="true" />
       </div>
 
-      <h1 class="pin__title">{{ title }}</h1>
-      <p v-if="subtitle" class="pin__subtitle">{{ subtitle }}</p>
+      <!-- Adım değişince (PIN gir → tekrar gir) başlık ve alt metin yerinde
+           kayar; hata satırı açılıp katlanır, noktalar ve tuş takımı zıplamaz. -->
+      <h1 class="pin__title"><swap-text :text="title" /></h1>
+      <collapse-transition>
+        <p v-if="subtitle" class="pin__subtitle"><swap-text :text="subtitle" /></p>
+      </collapse-transition>
 
       <!-- role=alert: hatalı PIN ekran okuyucuya da bildirilsin -->
-      <p v-if="error" class="pin__error" role="alert">{{ error }}</p>
+      <collapse-transition>
+        <p v-if="error" class="pin__error" role="alert"><swap-text :text="error" /></p>
+      </collapse-transition>
     </div>
 
     <div
