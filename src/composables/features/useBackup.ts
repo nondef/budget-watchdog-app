@@ -1,5 +1,6 @@
 import { ref } from 'vue'
-import { alertController, toastController } from '@ionic/vue'
+import { toastController } from '@ionic/vue'
+import { useAlert } from '@/composables/ui/useAlert'
 import {
   backupService,
   PassphraseRequiredError,
@@ -45,6 +46,7 @@ export type { ExportDestination, ExportLocation, ShareOutcome }
 const MIN_PASSPHRASE_LENGTH = 8
 
 export function useBackup() {
+  const { showAlert } = useAlert()
   const isExporting = ref(false)
   const isImporting = ref(false)
   const isWiping = ref(false)
@@ -102,7 +104,7 @@ export function useBackup() {
    * @return Devam edilmeli mi.
    */
   async function confirmPlainExport(titleKey = 'backup.encryption.plainTitle'): Promise<boolean> {
-    const alert = await alertController.create({
+    const alert = await showAlert({
       header: t(titleKey),
       message: t('backup.encryption.plainWarning'),
       buttons: [
@@ -110,7 +112,6 @@ export function useBackup() {
         { text: t('backup.encryption.plainConfirm'), role: 'confirm' },
       ],
     })
-    await alert.present()
 
     const { role } = await alert.onDidDismiss()
     return role === 'confirm'
@@ -163,7 +164,7 @@ export function useBackup() {
       return
     }
 
-    const saved = await alertController.create({
+    const saved = await showAlert({
       header: t('backup.saved.title'),
       message: location.scope === 'documents'
         ? t('backup.saved.inDocuments')
@@ -173,7 +174,6 @@ export function useBackup() {
         { text: t('backup.saved.share'), role: 'confirm' },
       ],
     })
-    await saved.present()
 
     const { role } = await saved.onDidDismiss()
     if (role === 'confirm') await shareBackup(location.uri)
@@ -184,7 +184,7 @@ export function useBackup() {
    * `mode` yalnızca başlık/mesajı değiştirir (ilk deneme mi, yanlış parola mı).
    */
   async function promptPassphrase(mode: 'import' | 'retry' = 'import'): Promise<string | null> {
-    const alert = await alertController.create({
+    const alert = await showAlert({
       header: t('backup.encryption.enterTitle'),
       message: mode === 'retry'
         ? t('backup.encryption.wrongPassphrase')
@@ -201,7 +201,6 @@ export function useBackup() {
         { text: t('backup.encryption.unlock'), role: 'confirm' },
       ],
     })
-    await alert.present()
 
     const { role, data } = await alert.onDidDismiss<{ values: { passphrase?: string } }>()
     if (role !== 'confirm') return null
@@ -218,7 +217,7 @@ export function useBackup() {
    * İptal → null.
    */
   async function promptNewPassphrase(): Promise<string | null> {
-    const alert = await alertController.create({
+    const alert = await showAlert({
       header: t('backup.encryption.setTitle'),
       message: t('backup.encryption.setMessage'),
       inputs: [
@@ -230,7 +229,6 @@ export function useBackup() {
         { text: t('backup.encryption.encryptAction'), role: 'confirm' },
       ],
     })
-    await alert.present()
 
     const { role, data } = await alert.onDidDismiss<{
       values: { passphrase?: string; confirm?: string }
@@ -352,7 +350,7 @@ export function useBackup() {
    *  - 'failed'     → wipe sırasında hata (lastError dolu)
    */
   async function confirmAndWipe(): Promise<'cancelled' | 'mismatch' | 'done' | 'failed'> {
-    const intent = await alertController.create({
+    const intent = await showAlert({
       header: t('backup.wipe.title'),
       message: t('backup.wipe.message'),
       buttons: [
@@ -360,7 +358,6 @@ export function useBackup() {
         { text: t('backup.wipe.continue'), role: 'confirm' },
       ],
     })
-    await intent.present()
     const { role: intentRole } = await intent.onDidDismiss()
     if (intentRole !== 'confirm') return 'cancelled'
 
@@ -368,7 +365,8 @@ export function useBackup() {
     // anlamadığı bir kelimeyi yazmak zorunda bırakıyordu.
     const confirmWord = t('backup.wipe.confirmWord')
 
-    const confirm = await alertController.create({
+    const confirm = await showAlert({
+      cssClass: 'backup-wipe-confirm',
       header: t('backup.wipe.confirmTitle'),
       message: t('backup.wipe.confirmMessage', { word: confirmWord }),
       inputs: [
@@ -376,7 +374,15 @@ export function useBackup() {
           name: 'confirmText',
           type: 'text',
           placeholder: confirmWord,
-          attributes: { autocapitalize: 'characters', autocorrect: 'off' },
+          attributes: {
+            inputmode: 'text',
+            enterkeyhint: 'done',
+            autocomplete: 'off',
+            autocapitalize: 'characters',
+            autocorrect: 'off',
+            spellcheck: false,
+            'aria-label': t('backup.wipe.confirmMessage', { word: confirmWord }),
+          },
         },
       ],
       buttons: [
@@ -384,7 +390,6 @@ export function useBackup() {
         { text: t('backup.wipe.action'), role: 'destructive' },
       ],
     })
-    await confirm.present()
     const { role: confirmRole, data } = await confirm.onDidDismiss<{
       values: { confirmText?: string }
     }>()
