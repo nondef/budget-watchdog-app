@@ -20,6 +20,8 @@ log.txt
 npm-debug.log*
 *.zip
 
+android/app/tsconfig.json
+
 .env
 
 /.idea
