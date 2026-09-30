@@ -257,7 +257,7 @@ Erste Version. Verwalte Konten, Ausgaben, Budgets und Sparziele offline. Deine D
 | Uygulama kategorisi | **Finans** |
 | Etiketler | Bütçe, Harcama takibi, Kişisel finans |
 | İletişim e-postası | `atkansenturk@gmail.com` |
-| Gizlilik politikası | `https://github.com/KULLANICI/REPO/blob/main/docs/privacy-policy.md` |
+| Gizlilik politikası | `https://github.com/nondef/budget-watchdog-app/blob/main/docs/privacy-policy.md` |
 | Reklam içeriyor mu | Hayır |
 | Uygulama içi satın alma | Hayır |
 | Fiyat | Ücretsiz |
