@@ -73,13 +73,13 @@ ion-select.md.select-fill-solid.has-focus::part(wrapper) {
 
 ion-input.md.input-fill-solid.ion-touched.ion-invalid .input-wrapper,
 ion-textarea.md.textarea-fill-solid.ion-touched.ion-invalid .textarea-wrapper {
-  box-shadow: inset 0 0 0 1.5px var(--md-error);
+  box-shadow: inset 0 0 0 1px var(--md-error);
 }
 
 /* Hata halkası — odak kuralından SONRA geldiği için açık/odaklı halde de
    kırmızı kalır. */
 ion-select.md.select-fill-solid.ion-touched.ion-invalid::part(wrapper) {
-  box-shadow: inset 0 0 0 1.5px var(--md-error) !important;
+  box-shadow: inset 0 0 0 1px var(--md-error) !important;
 }
 
 /* Hata durumunda etiket/placeholder de kırmızı — input'ta Ionic bunu

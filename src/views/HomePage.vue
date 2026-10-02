@@ -291,7 +291,7 @@ onIonViewWillEnter(async () => {
       <main class="mx-auto w-full max-w-xl px-4 pb-12 pt-5">
         <!-- Bakiye + Hızlı işlemler tek kart -->
         <section class="app-hero balance-card overflow-hidden px-5 py-5">
-          <div class="flex items-center gap-2 font-semibold text-content">
+          <div class="flex items-center justify-between gap-2 font-semibold text-content">
             <p class="text-[12px]">{{ $t('home.totalBalance') }}</p>
             <ion-button
                 fill="clear"
@@ -435,17 +435,18 @@ onIonViewWillEnter(async () => {
 }
 
 ion-button.balance-visibility {
-  width: 30px;
-  height: 30px;
-  margin: -7px 0;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  margin: -8px 0;
   --border-radius: 10px;
-  --color: var(--c-content-muted);
+  --color: var(--c-content-secondary);
   --padding-start: 0;
   --padding-end: 0;
 }
 
 ion-button.balance-visibility ion-icon {
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .balance-stat {

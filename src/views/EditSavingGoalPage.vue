@@ -1,6 +1,15 @@
 <script lang="ts" setup>
-import { IonPage, IonContent, IonIcon, IonInput, IonTextarea, IonToolbar, IonButton, IonFooter } from '@ionic/vue';
-import { chevronBackOutline, lockClosedOutline } from 'ionicons/icons';
+import {
+  IonPage,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonTextarea,
+  IonToolbar,
+  IonButton,
+  IonFooter
+} from '@ionic/vue';
+import { lockClosedOutline } from 'ionicons/icons';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
@@ -14,9 +23,12 @@ import { getIconByName } from "@/shared/utils";
 import IconPickerModal from "@/components/IconPickerModal.vue";
 import DateField from "@/components/DateField.vue";
 import PickerField from "@/components/PickerField.vue";
-import AmountCard from "@/components/AmountCard.vue";
+import CurrencyInput from "@/components/CurrencyInput.vue";
+import ErrorChip from "@/components/ErrorChip.vue";
+import CollapseTransition from "@/components/CollapseTransition.vue";
 import { useToast } from '@/composables/ui/useToast';
 import { useErrorHandler } from "@/composables";
+import SubPageHeader from "@/components/SubPageHeader.vue";
 
 const { t } = useI18n();
 const { ionRouter, goBackOrFallback } = useAppNavigation();
@@ -70,7 +82,7 @@ const submitGoal = handleSubmit(async (values) => {
       iconColor: selectedColor.value,
     });
 
-    toast.success(t('savingGoals.updatedSuccess'))
+    toast.show(t('savingGoals.updatedSuccess'))
 
     goBackOrFallback('/settings/savings');
   } catch (err) {
@@ -89,7 +101,7 @@ onMounted(async () => {
 
   const goal = await savingGoalStore.getGoalById(goalId);
   if (!goal) {
-    toast.error(t('savingGoals.notFound'))
+    toast.show(t('savingGoals.notFound'))
     // Geçersiz id: sayfa geçmişte iz bırakmasın, geri tuşu buraya dönmesin.
     ionRouter.navigate('/settings/savings', 'back', 'replace');
     return;
@@ -114,19 +126,10 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <sub-page-header :title="$t('savingGoals.edit')" default-href="/settings/savings"/>
+
     <ion-content :scroll-y="true">
-      <div class="px-4 pt-[max(env(safe-area-inset-top),1rem)]">
-        <header class="app-page-header flex items-center justify-between pt-2 px-1">
-          <button
-              class="size-9 rounded-full flex items-center justify-center text-content-secondary active:bg-surface-strong transition"
-              @click="goBackOrFallback('/settings/savings')"
-              :aria-label="$t('common.back')"
-          >
-            <ion-icon :icon="chevronBackOutline" class="size-[20px]" />
-          </button>
-          <h1 class="text-[15px] font-semibold text-content">{{ $t('savingGoals.edit') }}</h1>
-          <div class="size-9" />
-        </header>
+      <div class="px-4">
 
         <!-- Hero: ikon -->
         <section class="mt-6 flex flex-col items-center">
@@ -175,13 +178,32 @@ onMounted(async () => {
         </picker-field>
 
         <!-- Hedef tutar -->
-        <amount-card
-            :label="$t('savingGoals.targetAmount')"
-            v-model="targetAmount"
-            :currency-code="goalCurrency?.code || 'TRY'"
-            :minor-unit="goalCurrency?.minorUnit"
-            :error="errors.targetAmount"
-        />
+        <section>
+          <p class="text-center text-[13px] font-medium uppercase tracking-wider text-content-muted mb-2">
+            {{ $t('savingGoals.targetAmount') }}
+          </p>
+          <div
+              class="amount-card relative flex items-center justify-center rounded-2xl border border-line bg-surface px-3"
+              :class="{ 'amount-card-error': errors.targetAmount }"
+          >
+            <CurrencyInput
+                v-model="targetAmount"
+                variant="plain"
+                hide-currency
+                :label="$t('savingGoals.targetAmount')"
+                :currency-code="goalCurrency?.code || 'TRY'"
+                :minor-unit="goalCurrency?.minorUnit"
+                :error-text="errors.targetAmount"
+                class="w-full"
+            />
+            <span class="amount-currency-code">{{ goalCurrency?.code || 'TRY' }}</span>
+          </div>
+          <collapse-transition>
+            <div v-if="errors.targetAmount" class="mt-2 flex justify-center">
+              <ErrorChip :message="errors.targetAmount" />
+            </div>
+          </collapse-transition>
+        </section>
 
         <!-- Tarih -->
         <DateField
@@ -233,6 +255,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.amount-card {
+  transition: border-color 150ms ease;
+}
+
+.amount-card.amount-card-error {
+  border-color: color-mix(in srgb, var(--c-error) 60%, var(--c-line));
+}
+
 ion-item.plain-item {
   --background: transparent;
   --background-hover: transparent;

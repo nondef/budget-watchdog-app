@@ -49,21 +49,10 @@ ion-alert .alert-button.alert-button-role-destructive {
   color: var(--c-error);
 }
 
-/* Alert içindeki form alanları (prompt) — kart dili */
-ion-alert .alert-input {
-  background: var(--md-surface-container-lowest);
-  color: var(--c-content);
-  border-radius: 12px;
-  border: 1px solid var(--c-line);
-  padding: 10px 12px;
-}
-ion-alert .alert-input::placeholder {
-  color: var(--c-content-muted);
-}
-
-/* Son sıfırlama onayı: Ionic'in yerel text input'unu mobilde rahat yazılan,
-   odakta yüksekliği değişmeyen ve iki temada da belirgin bir alan yap. */
-ion-alert.backup-wipe-confirm input.alert-input {
+/* Reset onayı, yedek parolası ve diğer prompt'lar aynı alan stilini paylaşır.
+   .md/.ios özgüllüğü Ionic'in scoped input ve focus kurallarını geçer. */
+ion-alert.md .alert-input,
+ion-alert.ios .alert-input {
   box-sizing: border-box;
   width: 100%;
   min-height: 48px;
@@ -71,7 +60,7 @@ ion-alert.backup-wipe-confirm input.alert-input {
   padding: 12px 14px;
   border: 1px solid var(--c-line-strong);
   border-radius: 10px;
-  background: var(--c-surface);
+  background: var(--md-surface-container-lowest);
   color: var(--c-content);
   caret-color: var(--c-primary);
   font-family: var(--app-font);
@@ -81,16 +70,22 @@ ion-alert.backup-wipe-confirm input.alert-input {
   box-shadow: none;
 }
 
-ion-alert.backup-wipe-confirm input.alert-input:focus {
+ion-alert.md .alert-input:focus,
+ion-alert.ios .alert-input:focus {
   margin: 0;
   border: 1px solid var(--c-primary);
   outline: 2px solid var(--c-primary);
   outline-offset: 2px;
 }
 
-ion-alert.backup-wipe-confirm input.alert-input::placeholder {
+ion-alert.md .alert-input::placeholder,
+ion-alert.ios .alert-input::placeholder {
   color: var(--c-content-muted);
   opacity: 1;
+}
+
+ion-alert .alert-input-wrapper + .alert-input-wrapper {
+  margin-top: 12px;
 }
 
 /* Radio / checkbox listesi */

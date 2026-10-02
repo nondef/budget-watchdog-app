@@ -32,12 +32,7 @@ const statusMeta = computed(() => {
   return map[props.budget.status as keyof typeof map] ?? map.draft
 })
 
-const typeLabel = computed(() => {
-  const map: Record<string, string> = {
-    monthly: t('budgets.types.monthly'), weekly: t('budgets.types.weekly'), yearly: t('budgets.types.yearly'), custom: t('budgets.types.custom'),
-  }
-  return map[props.budget.type] ?? t('budgets.types.custom')
-})
+const typeLabel = computed(() => t(`budgets.types.${props.budget.type}`))
 
 const categoryNames = computed(() =>
     props.budget.categories?.map((c: CategoryDTO) => translateCategoryName(c?.name)).filter(Boolean).join(' • ') ?? ''

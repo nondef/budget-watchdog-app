@@ -69,7 +69,7 @@ const buildMailto = (values: { feedbackType: string; feedbackText: string; ratin
 const submitFeedback = guardSubmit(isSubmitting, handleSubmit((values) => {
   openExternalUrl(buildMailto(values));
 
-  toast.info(t('feedbackForm.mailOpened'))
+  toast.show(t('feedbackForm.mailOpened'))
   resetForm();
 }));
 </script>
@@ -211,8 +211,13 @@ const submitFeedback = guardSubmit(isSubmitting, handleSubmit((values) => {
 }
 
 .feedback-form {
+  --feedback-field-border: color-mix(in srgb, var(--c-line) 55%, transparent);
   padding: 14px;
   border-radius: 1.25rem;
+}
+
+:global(.ion-palette-dark .feedback-form) {
+  --feedback-field-border: transparent;
 }
 
 .feedback-form ion-select.feedback-field,
@@ -227,25 +232,22 @@ const submitFeedback = guardSubmit(isSubmitting, handleSubmit((values) => {
   --border-radius: 1rem;
   --padding-start: 16px;
   --padding-end: 16px;
-  --feedback-field-outline: var(--c-line-strong);
   color: var(--c-content);
 }
 
-/* Dolgulu alanların genel stili kenarlığı kaldırıyor; alan sınırını sayaç
-   ve hata metnini kutuya almadan gerçek giriş sarmalayıcısında belirginleştir. */
 .feedback-form ion-select.feedback-field::part(wrapper),
 .feedback-form ion-textarea.feedback-field :deep(.textarea-wrapper) {
-  outline: 1px solid var(--feedback-field-outline);
+  outline: 1px solid var(--feedback-field-border);
   outline-offset: -1px;
 }
 
-.feedback-form .feedback-field:focus-within,
-.feedback-form .feedback-field.select-expanded {
-  --feedback-field-outline: var(--c-primary);
-}
-
-.feedback-form .feedback-field.ion-touched.ion-invalid {
-  --feedback-field-outline: var(--c-error);
+/* Odak ve hata halkalarını ortak form stilleri çizer. */
+.feedback-form ion-select.feedback-field.has-focus::part(wrapper),
+.feedback-form ion-select.feedback-field.select-expanded::part(wrapper),
+.feedback-form ion-select.feedback-field.ion-touched.ion-invalid::part(wrapper),
+.feedback-form ion-textarea.feedback-field.has-focus :deep(.textarea-wrapper),
+.feedback-form ion-textarea.feedback-field.ion-touched.ion-invalid :deep(.textarea-wrapper) {
+  outline: none;
 }
 
 .feedback-form ion-select.feedback-field::part(icon) {
@@ -259,7 +261,7 @@ const submitFeedback = guardSubmit(isSubmitting, handleSubmit((values) => {
 }
 
 .rating-card {
-  border: 1px solid var(--c-line);
+  border: 1px solid var(--feedback-field-border);
   border-radius: 1rem;
   background: var(--c-surface-sunken);
 }

@@ -139,7 +139,6 @@ const save = () => {
     <ion-footer class="ion-no-border">
       <ion-toolbar class="picker-footer">
         <ion-button expand="block" class="picker-save" :disabled="!selectedIconName" @click="save">
-          <ion-icon slot="start" :icon="checkmarkOutline" aria-hidden="true" />
           {{ $t('common.save') }}
         </ion-button>
       </ion-toolbar>

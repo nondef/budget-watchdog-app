@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { accountGradient } from "@/shared/utils/ui/colors";
-import { getIconByName } from "@/shared/utils";
+import { accountGradient, getIconByName } from "@/shared/utils";
 import { IonIcon, IonRippleEffect, IonSegment, IonSegmentButton } from "@ionic/vue";
 import { AccountDTO } from "@/application";
 import { useMoney } from "@/composables/money/useMoney";

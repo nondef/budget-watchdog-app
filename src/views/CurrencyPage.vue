@@ -20,6 +20,7 @@ import SwapText from '@/components/SwapText.vue';
 import { useAlert } from "@/composables";
 import { useI18n } from "vue-i18n";
 import { useToast } from '@/composables/ui/useToast';
+import { useErrorHandler } from '@/composables/ui/useErrorHandler';
 
 const selectedCurrency = ref<CurrencyDTO | null>(null);
 const searchText = ref('');
@@ -29,6 +30,7 @@ const currencyStore = useCurrenciesStore()
 const { t } = useI18n()
 const alert = useAlert()
 const toast = useToast()
+const { handle } = useErrorHandler()
 const { currencyName } = useCurrencyDisplay()
 
 const filteredCurrencies = computed(() => {
@@ -65,12 +67,12 @@ const handleSelect = async (currency: CurrencyDTO) => {
     selectedCurrency.value = currency
 
     if (result.ratesRefreshed) {
-      toast.success(t('settings.currencyChange.success'))
+      toast.show(t('settings.currencyChange.success'))
     } else {
-      toast.warning(t('settings.currencyChange.ratesStale'))
+      toast.show(t('settings.currencyChange.ratesStale'))
     }
   } catch (e) {
-    toast.error(t('settings.currencyChange.error'))
+    handle(e, { context: 'CurrencyPage', fallback: t('settings.currencyChange.error') })
   } finally {
     await loader.dismiss()
   }
