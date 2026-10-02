@@ -7,7 +7,7 @@
 **İnternetsiz çalışan, çok para birimli kişisel bütçe uygulaması**
 _Offline-first, multi-currency personal finance app for Android_
 
-![version](https://img.shields.io/badge/version-1.2.0-informational) ![license](https://img.shields.io/badge/license-MIT-blue) ![platform](https://img.shields.io/badge/android-7.0%2B-3DDC84) ![node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+![version](https://img.shields.io/badge/version-1.3.0-informational) ![license](https://img.shields.io/badge/license-MIT-blue) ![platform](https://img.shields.io/badge/android-7.0%2B-3DDC84) ![node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
 
 [Türkçe](#türkçe) · [English](#english)
 

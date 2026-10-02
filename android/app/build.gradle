@@ -18,7 +18,7 @@ android {
         applicationId = "com.atakansenturk.budgetwatchdog"
         minSdkVersion = rootProject.ext.minSdkVersion
         targetSdkVersion = rootProject.ext.targetSdkVersion
-        versionCode = 3
+        versionCode = 4
         versionName = pkg.version
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
