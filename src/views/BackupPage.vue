@@ -3,7 +3,6 @@ import {
   IonPage,
   IonContent,
   IonIcon,
-  toastController,
   IonButton,
   IonProgressBar,
   IonCard,
@@ -32,6 +31,7 @@ import { useI18n } from 'vue-i18n'
 import { Capacitor } from '@capacitor/core'
 import { useBackup } from '@/composables/features/useBackup'
 import { useAlert } from '@/composables/ui/useAlert'
+import { useToast } from '@/composables/ui/useToast'
 import { useBackupReminder } from '@/composables/features/useBackupReminder'
 import { useNotifier } from '@/composables/features/useNotifier'
 import { isEncryptionAvailable, readEncryptionContext } from '@/shared/utils/crypto/backup-crypto'
@@ -41,6 +41,7 @@ import SubPageHeader from '@/components/SubPageHeader.vue';
 import SwapText from '@/components/SwapText.vue';
 const { t, locale } = useI18n()
 const { showAlert } = useAlert()
+const toast = useToast()
 const {
   isExporting, isImporting, isWiping,
   exportToFile, importFromFile, confirmAndWipe, promptNewPassphrase,
@@ -65,13 +66,6 @@ const formattedLastExport = computed(() => {
     hour: '2-digit', minute: '2-digit',
   })
 })
-
-async function showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-  const toast = await toastController.create({
-    message, duration: 2500, color, position: 'top',
-  })
-  await toast.present()
-}
 
 /**
  * Yedek ŞİFRELİ üretilir (varsayılan) ve Documents klasörüne yazılır: dosya
@@ -155,14 +149,13 @@ async function handleExport(encrypted = true) {
       webMessage: encrypted
           ? t('backup.encryption.createdEncrypted')
           : t('backup.encryption.createdPlain'),
-      webColor: encrypted ? 'success' : 'warning',
       // Şifresiz yedek geçici klasörde: paylaşılmazsa elde yedek KALMAZ.
       // Gizlilik ekranındaki veri indirmeden farklı olarak burada kullanıcı
       // bir yedek bekliyor, o yüzden mesaj daha sert.
       notSharedMessage: t('backup.share.backupNotKept'),
     })
   } catch (err) {
-    await showToast(err instanceof Error ? err.message : t('backup.backupFailed'), 'danger')
+    await toast.show(err instanceof Error ? err.message : t('backup.backupFailed'))
   }
 }
 
@@ -189,9 +182,8 @@ async function handleImport() {
     const result = await importFromFile('replace')
     if (!result) return
 
-    await showToast(
-        t('backup.importSuccessRestarting', { rows: result.importedRows, tables: result.importedTables }),
-        'success',
+    await toast.show(
+        t('backup.importSuccessRestarting', { rows: result.importedRows, tables: result.importedTables })
     )
 
     // Import tüm tabloları yeniden yazdı; Pinia store'ları hâlâ ESKİ veriyi
@@ -202,7 +194,7 @@ async function handleImport() {
       window.location.replace('/')
     }, 1200)
   } catch (err) {
-    await showToast(err instanceof Error ? err.message : t('backup.importFailed'), 'danger')
+    await toast.show(err instanceof Error ? err.message : t('backup.importFailed'))
   }
 }
 

@@ -296,7 +296,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     const warnSkippedBudgets = (skipped: SkippedBudget[]) => {
         if (!skipped.length) return
 
-        const { warning } = useToast()
+        const { show } = useToast()
 
         const byReason = new Map<SkippedBudgetReason, string[]>()
 
@@ -310,7 +310,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         }
 
         for (const [reason, names] of byReason) {
-            warning(i18n.global.t(SKIPPED_BUDGET_MESSAGE[reason], {
+            show(i18n.global.t(SKIPPED_BUDGET_MESSAGE[reason], {
                 names: names.join(', ')
             }))
         }

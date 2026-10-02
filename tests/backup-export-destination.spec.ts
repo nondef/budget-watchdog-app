@@ -41,7 +41,13 @@ vi.mock('@capacitor/preferences', () => ({
 
 vi.mock('@ionic/vue', () => ({
     alertController: { create: vi.fn() },
-    toastController: { create: vi.fn(async () => ({ present: vi.fn() })) },
+    toastController: {
+        create: vi.fn(async () => ({
+            present: vi.fn(),
+            dismiss: vi.fn(async () => true),
+            onDidDismiss: vi.fn(() => new Promise(() => {})),
+        })),
+    },
 }))
 
 vi.mock('@/infrastructure/services/backup.service', () => ({

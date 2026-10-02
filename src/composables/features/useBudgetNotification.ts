@@ -67,13 +67,13 @@ export function useBudgetNotification() {
 
     const notifyWarning = (budgetName: string, progress: number) => {
         const msg = t('budgets.alerts.warning', { name: budgetName, progress: Math.round(progress) })
-        toast.warning(msg)
+        toast.show(msg)
         void showNow(t('budgets.alerts.warningTitle'), msg, { budgetName, type: 'warning' })
     }
 
     const notifyExceeded = (budgetName: string) => {
         const msg = t('budgets.alerts.exceeded', { name: budgetName })
-        toast.error(msg)
+        toast.show(msg)
         void showNow(t('budgets.alerts.exceededTitle'), msg, { budgetName, type: 'exceeded' })
     }
 
@@ -86,7 +86,7 @@ export function useBudgetNotification() {
         // (`scheduleResetReminder` erken dönüyor), orada tek haber kanalı toast.
         if (isNative) return
 
-        toast.success(t('budgets.alerts.reset', { count }))
+        toast.show(t('budgets.alerts.reset', { count }))
     }
 
     const scheduleResetReminder = async (budgetId: string, budgetName: string, at: Date) =>

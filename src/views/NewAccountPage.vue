@@ -32,6 +32,7 @@ import CurrencyPickerModal from "@/components/CurrencyPickerModal.vue";
 import { getIconByName } from "@/shared/utils";
 import { AccountType, AccountLimitExceededException } from "@/domain";
 import { useToast } from "@/composables/ui/useToast";
+import { useErrorHandler } from "@/composables/ui/useErrorHandler";
 import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useI18n } from "vue-i18n";
 import PickerField from "@/components/PickerField.vue";
@@ -70,6 +71,7 @@ const [selectedIconName] = defineField('selectedIconName')
 const [selectedColor] = defineField('selectedColor')
 
 const toast = useToast()
+const { handle } = useErrorHandler()
 
 const pickers = reactive({
   icon: false,
@@ -144,9 +146,9 @@ const submitAccount = handleSubmit(async (values) => {
     goBackOrFallback('/settings/accounts')
   } catch (e) {
     if (e instanceof AccountLimitExceededException) {
-      toast.error(t('accounts.limitReached'))
+      toast.show(t('accounts.limitReached'))
     } else {
-      toast.error(t('accounts.addError'))
+      handle(e, { context: 'NewAccount', fallback: t('accounts.addError') })
     }
   }
 })

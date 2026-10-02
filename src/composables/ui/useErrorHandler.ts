@@ -1,5 +1,5 @@
 import { logger } from '@/infrastructure/logging';
-import { AppError, normalizeError, type ErrorSeverity } from '@/application/errors';
+import { AppError, normalizeError } from '@/application/errors';
 import { i18n } from '@/i18n';
 import { useToast } from './useToast';
 
@@ -13,13 +13,6 @@ interface HandleOptions {
     /** Log'a eklenecek ek yapısal veri. */
     data?: Record<string, unknown>;
 }
-
-const SEVERITY_TO_COLOR: Record<ErrorSeverity, 'danger' | 'warning' | 'primary'> = {
-    fatal: 'danger',
-    error: 'danger',
-    warning: 'warning',
-    info: 'primary',
-};
 
 const SEVERITY_TO_LOG = {
     fatal: 'fatal',
@@ -75,10 +68,7 @@ export function useErrorHandler() {
         });
 
         if (!opts.silent) {
-            void toast.showToast({
-                message: userMessage,
-                color: SEVERITY_TO_COLOR[appErr.severity],
-            });
+            toast.show(userMessage)
         }
 
         return appErr;

@@ -8,11 +8,12 @@ import { useAppNavigation } from '@/composables/navigation/useAppNavigation';
 import { useHaptics } from '@/composables/ui/useHaptics';
 import { useSecurityStore } from '@/stores/security';
 import PinKeypad from '@/components/PinKeypad.vue';
-import { Toast } from "@capacitor/toast";
+import { useToast } from '@/composables/ui/useToast';
 
 const { goBackOrFallback } = useAppNavigation();
 const security = useSecurityStore();
 const haptics = useHaptics();
+const toast = useToast();
 const { t } = useI18n();
 
 const PIN_LENGTH = 4;
@@ -95,7 +96,7 @@ const handleComplete = async () => {
     await security.setPin(newPin.value);
     haptics.success();
 
-    Toast.show({ text: t('security.pinSetup.updated') })
+    toast.show(t('security.pinSetup.updated'))
 
     goBackOrFallback('/settings/security');
   } catch (e) {

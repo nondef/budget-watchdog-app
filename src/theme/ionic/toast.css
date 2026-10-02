@@ -1,55 +1,55 @@
-/* Controller ve template toast'ları aynı tema tokenlarını kullanır.
-   Renkler tokens/light.css ve tokens/dark.css'teki --c-toast-* rollerinden
-   gelir; burada yalnızca varyant → rol eşlemesi yapılır. */
+/* MD3 Snackbar. Controller ve template toast'ları aynı görünür: ters yüzey,
+   ikon/kenarlık yok, tek eylem butonu. Durum (success/danger/warning)
+   renkle değil mesaj metniyle anlatılır; Android'deki sistem snackbar'ı
+   da böyle. Renkler tokens/light.css ve tokens/dark.css'teki --c-toast-*. */
 ion-toast {
-  --toast-background: var(--c-toast-background);
-  --toast-content: var(--c-toast-content);
-  --toast-border: var(--c-toast-border);
-  --toast-accent: var(--c-toast-accent);
-  --background: var(--toast-background);
-  --color: var(--toast-content);
-  --button-color: var(--toast-content);
-  --border-color: var(--toast-border);
-  --border-style: solid;
-  --border-width: 1px;
+  --background: var(--c-toast-background);
+  --color: var(--c-toast-content);
+  --button-color: var(--c-toast-action);
+  --border-width: 0;
+  --border-radius: 4px;
   --box-shadow: var(--c-toast-shadow);
+  --max-width: 600px;
 }
 
-/* Ionic color verilince --background/--color yerine bu değişkenleri okur.
-   Eşleme yalnızca toast üzerinde kalır; diğer kontrollerin paleti değişmez. */
+/* `color` verilse bile palet rengi değil snackbar yüzeyi kullanılır. */
 ion-toast.ion-color {
-  --ion-color-base: var(--toast-background);
-  --ion-color-contrast: var(--toast-content);
+  --ion-color-base: var(--c-toast-background);
+  --ion-color-contrast: var(--c-toast-content);
 }
 
-ion-toast.ion-color-success {
-  --toast-background: var(--c-toast-success-background);
-  --toast-content: var(--c-toast-success-content);
-  --toast-border: var(--c-toast-success-border);
-  --toast-accent: var(--c-toast-success-accent);
+ion-toast::part(container) {
+  min-height: 48px;
+  padding-inline: 16px 8px;
 }
 
-ion-toast.ion-color-danger {
-  --toast-background: var(--c-toast-danger-background);
-  --toast-content: var(--c-toast-danger-content);
-  --toast-border: var(--c-toast-danger-border);
-  --toast-accent: var(--c-toast-danger-accent);
+ion-toast::part(message) {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.25px;
 }
 
-ion-toast.ion-color-warning {
-  --toast-background: var(--c-toast-warning-background);
-  --toast-content: var(--c-toast-warning-content);
-  --toast-border: var(--c-toast-warning-border);
-  --toast-accent: var(--c-toast-warning-accent);
+ion-toast::part(header) {
+  font-size: 14px;
+  font-weight: 600;
 }
 
-/* Durum ikonu metinden bir ton daha doygun: varyant bir bakışta ayırt edilir. */
-ion-toast::part(icon) {
-  color: var(--toast-accent);
+/* Eylem butonu: MD3 label-large, inverse-primary. */
+ion-toast::part(button) {
+  color: var(--c-toast-action);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  text-transform: none;
 }
 
-/* MD'nin renksiz toast için sabit kapatma rengi dahil tüm aksiyonlar. */
-ion-toast::part(button),
+/* Kapat (×) ikonu içerik renginde kalır; eylem gibi vurgulanmaz. */
 ion-toast::part(button cancel) {
-  color: var(--toast-content);
+  color: var(--c-toast-content);
+}
+
+/* Snackbar'da durum ikonu yok; açıkça `icon` verilen nadir durum için soluk. */
+ion-toast::part(icon) {
+  color: var(--c-toast-content);
+  opacity: 0.8;
 }

@@ -47,7 +47,7 @@ export function useRateRefresh() {
         refreshing.value = true
         try {
             const ok = await appStore.refreshRates()
-            if (!ok) toast.warning(t('exchangeRates.updateFailed'))
+            if (!ok) toast.show(t('exchangeRates.updateFailed'))
         } finally {
             refreshing.value = false
         }

@@ -1,91 +1,24 @@
 import { toastController } from "@ionic/vue";
-import type { ToastButton, ToastOptions as IonToastOptions } from "@ionic/vue";
-import {
-    alertCircleOutline,
-    checkmarkCircleOutline,
-    closeOutline,
-    informationCircleOutline,
-    warningOutline,
-} from "ionicons/icons";
+import type { ToastOptions } from "@ionic/vue";
 
-type ToastType = 'success' | 'danger' | 'warning' | 'primary'
+/**
+ * Ionic toast seçeneklerinden (ionicframework.com/docs/api/toast) uygulamada
+ * anlamlı olanlar. Bilerek dışarıda bırakılanlar:
+ *  - color: Ionic `.ion-color-*`'ı !important ile yazar, snackbar görünümünü bozar.
+ *  - htmlAttributes: toast'ta aria-live "assertive" yapılmamalı; kullanıcının
+ *    mutlaka görmesi gereken mesaj için useAlert kullan.
+ *  - enter/leaveAnimation: main.ts'te global olarak veriliyor.
+ */
+type ToastConfig = Pick<
+    ToastOptions,
+    'duration' | 'position' | 'positionAnchor' | 'header' | 'icon' | 'buttons' | 'layout' | 'cssClass'
+>
 
-/** dismiss() çağrılarında ve onDidDismiss sonucunda dönen roller. */
-export const TOAST_ROLE = {
-    /** Kullanıcı kapat butonuyla veya swipe ile kapattı. */
-    cancel: 'cancel',
-    /** Süre dolduğunda Ionic'in atadığı rol. */
-    timeout: 'timeout',
-    /** Yeni bir toast gösterilirken eskisi programatik kapatıldı. */
-    replaced: 'replaced',
-} as const
-
-interface ToastOptions {
-    message: string
-    header?: string
-    /**
-     * Aynı id ile art arda çağrılırsa yeni toast açılmaz; açık olan
-     * toast'un mesajı yerinde güncellenir ve süresi baştan başlar.
-     * Hızlı tekrarlı bildirimlerde (ör. "X dokunuş kaldı") animasyon
-     * yığılmasını önler.
-     */
-    id?: string
-    /**
-     * Otomatik kapanma süresi (ms). Varsayılan 3000.
-     * `persistent: true` ise yok sayılır.
-     */
-    duration?: number
-    /**
-     * true ise toast süreyle kapanmaz; kullanıcı kapat butonu,
-     * swipe veya `dismiss()` ile kapatana kadar açık kalır.
-     * Erişilebilirlik için otomatik bir kapat butonu eklenir.
-     */
-    persistent?: boolean
-    color?: ToastType
-    position?: 'top' | 'bottom' | 'middle'
-    /** Özel hizalama hedefi. Bottom toast'lar varsayılan olarak görünür tabbar'ın üstüne hizalanır. */
-    positionAnchor?: string | HTMLElement
-    /** ionicons ikonu. Verilmezse renge uygun varsayılan ikon kullanılır. */
-    icon?: string
-    /** Uzun buton metinlerinde 'stacked' kullan. */
-    layout?: 'baseline' | 'stacked'
-    /** Swipe ile kapatma. Varsayılan açık ('vertical'). */
-    swipeGesture?: 'vertical' | false
-    buttons?: ToastButton[]
-    /** Kalıcı toast'a eklenen kapat butonunu gizler. */
-    hideCloseButton?: boolean
-    cssClass?: string | string[]
-    htmlAttributes?: IonToastOptions['htmlAttributes']
-}
-
-export interface ToastHandle {
-    /** Toast'u programatik kapatır. handler'lardan veri/rol geçilebilir. */
-    dismiss: (data?: unknown, role?: string) => Promise<boolean>
-    /** Toast kapanınca çözülür; { data, role } döner. */
-    onDidDismiss: HTMLIonToastElement['onDidDismiss']
-}
-
+/** Ionic'in varsayılanı 0'dır (dismiss() çağrılana kadar kalır); her zaman bir süre veriyoruz. */
 const DEFAULT_DURATION = 3000
-
-const DEFAULT_ICONS: Record<ToastType, string> = {
-    success: checkmarkCircleOutline,
-    danger: alertCircleOutline,
-    warning: warningOutline,
-    primary: informationCircleOutline,
-}
 
 /** Aynı anda tek toast: yenisi gelince öncekini kapatırız ki üst üste binmesin. */
 let activeToast: HTMLIonToastElement | null = null
-let activeToastId: string | null = null
-/** id'li toast'larda süreyi kendimiz yönetiriz ki güncellemede sıfırlanabilsin. */
-let activeTimer: ReturnType<typeof setTimeout> | null = null
-
-function clearActiveTimer() {
-    if (activeTimer) {
-        clearTimeout(activeTimer)
-        activeTimer = null
-    }
-}
 
 /** Ionic önbellekteki sayfaları DOM'da tuttuğu için yalnızca görünür barı kullan. */
 function getVisibleTabBar(): HTMLElement | undefined {
@@ -103,118 +36,36 @@ function getVisibleTabBar(): HTMLElement | undefined {
         })
 }
 
-async function dismissActive(role: string = TOAST_ROLE.cancel): Promise<boolean> {
-    if (!activeToast) return false
-    const toast = activeToast
-    activeToast = null
-    activeToastId = null
-    clearActiveTimer()
-    return toast.dismiss(undefined, role)
-}
-
-export function useToast() {
-    const showToast = async (options: ToastOptions): Promise<ToastHandle> => {
-        const color = options.color ?? 'primary'
-        const duration = options.duration ?? DEFAULT_DURATION
-
-        // Aynı id'li toast açıksa yenisini yaratma: mesajı yerinde
-        // güncelle, süreyi baştan başlat. Animasyon yığılması olmaz.
-        if (options.id && activeToast && activeToastId === options.id) {
-            const toast = activeToast
-            toast.message = options.message
-            toast.color = color
-            if (options.icon) toast.icon = options.icon
-
-            clearActiveTimer()
-            if (!options.persistent) {
-                activeTimer = setTimeout(() => {
-                    void toast.dismiss(undefined, TOAST_ROLE.timeout)
-                }, duration)
-            }
-
-            return {
-                dismiss: (data?: unknown, role?: string) => toast.dismiss(data, role),
-                onDidDismiss: () => toast.onDidDismiss(),
-            }
-        }
-
-        await dismissActive(TOAST_ROLE.replaced)
-
-        const persistent = options.persistent ?? false
-
-        const buttons: ToastButton[] = [...(options.buttons ?? [])]
-
-        // Kalıcı toast'un her zaman kapatma yolu olmalı (a11y):
-        // role: 'cancel' butonu Ionic tarafından otomatik dismiss eder.
-        const hasCancelButton = buttons.some((b) => b.role === 'cancel')
-        if (persistent && !hasCancelButton && !options.hideCloseButton) {
-            buttons.push({
-                icon: closeOutline,
-                role: 'cancel',
-                htmlAttributes: { 'aria-label': 'Kapat' },
-            })
-        }
-
-        // id'li toast'larda süreyi manuel timer yönetir; böylece aynı id ile
-        // gelen güncellemede süre sıfırlanabilir (native duration sıfırlanamaz).
-        const useManualTimer = Boolean(options.id) && !persistent
-        const position = options.position ?? 'bottom'
-        // positionAnchor tabbar yüksekliğini ve safe-area'yı hesaba katar.
-        // Ionic arada MD'de 8px, iOS'ta 10px boşluk bırakır.
-        const positionAnchor = options.positionAnchor ??
-            (position === 'bottom' ? getVisibleTabBar() : undefined)
+/**
+ * MD3 snackbar (görünüm: theme/ionic/toast.css). `defaults` bu çağrı yerinin
+ * varsayılanlarıdır; tek bir mesaj için `show`'un ikinci parametresiyle ezilir.
+ */
+export function useToast(defaults: ToastConfig = {}) {
+    const show = async (message: string, opts: ToastConfig = {}): Promise<HTMLIonToastElement> => {
+        const config = { ...defaults, ...opts }
+        const position = config.position ?? 'bottom'
 
         const toast = await toastController.create({
-            header: options.header,
-            message: options.message,
-            duration: persistent || useManualTimer ? 0 : duration,
-            color,
+            ...config,
+            message,
+            duration: config.duration ?? DEFAULT_DURATION,
             position,
-            positionAnchor,
-            icon: options.icon ?? DEFAULT_ICONS[color],
-            layout: options.layout ?? 'baseline',
-            swipeGesture: options.swipeGesture === false ? undefined : 'vertical',
-            buttons: buttons.length > 0 ? buttons : undefined,
-            cssClass: options.cssClass,
-            htmlAttributes: options.htmlAttributes,
+            // Bottom toast tab barın üstüne oturur; "middle"da Ionic anchor'ı yok sayar.
+            positionAnchor: config.positionAnchor ?? (position === 'bottom' ? getVisibleTabBar() : undefined),
+            swipeGesture: 'vertical',
         })
 
+        activeToast?.dismiss()
         activeToast = toast
-        activeToastId = options.id ?? null
         toast.onDidDismiss().then(() => {
             if (activeToast === toast) {
                 activeToast = null
-                activeToastId = null
-                clearActiveTimer()
             }
         })
 
         await toast.present()
-
-        if (useManualTimer) {
-            activeTimer = setTimeout(() => {
-                void toast.dismiss(undefined, TOAST_ROLE.timeout)
-            }, duration)
-        }
-
-        return {
-            dismiss: (data?: unknown, role?: string) => toast.dismiss(data, role),
-            onDidDismiss: () => toast.onDidDismiss(),
-        }
+        return toast
     }
 
-    const success = (msg: string, opts?: Partial<ToastOptions>) => showToast({ message: msg, color: 'success', ...opts })
-    const error = (msg: string, opts?: Partial<ToastOptions>) => showToast({ message: msg, color: 'danger', ...opts })
-    const warning = (msg: string, opts?: Partial<ToastOptions>) => showToast({ message: msg, color: 'warning', ...opts })
-    const info = (msg: string, opts?: Partial<ToastOptions>) => showToast({ message: msg, color: 'primary', ...opts })
-
-    return {
-        showToast,
-        success,
-        error,
-        warning,
-        info,
-        /** Açık olan toast'u (varsa) kapatır. */
-        dismiss: () => dismissActive(),
-    }
+    return { show }
 }

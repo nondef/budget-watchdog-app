@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { toastController } from '@ionic/vue'
 import { useAlert } from '@/composables/ui/useAlert'
+import { useToast } from '@/composables/ui/useToast'
 import {
   backupService,
   PassphraseRequiredError,
@@ -47,6 +47,8 @@ const MIN_PASSPHRASE_LENGTH = 8
 
 export function useBackup() {
   const { showAlert } = useAlert()
+  // Yedek mesajları biraz uzun; varsayılan 3 sn yerine eski süre korunur.
+  const toast = useToast({ duration: 2800 })
   const isExporting = ref(false)
   const isImporting = ref(false)
   const isWiping = ref(false)
@@ -128,13 +130,13 @@ export function useBackup() {
    * geliyordu. Sunumu tek yere almak iki ekranın ayrışmasını engelliyor.
    *
    * @param location `exportToFile` dönüşü; `null` ise web'de dosya zaten indi.
+   * @param options
    */
   async function presentExportResult(
     location: ExportLocation | null,
     options: {
       /** Web'de dosya zaten indi; gösterilecek bilgi mesajı. */
       webMessage: string
-      webColor?: 'success' | 'warning'
       /**
        * `share` hedefinde kullanıcı paylaşmaktan vazgeçtiyse gösterilecek
        * mesaj. Dosya geçici klasörde kaldığı için elde bir şey kalmaz —
@@ -144,7 +146,7 @@ export function useBackup() {
     }
   ): Promise<void> {
     if (!location) {
-      await showBackupToast(options.webMessage, options.webColor ?? 'success')
+      await toast.show(options.webMessage)
       return
     }
 
@@ -155,11 +157,10 @@ export function useBackup() {
       const outcome = await shareBackup(location.uri)
       if (outcome === 'shared') return
 
-      await showBackupToast(
+      await toast.show(
         outcome === 'unavailable'
           ? t('backup.share.unavailable')
-          : options.notSharedMessage ?? t('backup.share.notKept'),
-        'warning'
+          : options.notSharedMessage ?? t('backup.share.notKept')
       )
       return
     }
@@ -239,23 +240,16 @@ export function useBackup() {
     const confirm = data?.values?.confirm ?? ''
 
     if (passphrase.length < MIN_PASSPHRASE_LENGTH) {
-      await showBackupToast(t('backup.encryption.tooShort', { min: MIN_PASSPHRASE_LENGTH }), 'warning')
+      await toast.show(t('backup.encryption.tooShort', { min: MIN_PASSPHRASE_LENGTH }))
       return promptNewPassphrase()
     }
 
     if (passphrase !== confirm) {
-      await showBackupToast(t('backup.encryption.mismatch'), 'warning')
+      await toast.show(t('backup.encryption.mismatch'))
       return promptNewPassphrase()
     }
 
     return passphrase
-  }
-
-  async function showBackupToast(message: string, color: string) {
-    const toast = await toastController.create({
-      message, duration: 2800, color, position: 'bottom',
-    })
-    await toast.present()
   }
 
   /**
@@ -397,37 +391,19 @@ export function useBackup() {
 
     const typed = (data?.values?.confirmText ?? '').trim().toUpperCase()
     if (typed !== confirmWord.toUpperCase()) {
-      const toast = await toastController.create({
-        message: t('backup.wipe.mismatch'),
-        duration: 2500,
-        color: 'warning',
-        position: 'bottom',
-      })
-      await toast.present()
+      await toast.show(t('backup.wipe.mismatch'), { duration: 2500 })
       return 'mismatch'
     }
 
     try {
       await wipeAllData()
-      const toast = await toastController.create({
-        message: t('backup.wipe.success'),
-        duration: 1500,
-        color: 'success',
-        position: 'bottom',
-      })
-      await toast.present()
+      await toast.show(t('backup.wipe.success'), { duration: 1500 })
       setTimeout(() => {
         window.location.replace('/')
       }, 800)
       return 'done'
     } catch (err) {
-      const toast = await toastController.create({
-        message: err instanceof Error ? err.message : t('backup.wipe.failed'),
-        duration: 2500,
-        color: 'danger',
-        position: 'bottom',
-      })
-      await toast.present()
+      await toast.show(err instanceof Error ? err.message : t('backup.wipe.failed'), { duration: 2500 })
       return 'failed'
     }
   }

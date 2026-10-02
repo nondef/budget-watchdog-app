@@ -70,31 +70,15 @@
   --c-error: var(--md-error);
   --c-on-error: var(--md-on-error);            /* hata zemini uzerindeki metin */
 
-  /* ── Toast ───────────────────────────────────────────────────────────
-     Her varyant 4 rol taşır: zemin / içerik / kenarlık / vurgu (ikon).
-     Light: zemin sayfaya çok yakın (≈1.1:1) olduğundan ayrışmayı
-     kenarlık (≈1.9:1) ve gölge sağlar. İçerik ≥6.7:1, vurgu ≥4.4:1. */
-  --c-toast-shadow: 0 6px 20px rgba(56, 52, 47, 0.16), 0 1px 3px rgba(56, 52, 47, 0.12);
-
-  --c-toast-background: var(--md-surface-container-lowest);
-  --c-toast-content: var(--md-on-surface-variant);
-  --c-toast-border: #b9b2a8;
-  --c-toast-accent: var(--md-outline);
-
-  --c-toast-success-background: #e5f3e9;
-  --c-toast-success-content: #205b36;
-  --c-toast-success-border: #8fbf9d;
-  --c-toast-success-accent: #2e7d4a;
-
-  --c-toast-danger-background: #fce9e7;
-  --c-toast-danger-content: #922b25;
-  --c-toast-danger-border: #e0998f;
-  --c-toast-danger-accent: var(--md-error);
-
-  --c-toast-warning-background: #fff2d6;
-  --c-toast-warning-content: #754c0d;
-  --c-toast-warning-border: #d6ae62;
-  --c-toast-warning-accent: #9a6200;
+  /* ── Toast (MD3 Snackbar) ────────────────────────────────────────────
+     Tek görünüm: ters yüzey (light'ta koyu şerit), durum rengi yok.
+     Eylem butonu MD3 inverse-primary rolünde; primary burada nötr koyu
+     olduğundan marka altını açık tonda kullanılır. İçerik 11.8:1, eylem 7.7:1. */
+  --c-toast-background: var(--md-inverse-surface);
+  --c-toast-content: var(--md-inverse-on-surface);
+  --c-toast-action: #e3c27f;
+  /* MD3 elevation level 3 */
+  --c-toast-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
 
   /* ── Ionic palette (color="primary" kontroller MD3 primary kullansın) ── */
   --ion-color-primary: var(--md-primary);

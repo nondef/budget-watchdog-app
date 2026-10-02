@@ -8,7 +8,13 @@ const { createAlert, wipeAll, clearDeviceStorage } = vi.hoisted(() => ({
 
 vi.mock('@ionic/vue', () => ({
   alertController: { create: createAlert },
-  toastController: { create: vi.fn(async () => ({ present: vi.fn() })) },
+  toastController: {
+    create: vi.fn(async () => ({
+      present: vi.fn(),
+      dismiss: vi.fn(async () => true),
+      onDidDismiss: vi.fn(() => new Promise(() => {})),
+    })),
+  },
 }))
 
 vi.mock('@/infrastructure/services/backup.service', () => ({

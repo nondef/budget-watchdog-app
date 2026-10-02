@@ -27,6 +27,7 @@ import AccountField from "@/components/AccountField.vue";
 import DateField from "@/components/DateField.vue";
 import SheetModal from "@/components/SheetModal.vue";
 import { useToast } from "@/composables/ui/useToast";
+import { useErrorHandler } from "@/composables/ui/useErrorHandler";
 import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCategoryName } from "@/composables/features/useCategoryName";
 import { getIconByName } from "@/shared/utils";
@@ -40,6 +41,7 @@ const { ionRouter, goBackOrFallback } = useAppNavigation()
 const route = useRoute()
 const { t } = useI18n()
 const toast = useToast()
+const { handle } = useErrorHandler()
 const budgetStore = useBudgetStore();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
@@ -159,7 +161,7 @@ const submitBudget = handleSubmit(async (values) => {
 
     goBackOrFallback('/settings/budget-goals')
   } catch (e) {
-    toast.error(t('budgets.updateError'))
+    handle(e, { context: 'EditBudget', fallback: t('budgets.updateError') })
   } finally {
     isSaving.value = false
   }
@@ -185,7 +187,7 @@ onMounted(async () => {
 
     const result = await budgetStore.getBudgetById(budgetId)
     if (!result) {
-      toast.error(t('budgets.notFound'))
+      toast.show(t('budgets.notFound'))
       // Geçersiz id: sayfa geçmişte iz bırakmasın, geri tuşu buraya dönmesin.
       ionRouter.navigate('/settings/budget-goals', 'back', 'replace')
       return
@@ -215,7 +217,7 @@ onMounted(async () => {
         .map(id => categoriesStore.categoryById(id))
         .filter(Boolean) as CategoryDTO[]
   } catch (e) {
-    toast.error(t('budgets.loadError'))
+    handle(e, { context: 'EditBudget', fallback: t('budgets.loadError') })
   }
 })
 </script>

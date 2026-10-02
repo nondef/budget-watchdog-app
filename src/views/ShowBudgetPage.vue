@@ -41,14 +41,15 @@ import { formatDateLocalized } from "@/i18n/format";
 import { useAppNavigation } from "@/composables/navigation/useAppNavigation";
 import AnimatedHeight from "@/components/AnimatedHeight.vue";
 import SwapText from "@/components/SwapText.vue";
-import { useAlert } from "@/composables";
-import { Toast } from "@capacitor/toast";
+import { useAlert, useErrorHandler, useToast } from "@/composables";
 
 const route = useRoute()
 const router = useRouter()
 const { goBackOrFallback } = useAppNavigation()
 const { t } = useI18n()
 const alert = useAlert()
+const toast = useToast()
+const { handle } = useErrorHandler()
 const budgetStore = useBudgetStore()
 
 const budgetId = route.params.id as string
@@ -89,16 +90,6 @@ const barColor = computed(() => {
 })
 
 const formatDate = (dateString: string) => formatDateLocalized(new Date(dateString))
-
-const getTypeText = (type: string) => {
-  const keys: Record<string, string> = {
-    monthly: 'budgets.types.monthly',
-    weekly: 'budgets.types.weekly',
-    yearly: 'budgets.types.yearly',
-    custom: 'budgets.types.custom'
-  }
-  return keys[type] ? t(keys[type]) : type
-}
 
 const getStatusText = (status: string) => {
   const keys: Record<string, string> = {
@@ -155,10 +146,10 @@ const pauseResumeBudget = async () => {
 
   if (budgetDetail.value.budget.status === 'active') {
     await budgetStore.pauseBudget(budgetId)
-    Toast.show({ text: t('budgets.paused') })
+    toast.show(t('budgets.paused'))
   } else if (budgetDetail.value.budget.status === 'paused') {
     await budgetStore.resumeBudget(budgetId)
-    Toast.show({ text: t('budgets.resumed') })
+    toast.show(t('budgets.resumed'))
   }
 }
 
@@ -178,9 +169,9 @@ const resetBudget = async () => {
 
     budgetDetail.value = await budgetStore.getBudgetDetail(budgetId)
 
-    Toast.show({ text: t('budgets.resetSuccess') })
-  } catch {
-    Toast.show({ text: t('budgets.resetFailed') })
+    toast.show(t('budgets.resetSuccess'))
+  } catch (e) {
+    handle(e, { context: 'ShowBudget', fallback: t('budgets.resetFailed') })
   }
 }
 
@@ -196,7 +187,7 @@ const handleDeleteAlert = async () => {
   if (!confirmed) return
 
   await budgetStore.deleteBudget(budgetId)
-  await Toast.show({ text: t('budgets.deleted') })
+  toast.show(t('budgets.deleted'))
 
   goBackOrFallback('/settings/budget-goals')
 }
@@ -381,7 +372,7 @@ onMounted(async () => {
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-[11px] text-content-muted">{{ $t('budgets.period') }}</p>
-                <p class="text-[14px] font-medium text-content mt-0.5">{{ getTypeText(budgetDetail.budget.type) }}</p>
+                <p class="text-[14px] font-medium text-content mt-0.5">{{ $t(`budgets.types.${budgetDetail.budget.type}`) }}</p>
               </div>
             </div>
 

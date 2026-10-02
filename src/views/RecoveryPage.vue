@@ -98,7 +98,7 @@ async function exportData() {
     await presentExportResult(location, { webMessage: t('recovery.export.success') });
   } catch (error) {
     logger.error('Kurtarma yedeği alınamadı', { context: 'RecoveryPage', error });
-    await toast.error(t('recovery.export.failed'));
+    await toast.show(t('recovery.export.failed'));
   } finally {
     isExportingData.value = false;
   }
@@ -118,7 +118,7 @@ async function exportDiagnostics() {
     await presentExportResult(location, { webMessage: t('recovery.diagnostics.saved') });
   } catch (error) {
     logger.error('Tanılama dosyası üretilemedi', { context: 'RecoveryPage', error });
-    await toast.error(t('recovery.diagnostics.failed'));
+    await toast.show(t('recovery.diagnostics.failed'));
   } finally {
     isExportingDiagnostics.value = false;
   }
@@ -162,7 +162,7 @@ async function confirmReset(): Promise<boolean> {
   if (role !== 'destructive') return false;
 
   if ((data?.values?.confirmText ?? '').trim().toUpperCase() !== word.toUpperCase()) {
-    await toast.warning(t('backup.wipe.mismatch'));
+    await toast.show(t('backup.wipe.mismatch'));
     return false;
   }
 
@@ -189,11 +189,11 @@ async function reset() {
       return;
     }
 
-    await toast.success(t('recovery.reset.done'));
+    await toast.show(t('recovery.reset.done'));
     setTimeout(() => window.location.replace('/'), 800);
   } catch (error) {
     logger.error('Sıfırlama başarısız', { context: 'RecoveryPage', error });
-    await toast.error(t('recovery.reset.failed'));
+    await toast.show(t('recovery.reset.failed'));
   } finally {
     isResetting.value = false;
   }

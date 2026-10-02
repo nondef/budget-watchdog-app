@@ -255,8 +255,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             // Tab geçişleri ayrıca TabsPage.vue içinde animasyonlanır.
             navAnimation,
             // ion-toast'un MD3 snackbar hareketi. Global config olarak
-            // veriliyor ki useToast dışında doğrudan <ion-toast> kullanan
-            // sayfalar (ör. FeedbackPage) da aynı hareketi alsın.
+            // veriliyor ki ileride doğrudan <ion-toast> kullanılırsa o da
+            // useToast'takiyle aynı hareketi alsın.
             toastEnter: mdSnackbarEnterAnimation,
             toastLeave: mdSnackbarLeaveAnimation,
         })

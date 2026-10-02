@@ -23,7 +23,6 @@ import { useSecurityStore } from '@/stores/security';
 import { useToast } from '@/composables/ui/useToast';
 import SubPageHeader from '@/components/SubPageHeader.vue';
 import CollapseTransition from '@/components/CollapseTransition.vue';
-import { Toast } from "@capacitor/toast";
 
 const router = useRouter();
 const security = useSecurityStore();
@@ -66,7 +65,7 @@ const toggleScreenLock = async () => {
           role: 'destructive',
           handler: async () => {
             await security.removePin();
-            Toast.show({ text: t('security.screenLockDisabled')})
+            toast.show(t('security.screenLockDisabled'))
           },
         },
       ],
@@ -82,14 +81,14 @@ const toggleBiometric = async () => {
   const enabled = !s.value.biometricEnabled
 
   if (enabled && !security.hasPin) {
-    toast.warning(t('security.setPinFirst'));
+    toast.show(t('security.setPinFirst'));
     return;
   }
 
   try {
     await security.setBiometric(enabled);
   } catch (e) {
-    toast.error(e instanceof Error ? e.message : t('security.biometricError'));
+    toast.show(e instanceof Error ? e.message : t('security.biometricError'));
   }
 };
 
