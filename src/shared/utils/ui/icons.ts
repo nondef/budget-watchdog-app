@@ -14,7 +14,7 @@ import {
     bulbOutline, busOutline, businessOutline, cafeOutline, calculatorOutline,
     calendarNumberOutline, calendarOutline, cameraOutline, carOutline, cardOutline,
     cartOutline, cashOutline, cloudOutline, colorPaletteOutline, compassOutline,
-    constructOutline, desktopOutline, diamondOutline, documentTextOutline, earthOutline,
+    constructOutline, cutOutline, desktopOutline, diamondOutline, documentTextOutline, earthOutline,
     ellipsisHorizontalOutline, fastFoodOutline, fileTrayFullOutline, filmOutline,
     fingerPrintOutline, fitnessOutline, flameOutline, flashOutline, flowerOutline,
     footballOutline, gameControllerOutline, giftOutline, globeOutline, gridOutline,
@@ -32,6 +32,9 @@ import {
 } from 'ionicons/icons'
 
 const ICON_REGISTRY: Record<string, string> = {
+    // Kategori seeder'ı "Kişisel Bakım"ı `cut` adıyla kaydetti; mevcut
+    // veritabanlarında bu ad duruyor, o yüzden outline karşılığına eşlenir.
+    cut: cutOutline, cutOutline,
     airplaneOutline, alarmOutline, bagOutline, balloonOutline, bandageOutline,
     barChartOutline, barbellOutline, basketOutline, batteryFullOutline, bedOutline,
     beerOutline, bicycleOutline, boatOutline, bookOutline, briefcaseOutline,
