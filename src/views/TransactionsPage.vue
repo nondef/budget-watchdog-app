@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   IonPage,
   IonContent,
@@ -11,18 +10,16 @@ import {
   IonSelectOption,
   IonFab,
   IonFabButton,
-  IonModal,
-  IonDatetime,
   IonButton, IonTitle, IonHeader, IonToolbar, IonSearchbar,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonSpinner,
   type InfiniteScrollCustomEvent,
   onIonViewWillEnter,
 } from '@ionic/vue';
 import {
   addOutline,
   filterOutline,
-  closeOutline,
   calendarOutline,
   arrowUpOutline,
   arrowDownOutline,
@@ -36,18 +33,22 @@ import TransactionEmptyState from "@/components/TransactionEmptyState.vue";
 import TransactionDateGroup from "@/components/TransactionDateGroup.vue";
 import CollapseTransition from "@/components/CollapseTransition.vue";
 import SwapText from "@/components/SwapText.vue";
+import PickerField from "@/components/PickerField.vue";
+import DatePickerModal from "@/components/DatePickerModal.vue";
 import { useCategoriesStore } from "@/stores/categories";
 import { translateCategoryName } from "@/composables/features/useCategoryName";
 import { TransactionDTO } from "@/application";
 import { formatDateShortLocalized } from "@/i18n/format";
 
 const router = useRouter();
-const { t } = useI18n();
 const transactionStore = useTransactionsStore();
 const categoriesStore = useCategoriesStore()
 const { convertToBase, formatMoney, hidden: amountsHidden } = useMoney()
 
-const showDateModal = ref(false)
+const showStartDateModal = ref(false)
+const showEndDateModal = ref(false)
+// İlk render'da henüz sorgu başlamamış olsa da liste boş kabul edilmez.
+const isLoading = ref(true)
 
 const {
   filteredTransactions,
@@ -110,11 +111,6 @@ const activeFilterCount = computed(() => {
   return n
 })
 
-const dateRangeLabel = computed(() => {
-  if (!startDate.value && !endDate.value) return t('transactions.selectDateRange')
-  return `${startDate.value ? formatDate(startDate.value) : '…'} → ${endDate.value ? formatDate(endDate.value) : t('transactions.until')}`
-})
-
 const openDetail = (transaction: TransactionDTO) => {
   router.push(`/transaction/${transaction.id}/show`)
 }
@@ -135,7 +131,14 @@ const categoryName = (id: string) => {
 onMounted(async () => categoriesStore.loadCategories())
 
 // Ionic sayfaları cache'lediğinden işlem listesi sayfaya her girişte yenilenir.
-onIonViewWillEnter(() => transactionStore.loadTransactions())
+onIonViewWillEnter(async () => {
+  isLoading.value = true
+  try {
+    await transactionStore.loadTransactions()
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -200,45 +203,59 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
 
             <div class="space-y-2">
               <!-- Tip -->
-              <div class="filter-field flex h-12 items-center justify-between gap-2 rounded-xl px-3">
-                <span class="text-[12px] text-content-muted">{{ $t('transactions.type') }}</span>
                 <ion-select
                     v-model="selectedType"
+                    fill="solid"
+                    label-placement="stacked"
+                    :label="$t('transactions.type')"
+                    class="filter-select"
                     :placeholder="$t('common.all')"
                     interface="popover"
-                    class="text-[13px] flex-1 text-right"
                 >
+                  <ion-select-option value="">{{ $t('common.all') }}</ion-select-option>
                   <ion-select-option value="income">{{ $t('common.income') }}</ion-select-option>
                   <ion-select-option value="expense">{{ $t('common.expense') }}</ion-select-option>
                 </ion-select>
-              </div>
 
               <!-- Kategori -->
-              <div class="filter-field flex h-12 items-center justify-between gap-2 rounded-xl px-3">
-                <span class="text-[12px] text-content-muted">{{ $t('transactions.category') }}</span>
                 <ion-select
                     v-model="selectedCategory"
+                    fill="solid"
+                    label-placement="stacked"
+                    :label="$t('transactions.category')"
+                    class="filter-select"
                     :placeholder="$t('common.all')"
                     interface="popover"
-                    class="text-[13px] flex-1 text-right"
                 >
+                  <ion-select-option value="">{{ $t('common.all') }}</ion-select-option>
                   <ion-select-option v-for="id in categoryIds" :key="id" :value="id">
                     {{ categoryName(id) }}
                   </ion-select-option>
                 </ion-select>
-              </div>
 
               <!-- Tarih -->
-              <button
-                  class="filter-field flex h-12 w-full items-center justify-between gap-2 rounded-xl px-3 transition"
-                  @click="showDateModal = true"
+              <picker-field
+                  class="filter-date"
+                  :label="$t('transactions.start')"
+                  :empty="!startDate"
+                  @click="showStartDateModal = true"
               >
-                <span class="text-[12px] text-content-muted">{{ $t('transactions.date') }}</span>
-                <span class="text-[13px] text-content-secondary truncate flex items-center gap-1.5">
-                  <swap-text :text="dateRangeLabel" />
-                  <ion-icon :icon="calendarOutline" class="size-[14px] text-slate-400" />
-                </span>
-              </button>
+                <swap-text :text="startDate ? formatDate(startDate) : $t('common.selectDate')" />
+                <template #end>
+                  <ion-icon slot="end" :icon="calendarOutline" class="size-5 text-content-muted" />
+                </template>
+              </picker-field>
+              <picker-field
+                  class="filter-date"
+                  :label="$t('transactions.end')"
+                  :empty="!endDate"
+                  @click="showEndDateModal = true"
+              >
+                <swap-text :text="endDate ? formatDate(endDate) : $t('common.selectDate')" />
+                <template #end>
+                  <ion-icon slot="end" :icon="calendarOutline" class="size-5 text-content-muted" />
+                </template>
+              </picker-field>
             </div>
           </section>
         </collapse-transition>
@@ -277,8 +294,16 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
            Anahtar gün başlığı — dizin olsaydı filtrelenince yanlış grup
            "değişmiş" sayılır, giriş/çıkış animasyonu yanlış karta oynardı. -->
       <div class="transaction-list mt-4">
+        <div
+            v-if="isLoading && transactionStore.transactions.length === 0"
+            class="flex items-center justify-center gap-2 py-12 text-content-muted"
+            role="status"
+        >
+          <ion-spinner name="crescent" />
+          <span>{{ $t('common.loading') }}</span>
+        </div>
         <transition name="fade">
-          <TransactionEmptyState v-if="filteredTransactions.length === 0" />
+          <TransactionEmptyState v-if="!isLoading && filteredTransactions.length === 0" />
         </transition>
 
         <transition-group tag="div" name="list-row" class="relative">
@@ -295,7 +320,7 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
 
       <!-- Sonraki sayfa: eskiden yalnız ilk 50 kayıt gösterilip 51+ görünmüyordu -->
       <ion-infinite-scroll
-          :disabled="!transactionStore.hasNext"
+          :disabled="isLoading || !transactionStore.hasNext"
           @ionInfinite="loadMore"
       >
         <ion-infinite-scroll-content />
@@ -310,77 +335,20 @@ onIonViewWillEnter(() => transactionStore.loadTransactions())
       </ion-fab>
     </ion-content>
 
-    <!-- Tarih modal -->
-    <ion-modal :is-open="showDateModal" @did-dismiss="showDateModal = false" class="date-modal">
-      <div class="date-modal-sheet h-full overflow-y-auto p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-[15px] font-semibold text-content">{{ $t('transactions.dateRange') }}</h3>
-          <ion-button
-              fill="clear"
-              class="date-modal-close"
-              @click="showDateModal = false"
-          >
-            <ion-icon slot="icon-only" :icon="closeOutline" />
-          </ion-button>
-        </div>
-        <div class="space-y-3">
-          <div>
-            <p class="text-[11px] text-content-muted mb-1">{{ $t('transactions.start') }}</p>
-            <ion-datetime
-                v-model="startDate"
-                presentation="date"
-                :show-default-buttons="false"
-            />
-          </div>
-          <div>
-            <p class="text-[11px] text-content-muted mb-1">{{ $t('transactions.end') }}</p>
-            <ion-datetime
-                v-model="endDate"
-                presentation="date"
-                :show-default-buttons="false"
-            />
-          </div>
-          <ion-button expand="block" class="apply-date-button" @click="showDateModal = false">
-            {{ $t('transactions.apply') }}
-          </ion-button>
-        </div>
-      </div>
-    </ion-modal>
+    <DatePickerModal v-model="startDate" v-model:open="showStartDateModal" />
+    <DatePickerModal v-model="endDate" v-model:open="showEndDateModal" />
   </ion-page>
 </template>
 
-<style>
-/* Tarih aralığı modalı — diğer modallarla aynı yüzey dili (MD3
-   surface-container-high). Modal teleport edildiği için bu blok global;
-   içerideki sheet ve ion-datetime aynı yüzeye oturur. */
-ion-modal.date-modal {
-  --width: min(calc(100% - 16px), 440px);
-  --height: min(760px, calc(100% - 48px));
-  --border-radius: 28px;
-  --background: var(--md-surface-container-high);
-  --box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
-  align-items: flex-end;
-  justify-content: center;
-}
-ion-modal.date-modal::part(content) {
-  margin-bottom: max(20px, calc(env(safe-area-inset-bottom) + 6px));
-  background: var(--md-surface-container-high);
-}
-ion-modal.date-modal .date-modal-sheet {
-  background: var(--md-surface-container-high);
-  padding-bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px));
-}
-ion-modal.date-modal ion-datetime {
-  width: 100%;
-  max-width: none;
-  --background: var(--c-surface-sunken);
-  margin: 0 auto;
-  border: 1px solid var(--c-line);
-  border-radius: 18px;
-}
-</style>
-
 <style scoped>
+.filter-select::part(wrapper) {
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
+
+.filter-date :deep(ion-item.md3-picker)::part(native) {
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
+
 .tx-content {
   --background: var(--c-page);
 }
@@ -406,24 +374,10 @@ ion-button.clear-filter {
   --border-radius: 10px;
 }
 
-.filter-field {
-  background: var(--c-surface-sunken);
-  border: 1px solid var(--c-line);
-}
-
-button.filter-field:active {
-  background: var(--c-surface-strong);
-}
-
 .summary-card {
   background: linear-gradient(145deg, var(--c-surface) 0%, var(--c-surface-sunken) 100%);
 }
 
-ion-select {
-  --padding-start: 0;
-  --padding-end: 0;
-  min-height: 0;
-}
 
 /* FAB stil */
 .custom-fab {
@@ -439,26 +393,4 @@ ion-select {
   --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
 }
 
-ion-button.date-modal-close {
-  width: 36px;
-  height: 36px;
-  margin: 0;
-  --border-radius: 12px;
-  --color: var(--c-content-muted);
-  --padding-start: 0;
-  --padding-end: 0;
-}
-
-ion-button.apply-date-button {
-  min-height: 48px;
-  margin: 4px 0 0;
-  font-size: 14px;
-  font-weight: 750;
-  text-transform: none;
-  --background: var(--c-primary);
-  --background-activated: var(--c-primary-strong);
-  --border-radius: 14px;
-  --box-shadow: none;
-  --color: var(--c-on-primary);
-}
 </style>
