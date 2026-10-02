@@ -2,242 +2,154 @@
 
 [Türkçe](#türkçe) · [English](#english)
 
----
-
 # Türkçe
 
-**Yürürlük tarihi:** 11 Eylül 2026
-**Geliştirici:** Atakan Şentürk
+**Son güncelleme / yürürlük tarihi:** 1 Ekim 2026  
+**Geliştirici ve geri bildirim kapsamındaki veri sorumlusu:** Atakan Şentürk  
 **İletişim:** atkansenturk@gmail.com
 
-## Özet
+## 1. Kapsam ve yerel veriler
 
-Budget Watchdog, verilerini **yalnızca senin telefonunda** saklayan bir kişisel
-bütçe uygulamasıdır. Hesap açman gerekmez; sunucumuz yoktur; kişisel veya
-finansal bilgilerini toplamayız, görmeyiz, satmayız ve kimseyle paylaşmayız.
+Budget Watchdog kişisel bütçe ve harcama takibi için geliştirilmiştir. Uygulama hesabı açman gerekmez. Hesaplar, bakiyeler, gelir/gider/transfer kayıtları, notlar, bütçeler, birikim hedefleri, kategoriler ve uygulama ayarları cihazında saklanır. Geliştirici bu finansal kayıtları otomatik olarak toplamaz, kendi sunucusuna göndermez ve bunlara uzaktan erişmez.
 
-## 1. Telefonunda saklanan veriler
+Temel finansal işlemler internet olmadan çalışır. Döviz kuru bağlantıları, kendi seçtiğin dosya paylaşımları ve gönderdiğin geri bildirim e-postaları aşağıdaki istisnalardır.
 
-Uygulamaya girdiğin bilgiler yalnızca telefonundaki veritabanında tutulur:
+## 2. Güvenlik ve yerel teknik kayıtlar
 
-- Hesaplar, bakiyeler ve para birimleri
-- Gelir, gider ve transfer işlemleri, notlar
-- Bütçeler, birikim hedefleri ve kategoriler
-- Uygulama ayarları (tema, dil, bildirim tercihleri)
+Android uygulamasının finansal veritabanı SQLCipher ile şifrelenir. Veritabanı anahtarı Android Keystore destekli şifreli depolamada korunur. Bu açıklama her cihazda donanım destekli güvenliğin mevcut olduğu veya tüm uygulama ayarlarının aynı veritabanı şifrelemesiyle korunduğu anlamına gelmez.
 
-Bu veritabanı **şifrelidir**. Şifreleme anahtarı telefonun güvenli donanımında
-(Android Keystore) saklanır ve telefondan dışarı çıkmaz.
+Tarayıcı sürümünün yerel veritabanı aynı SQLCipher şifreleme korumasını kullanmaz. Tarayıcı verilerini temizlemek yerel kayıtlarını silebilir.
 
-**PIN kilidi:** PIN'in kendisi saklanmaz; yalnızca geri çevrilemeyen bir özeti
-(hash) telefonda tutulur.
+PIN'in kendisi yerine yerel bir kriptografik özeti saklanır. Biyometrik doğrulamayı işletim sistemi gerçekleştirir; uygulama parmak izi veya yüz şablonlarına erişmez.
 
-**Biyometrik kilit:** Parmak izi ve yüz tanıma tamamen Android sistemi tarafından
-yapılır. Uygulama biyometrik verine erişmez; sadece "doğrulandı / doğrulanmadı"
-sonucunu alır.
+Teknik hata ve tanılama kayıtları cihazda tutulabilir. Bunlar otomatik olarak geliştiriciye veya bir hata raporlama hizmetine gönderilmez. Uygulamada reklam, kullanım analitiği ve takip kodu bulunmaz.
 
-## 2. Toplamadığımız veriler
+## 3. İnternet ve döviz kuru sağlayıcıları
 
-Uygulama şunları **toplamaz**: ad, e-posta, telefon numarası, konum, rehber,
-fotoğraflar, reklam kimliği, kullanım istatistikleri (analitik) veya hata
-raporları. Uygulamada reklam ve takip kodu yoktur.
+Kurlar aşağıdaki hizmetlerden alınır:
 
-## 3. İnternet kullanımı
-
-Uygulama interneti **yalnızca döviz kurlarını güncellemek** için kullanır. Kurlar
-şu ücretsiz servislerden alınır:
-
-| Servis | Adres |
+| Hizmet | İstek adresi |
 |---|---|
-| ExchangeRate-API (Open Access) | `open.er-api.com` |
-| Frankfurter | `api.frankfurter.app` |
+| ExchangeRate-API (Open Access) | `https://open.er-api.com/v6/latest` |
+| Frankfurter | `https://api.frankfurter.app/latest` |
 
-Bu isteklerde gönderilen tek bilgi seçtiğin **temel para biriminin kodudur**
-(ör. `TRY`). Hesapların, işlemlerin veya başka bir finansal bilgin
-**gönderilmez**. Her internet isteğinde olduğu gibi bu servisler telefonunun IP
-adresini görebilir; bu durum ilgili servislerin kendi gizlilik politikalarına
-tabidir.
+Güncelleme elle, uygulama açılırken veya uygulama yeniden öne geldiğinde otomatik yapılabilir. İsteklerde temel para birimi kodu (ör. `TRY`) kullanılır. Hesap adları, bakiyeler, işlemler, bütçeler ve notlar bu isteklere eklenmez.
 
-İnternet bağlantısı yoksa uygulama son bilinen kurlarla çalışmaya devam eder.
+Sağlayıcılar IP adresini ve bağlantının gerektirdiği teknik bilgileri görebilir. Bu hizmetlerin kendi gizlilik politikaları geçerlidir; veriler hizmetin kullandığı altyapıya göre yurt dışında da işlenebilir. Geliştirici sağlayıcıların günlük saklama uygulamalarını yönetmez. İnternet yoksa mevcut kurlar kullanılabilir; henüz alınmamış kurlar için güncel kur bilgisi bulunmayabilir.
 
-## 4. Yedekler ve dışa aktarma
+## 4. Yedekleme, dışa aktarma ve paylaşım
 
-- **Yedek Oluştur** (Ayarlar → Yedekleme): Verilerinin bir kopyasını telefonunda
-  bir dosya olarak oluşturur. Yedek dosyası varsayılan olarak **senin belirlediğin
-  parolayla şifrelenir**. Parolayı biz bilmeyiz; unutursan yedek açılamaz.
-- **Verilerimi İndir** (Ayarlar → Kişisel Veri & Gizlilik): Verilerini
-  **şifresiz** bir JSON dosyası olarak dışa aktarır. Bu dosyayı güvenli bir yerde
-  sakla.
+**Yedek Oluştur** varsayılan olarak senin belirlediğin parolayla şifreli dosya üretir. Android'de dosya cihaz depolamasına kaydedilir; tarayıcıda indirilir. Geliştirici yedek parolanı bilmez ve sıfırlayamaz.
 
-Bu dosyaları nereye kaydedeceğine veya kiminle paylaşacağına (Google Drive,
-e-posta vb.) **sen karar verirsin**. Paylaştığın servis, kendi gizlilik
-politikasına tabidir.
+**Şifresiz yedek** ve **Verilerimi İndir** okunabilir JSON üretir ve ayrıca onay ister. Android'de şifresiz dosya geçici özel depolamadan paylaşılır; paylaşılmazsa kalıcı bir yedek olarak saklanacağına güvenmemelisin. Tarayıcıda dosya indirilir.
 
-Android'in otomatik Google yedeklemesi bu uygulama için **bilerek kapalıdır**;
-verilerin Google sunucularına kopyalanmaz.
+Başka uygulamalara, e-posta veya bulut depolama hizmetlerine paylaşmayı sen seçersin. Paylaştığın dosya finansal kayıtlarını içerir; şifresiz dosyayı alan kişi içeriğini okuyabilir. Dosya cihaz dışına çıkabilir ve alıcı hizmetin gizlilik koşulları uygulanır. Uygulama bu harici kopyaları yönetmez veya silemez.
 
-## 5. Bildirimler
+Android otomatik uygulama yedeklemesi bu uygulama için kapalıdır. Bu ayar, senin ayrıca paylaştığın dosyaların veya cihazındaki diğer hizmetlerin oluşturabileceği kopyaların silindiği anlamına gelmez.
 
-Bütçe uyarıları gibi bildirimler **telefonunda yerel olarak** oluşturulur. Hiçbir
-sunucu üzerinden gönderilmez.
+## 5. Bildirimler ve izinler
 
-## 6. Geri bildirim
+Bütçe uyarıları ve hatırlatmalar cihazında yerel olarak oluşturulur; geliştiricinin sunucusundan gönderilmez. Cihazının bildirim ayarlarına bağlı olarak içerik kilit ekranında görülebilir.
 
-Uygulamadaki geri bildirim ekranı, telefonundaki e-posta uygulamasını açar. Yalnızca
-**senin göndermeyi seçtiğin** e-postayı ve e-posta adresini alırız. Bu bilgileri
-sadece sana cevap vermek için kullanırız; talep etmen hâlinde sileriz.
+Uygulama internet iznini kur güncellemeleri, bildirim ve zamanlama izinlerini yerel uyarılar, biyometrik iznini isteğe bağlı uygulama kilidi için kullanır. Kullanılabilir izinler işletim sistemi ve sürümüne göre değişebilir.
 
-## 7. İzinler
+## 6. İsteğe bağlı geri bildirim
 
-| İzin | Neden |
-|---|---|
-| İnternet | Döviz kurlarını güncellemek |
-| Bildirim gönderme | Bütçe uyarıları ve hatırlatmalar |
-| Biyometrik / parmak izi | Uygulama kilidini parmak izi veya yüzle açmak (isteğe bağlı) |
-| Açılışta çalışma | Telefon yeniden başlatıldığında planlı bildirimleri yeniden kurmak |
-| Titreşim | Dokunma geri bildirimi |
-| Uyanık tutma | Planlı bildirimlerin zamanında gösterilmesi |
+Geri bildirim ekranı e-posta uygulamanda bir taslak açar; e-postayı otomatik göndermez. Göndermeyi seçersen geliştirici gönderici e-posta adresini, mesajını, geri bildirim türünü, değerlendirme puanını, uygulama sürümünü ve platform bilgisini alır. Mesaja eklediğin kişisel veya finansal bilgiler de e-postanın parçasıdır; gereksiz hassas bilgi eklememelisin.
 
-## 8. Verilerini silme ve haklarınız
+Bu bilgiler talebini değerlendirmek, sorunları incelemek ve yanıtlamak için kullanılır. Bu işleme, temel hak ve özgürlüklerine zarar vermemek kaydıyla geliştiricinin destek sunmaya ilişkin meşru menfaatine (KVKK madde 5/2-f) dayanır. Uygulanabilir bir yasal yükümlülük varsa ilgili kayıtlar bu yükümlülüğün yerine getirilmesi için de işlenebilir (madde 5/2-ç).
 
-Verilerin yalnızca telefonunda olduğu için onlar üzerinde tam kontrol sendedir.
-KVKK ve GDPR kapsamındaki erişim ve silme haklarını doğrudan uygulamadan
-kullanabilirsin:
+E-postalar gönderici ve alıcı e-posta hizmetlerinde de işlenir; kullanılan altyapıya göre yurt dışında saklanabilir. Bu hizmetlerin kendi gizlilik koşulları geçerlidir. Yazışmalar talebin takibi ve yanıtlanması için gerekli süreyle; uygulanabilir yasal saklama yükümlülüğü varsa onun gerektirdiği süreyle sınırlı tutulur. Silme ve diğer veri talepleri için geliştiriciyle iletişime geçebilirsin.
 
-- **Erişim / taşıma:** Ayarlar → Kişisel Veri & Gizlilik → **Verilerimi İndir**
-- **Silme:** Ayarlar → Kişisel Veri & Gizlilik → **Verilerimi Sil**, ya da
-  uygulamayı telefondan kaldır.
+## 7. Silme, geri yükleme ve haklar
 
-⚠️ Silinen veriler **geri getirilemez**. Sunucumuz olmadığı için bizde de bir
-kopyası yoktur.
+Yerel kayıtlar sen silene kadar cihazında tutulur. **Verilerimi İndir** uygulamadaki kayıtların şifresiz JSON kopyasını dışa aktarır. **Verilerimi Sil** veya **Uygulamayı Sıfırla** uygulama içindeki kayıtları ve ayarları siler.
 
-## 9. Çocuklar
+Bu işlemler daha önce dışa aktardığın yedekleri, paylaştığın dosyaları, e-postaları veya başka hizmetlerdeki kopyaları silmez. Bunları ilgili konum veya hizmetten ayrıca silmelisin. Uygulamayı kaldırmak da harici kopyaların silinmesini sağlamaz.
 
-Uygulama çocuklara yönelik değildir ve bilerek çocuklardan veri toplamaz.
+Kullanılabilir bir yedeğin yoksa silinen veya kaybolan finansal kayıtlarını geliştirici geri getiremez. Bir yedekten geri yükleme mümkündür; şifreli yedeğin parolası gerekir.
 
-## 10. Değişiklikler
+Geliştiricinin geri bildirim kapsamında işlediği kişisel veriler için, uygulanabildiği ölçüde KVKK madde 11 uyarınca işleme hakkında bilgi, işleme amacı ve alıcılar, düzeltme, silme veya yok etme, ilgili işlemlerin alıcılara bildirilmesi, otomatik analiz sonucuna itiraz ve hukuka aykırı işlemden doğan zararların giderilmesi taleplerini **atkansenturk@gmail.com** adresine iletebilirsin. Uygulamadaki dışa aktarma ve silme araçları tüm hukuki hakların yerine geçmez.
 
-Bu politika değişirse güncel hâli bu sayfada yayınlanır ve üstteki yürürlük
-tarihi güncellenir.
+## 8. Kullanım ve değişiklikler
 
-## 11. İletişim
+Uygulama finansal veya yatırım tavsiyesi vermez. Önemli kararlar öncesinde hesaplamaları ve döviz kurlarını doğrula; düzenli yedek al. Çocuklara yönelik bir hizmet değildir.
 
-Sorularınız için: **atkansenturk@gmail.com**
+Bu metin, yürürlükteki mevzuattan doğan haklarını veya geliştiricinin zorunlu yükümlülüklerini sınırlamaz. Gizlilik politikasının içeriği değiştiğinde bu sayfa ve uygulamadaki güncelleme tarihi yenilenir.
 
 ---
 
 # English
 
-**Effective date:** September 11, 2026
-**Developer:** Atakan Şentürk
+**Last updated / effective date:** October 1, 2026  
+**Developer and controller for feedback data:** Atakan Şentürk  
 **Contact:** atkansenturk@gmail.com
 
-## Summary
+## 1. Scope and local data
 
-Budget Watchdog is a personal budgeting app that stores your data **only on your
-phone**. No account is required and there is no server. We do not collect, see,
-sell or share your personal or financial information.
+Budget Watchdog is a personal budget and spending tracker. No app account is required. Accounts, balances, income/expense/transfer records, notes, budgets, saving goals, categories and app settings are stored on your device. The developer does not automatically collect these financial records, send them to a developer server or access them remotely.
 
-## 1. Data stored on your phone
+Core financial features work without internet access. Exchange rate connections, file sharing you choose and feedback emails you send are the exceptions described below.
 
-Everything you enter is kept only in a database on your phone:
+## 2. Security and local technical logs
 
-- Accounts, balances and currencies
-- Income, expense and transfer transactions, notes
-- Budgets, saving goals and categories
-- App settings (theme, language, notification preferences)
+The Android app's financial database is encrypted with SQLCipher. Its key is protected by encrypted storage backed by Android Keystore. This does not mean every device provides hardware-backed protection or all app settings use the same database encryption.
 
-This database is **encrypted**. The encryption key is kept in the phone's secure
-hardware (Android Keystore) and never leaves the device.
+The browser version's local database does not use the same SQLCipher encryption protection. Clearing browser storage may delete local records.
 
-**PIN lock:** Your PIN itself is not stored; only a one-way hash is kept on the
-phone.
+A cryptographic hash of the PIN is stored locally rather than the PIN itself. The operating system performs biometric authentication; the app does not access fingerprint or face templates.
 
-**Biometric lock:** Fingerprint and face recognition are handled entirely by
-Android. The app never accesses your biometric data; it only receives a
-"verified / not verified" result.
+Technical error and diagnostic logs may be stored on the device. They are not automatically sent to the developer or a crash-reporting service. The app contains no advertising, usage analytics or tracking code.
 
-## 2. Data we do not collect
+## 3. Internet and exchange rate providers
 
-The app does **not** collect: name, email, phone number, location, contacts,
-photos, advertising ID, usage analytics or crash reports. There are no ads and no
-tracking code.
+Rates are retrieved from these services:
 
-## 3. Internet use
-
-The app uses the internet **only to refresh exchange rates**, from these free
-services:
-
-| Service | Address |
+| Service | Request address |
 |---|---|
-| ExchangeRate-API (Open Access) | `open.er-api.com` |
-| Frankfurter | `api.frankfurter.app` |
+| ExchangeRate-API (Open Access) | `https://open.er-api.com/v6/latest` |
+| Frankfurter | `https://api.frankfurter.app/latest` |
 
-The only information sent is your selected **base currency code** (e.g. `USD`).
-Your accounts, transactions or any other financial data are **never sent**. As
-with any internet request, these services can see your phone's IP address; this
-is governed by their own privacy policies.
+Updates may run manually or automatically on launch and when the app returns to the foreground. Requests use a base currency code, such as `USD`. Account names, balances, transactions, budgets and notes are not included.
 
-Without a connection, the app keeps working with the last known rates.
+Providers may see your IP address and technical information needed for the connection. Their own privacy policies apply; processing may occur abroad depending on their infrastructure. The developer does not manage their log retention practices. Existing rates can be used offline; current rates may be unavailable for currencies not previously retrieved.
 
-## 4. Backups and export
+## 4. Backups, export and sharing
 
-- **Create Backup** (Settings → Backup): Creates a copy of your data as a file on
-  your phone. Backups are **encrypted with a password you choose** by default. We
-  never know this password; if you forget it, the backup cannot be opened.
-- **Download My Data** (Settings → Personal Data & Privacy): Exports your data as
-  an **unencrypted** JSON file. Keep this file somewhere safe.
+**Create Backup** produces a file encrypted with a password you choose by default. On Android the file is saved to device storage; in the browser it is downloaded. The developer does not know or reset your backup password.
 
-**You decide** where these files are saved or shared (Google Drive, email, etc.).
-Any service you share them with is governed by its own privacy policy.
+**Unencrypted backup** and **Download My Data** produce readable JSON and require additional confirmation. On Android an unencrypted file is shared from temporary private storage; do not rely on it as a permanent backup if you do not share it. In the browser the file is downloaded.
 
-Android's automatic Google backup is **intentionally disabled** for this app;
-your data is not copied to Google's servers.
+You choose whether to share with other apps, email or cloud storage services. Shared files contain your financial records; anyone who receives an unencrypted file can read it. Files may leave your device and the receiving service's privacy terms apply. The app cannot manage or delete these external copies.
 
-## 5. Notifications
+Android automatic app backup is disabled for this app. This setting does not delete files you share separately or copies other services on your device may create.
 
-Notifications such as budget alerts are created **locally on your phone** and
-are never sent through a server.
+## 5. Notifications and permissions
 
-## 6. Feedback
+Budget alerts and reminders are created locally on your device and are not sent from a developer server. Their contents may appear on the lock screen depending on device notification settings.
 
-The feedback screen opens your phone's email app. We only receive the email and
-email address **you choose to send**. We use it solely to reply to you and will
-delete it on request.
+The app uses internet permission for exchange rate updates, notification and scheduling permissions for local alerts, and biometric permission for optional app locking. Available permissions may vary by operating system and version.
 
-## 7. Permissions
+## 6. Optional feedback
 
-| Permission | Why |
-|---|---|
-| Internet | Refresh exchange rates |
-| Post notifications | Budget alerts and reminders |
-| Biometric / fingerprint | Unlock the app with fingerprint or face (optional) |
-| Run at startup | Re-schedule planned notifications after the phone restarts |
-| Vibrate | Haptic feedback |
-| Wake lock | Deliver scheduled notifications on time |
+The feedback screen opens a draft in your email app and does not send it automatically. If you send it, the developer receives your sender email address, message, feedback type, rating, app version and platform information. Personal or financial details you add become part of that email; avoid unnecessary sensitive information.
 
-## 8. Deleting your data and your rights
+This information is used to assess requests, investigate issues and respond. Processing relies on the developer's legitimate interest in providing support, provided your fundamental rights and freedoms are not adversely affected (Turkish Personal Data Protection Law, article 5/2-f). Where an applicable legal obligation exists, relevant records may also be processed to comply with it (article 5/2-ç).
 
-Because your data lives only on your phone, you are in full control. You can
-exercise your access and deletion rights (GDPR and similar laws) directly in the
-app:
+Emails are also processed by the sender's and recipient's email services and may be stored abroad depending on their infrastructure. Their privacy terms apply. Correspondence is retained only as needed to follow up and respond, or for a period required by applicable legal retention obligations. Contact the developer for deletion and other data requests.
 
-- **Access / portability:** Settings → Personal Data & Privacy → **Download My Data**
-- **Deletion:** Settings → Personal Data & Privacy → **Delete My Data**, or
-  uninstall the app.
+## 7. Deletion, recovery and your rights
 
-⚠️ Deleted data **cannot be recovered**. Since there is no server, we do not have
-a copy either.
+Local records remain on your device until you delete them. **Download My Data** exports an unencrypted JSON copy of app records. **Delete My Data** or **Reset App** deletes records and settings within the app.
 
-## 9. Children
+These actions do not delete previously exported backups, shared files, emails or copies held by other services. Delete those separately at the relevant location or service. Uninstalling the app does not remove external copies either.
 
-The app is not directed at children and does not knowingly collect data from
-children.
+Without a usable backup, the developer cannot recover deleted or lost financial records. Restoration from a backup is possible; encrypted backups require their password.
 
-## 10. Changes
+For personal data processed by the developer through feedback, you may contact **atkansenturk@gmail.com** to exercise applicable rights, including information about processing, purposes and recipients, correction, deletion or destruction, notification of relevant actions to recipients, objection to automated analysis results and remedies for harm caused by unlawful processing under article 11 of the Turkish Personal Data Protection Law. The app's export and deletion tools do not replace all legal rights.
 
-If this policy changes, the updated version will be published on this page and
-the effective date above will be updated.
+## 8. Use and changes
 
-## 11. Contact
+The app does not provide financial or investment advice. Verify calculations and exchange rates before important decisions and make regular backups. The service is not directed at children.
 
-Questions: **atkansenturk@gmail.com**
+This policy does not limit statutory rights or the developer's mandatory obligations. When its content changes, this page and the policy update date shown in the app will be updated.

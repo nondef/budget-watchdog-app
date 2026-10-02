@@ -10,8 +10,7 @@ import {
   IonBadge,
   IonSpinner,
   IonAccordion,
-  IonAccordionGroup,
-  toastController
+  IonAccordionGroup
 } from '@ionic/vue'
 import {
   shieldCheckmarkOutline,
@@ -21,12 +20,19 @@ import {
   documentTextOutline
 } from 'ionicons/icons'
 import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
+import { privacyPolicy } from '@/shared/config/privacy-policy'
 import { useBackup } from '@/composables/features/useBackup'
 import { useBackupReminder } from '@/composables/features/useBackupReminder'
 import { useNotifier } from '@/composables/features/useNotifier'
+import { useToast } from '@/composables/ui/useToast'
 
 import SubPageHeader from '@/components/SubPageHeader.vue';
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const policyUpdatedDate = computed(() => new Intl.DateTimeFormat(locale.value, {
+  year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+}).format(new Date(`${privacyPolicy.updatedAt}T00:00:00Z`)))
+const policySections = ['noCollect', 'security', 'noServer', 'noThirdParty', 'noAnalytics', 'feedback', 'rights'] as const
 const {
   isExporting,
   isWiping,
@@ -42,13 +48,7 @@ const {
 // tam bir kopya indirmiş olmasına rağmen sürüyordu.
 const { markExported } = useBackupReminder()
 const notifier = useNotifier()
-
-async function showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-  const toast = await toastController.create({
-    message, duration: 2500, color, position: 'top',
-  })
-  await toast.present()
-}
+const toast = useToast()
 
 /**
  * "Verilerimi indir": tüm veriyi ŞİFRESİZ JSON olarak dışa aktarır.
@@ -83,10 +83,9 @@ async function handleDownload() {
     // zaten indi) ve yalnızca bilgi mesajı gösterilir.
     await presentExportResult(location, {
       webMessage: t('privacy.downloaded'),
-      webColor: 'warning',
     })
   } catch (err) {
-    await showToast(err instanceof Error ? err.message : t('privacy.downloadFailed'), 'danger')
+    await toast.show(err instanceof Error ? err.message : t('privacy.downloadFailed'))
   }
 }
 
@@ -129,7 +128,7 @@ async function handleDelete() {
                 :aria-busy="isExporting"
                 @click="handleDownload"
             >
-              <div slot="start" class="privacy-icon privacy-icon--download">
+              <div slot="start" class="privacy-icon">
                 <ion-icon :icon="cloudDownloadOutline" aria-hidden="true" />
               </div>
               <ion-label class="ion-text-wrap">
@@ -141,7 +140,7 @@ async function handleDelete() {
               </transition>
             </ion-item>
             <ion-item
-                class="privacy-item privacy-item--danger"
+                class="privacy-item"
                 lines="none"
                 button
                 :detail="!isWiping"
@@ -149,7 +148,7 @@ async function handleDelete() {
                 :aria-busy="isWiping"
                 @click="handleDelete"
             >
-              <div slot="start" class="privacy-icon privacy-icon--danger">
+              <div slot="start" class="privacy-icon">
                 <ion-icon :icon="trashOutline" aria-hidden="true" />
               </div>
               <ion-label class="ion-text-wrap">
@@ -168,13 +167,13 @@ async function handleDelete() {
           <ion-accordion-group class="app-card privacy-card overflow-hidden">
             <ion-accordion value="privacy" class="privacy-accordion">
               <ion-item slot="header" class="privacy-item" lines="none">
-                <div slot="start" class="privacy-icon privacy-icon--policy">
+                <div slot="start" class="privacy-icon">
                   <ion-icon :icon="lockClosedOutline" aria-hidden="true" />
                 </div>
                 <ion-label class="ion-text-wrap"><h3>{{ $t('privacy.privacyPolicy') }}</h3></ion-label>
               </ion-item>
               <div slot="content" class="legal-content">
-                <p v-for="key in ['noCollect', 'noServer', 'noThirdParty', 'rights']" :key="key">
+                <p v-for="key in policySections" :key="key">
                   <strong>{{ $t(`privacy.policy.${key}Title`) }}</strong>
                   {{ $t(`privacy.policy.${key}Body`) }}
                 </p>
@@ -182,12 +181,16 @@ async function handleDelete() {
                   <li>{{ $t('privacy.policy.rightsDownload') }}</li>
                   <li>{{ $t('privacy.policy.rightsDelete') }}</li>
                 </ul>
+                <p>
+                  <strong>{{ $t('privacy.policy.contactTitle') }}</strong>
+                  {{ $t('privacy.policy.contactBody', { developer: privacyPolicy.developer, email: privacyPolicy.contactEmail }) }}
+                </p>
                 <ion-note class="legal-disclaimer">{{ $t('privacy.disclaimer') }}</ion-note>
               </div>
             </ion-accordion>
             <ion-accordion value="terms" class="privacy-accordion">
               <ion-item slot="header" class="privacy-item" lines="none">
-                <div slot="start" class="privacy-icon privacy-icon--terms">
+                <div slot="start" class="privacy-icon">
                   <ion-icon :icon="documentTextOutline" aria-hidden="true" />
                 </div>
                 <ion-label class="ion-text-wrap"><h3>{{ $t('privacy.terms') }}</h3></ion-label>
@@ -204,7 +207,7 @@ async function handleDelete() {
         </section>
 
         <ion-note class="block text-center text-[11px] text-content-muted">
-          {{ $t('privacy.lastUpdated') }}
+          {{ $t('privacy.lastUpdated', { date: policyUpdatedDate }) }}
         </ion-note>
       </main>
     </ion-content>
@@ -243,8 +246,9 @@ async function handleDelete() {
   padding: 0;
 }
 
-.privacy-item {
-  --background: transparent;
+ion-item.privacy-item {
+  --background: var(--c-surface) !important;
+  --color: var(--c-content);
   --background-activated: var(--c-surface-sunken);
   --background-hover: var(--c-surface-sunken);
   --background-focused: var(--c-surface-sunken);
@@ -252,7 +256,8 @@ async function handleDelete() {
   --min-height: 64px;
   --padding-start: 14px;
   --inner-padding-end: 12px;
-  --detail-icon-color: var(--c-content-muted);
+  --detail-icon-color: var(--c-content);
+  --detail-icon-opacity: 1;
 }
 
 .privacy-item h3 {
@@ -268,14 +273,10 @@ async function handleDelete() {
   line-height: 1.5;
 }
 
-.privacy-item--danger {
-  --background-activated: color-mix(in srgb, var(--c-error) 10%, var(--c-surface));
-  --detail-icon-color: var(--c-error);
-}
-
-.privacy-item--danger h3,
-.privacy-item--danger ion-spinner {
-  color: var(--c-error);
+.privacy-item::part(detail-icon),
+.privacy-item ion-spinner {
+  color: var(--c-content);
+  opacity: 1;
 }
 
 .privacy-icon {
@@ -286,42 +287,14 @@ async function handleDelete() {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--privacy-icon-accent) 23%, var(--c-line));
+  border: 1px solid var(--c-line);
   border-radius: 13px;
-  background: color-mix(in srgb, var(--privacy-icon-accent) 11%, var(--c-surface-sunken));
-  color: var(--privacy-icon-accent);
+  background: var(--c-surface-sunken);
+  color: var(--c-primary);
 }
 
 .privacy-icon ion-icon {
   font-size: 18px;
-}
-
-.privacy-icon--download {
-  --privacy-icon-accent: #4338ca;
-}
-
-.privacy-icon--danger {
-  --privacy-icon-accent: var(--c-error);
-}
-
-.privacy-icon--policy {
-  --privacy-icon-accent: #0f766e;
-}
-
-.privacy-icon--terms {
-  --privacy-icon-accent: #0369a1;
-}
-
-:global(.ion-palette-dark .privacy-icon--download) {
-  --privacy-icon-accent: #a5b4fc;
-}
-
-:global(.ion-palette-dark .privacy-icon--policy) {
-  --privacy-icon-accent: #5eead4;
-}
-
-:global(.ion-palette-dark .privacy-icon--terms) {
-  --privacy-icon-accent: #7dd3fc;
 }
 
 .privacy-accordion {
@@ -333,7 +306,8 @@ async function handleDelete() {
 }
 
 .privacy-accordion :deep(.ion-accordion-toggle-icon) {
-  color: var(--c-content-muted);
+  color: var(--c-content);
+  opacity: 1;
   font-size: 18px;
 }
 
