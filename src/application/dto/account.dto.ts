@@ -34,4 +34,6 @@ export interface UpdateAccountInput {
     icon?: Partial<IIcon>
     notes?: string
     isActive?: boolean
+    /** Yalnızca hesapta hiç hareket yokken kabul edilir (bkz. UpdateAccountUseCase). */
+    balance?: number
 }

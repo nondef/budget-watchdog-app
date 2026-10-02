@@ -1,12 +1,20 @@
 import { Icon } from '@/domain/value-objects/icon';
+import { Money } from '@/domain/value-objects/money';
+import { Account } from '@/domain/entities/account';
 import { IAccountRepository } from '@/domain/interfaces/account-repository.interface';
-import { EntityNotFoundException } from '@/domain/exceptions/domain.exception';
+import {
+    EntityNotFoundException,
+    InvalidValueException,
+    NegativeAmountException
+} from '@/domain/exceptions/domain.exception';
 import { AccountDTO, UpdateAccountInput } from '@/application/dto/account.dto';
 import { AccountMapper } from "@/application/mappers";
 import {
     BusinessRuleViolationException,
     IBudgetRepository,
+    ISavingGoalContributionRepository,
     ISavingGoalRepository,
+    ITransactionRepository,
     IUnitOfWork
 } from '@/domain';
 
@@ -15,6 +23,8 @@ export class UpdateAccountUseCase {
         private accountRepository: IAccountRepository,
         private budgetRepository: IBudgetRepository,
         private savingGoalRepository: ISavingGoalRepository,
+        private transactionRepository: ITransactionRepository,
+        private contributionRepository: ISavingGoalContributionRepository,
         private unitOfWork: IUnitOfWork
     ) {}
 
@@ -60,6 +70,28 @@ export class UpdateAccountUseCase {
             }
 
             if (input.name !== undefined) account.rename(input.name);
+
+            // Bakiye tipten önce uygulanır: borçlu bir kredi hesabı aynı
+            // kayıtta hem artıya çekilip hem tipi değiştirilebilsin diye.
+            // İşaret kuralı kaydın SON tipine göre denetlenir.
+            if (input.balance !== undefined && input.balance !== account.balance.amount) {
+                await this.assertBalanceEditable(account.id);
+
+                if (!Number.isFinite(input.balance)) {
+                    throw new InvalidValueException('balance', String(input.balance));
+                }
+
+                if (input.balance < 0 && !Account.typeAllowsNegativeBalance(input.type ?? account.type)) {
+                    throw new NegativeAmountException('Balance');
+                }
+
+                account.setBalance(Money.create(
+                    input.balance,
+                    account.balance.currencyId,
+                    account.balance.minorUnit
+                ));
+            }
+
             if (input.type !== undefined) account.changeType(input.type);
             if (input.notes !== undefined) account.updateNotes(input.notes);
 
@@ -77,5 +109,25 @@ export class UpdateAccountUseCase {
             await this.accountRepository.save(account);
             return AccountMapper.toDTO(account)
         })
+    }
+
+    /**
+     * Bakiye yalnızca hesapta hiç hareket yokken doğrudan düzeltilebilir
+     * (ör. onboarding'de başlangıç bakiyesi boş geçildiyse). İlk işlemden ya
+     * da birikim hedefi hareketinden sonra bakiye o kayıtların toplamıdır;
+     * elle değiştirmek defterle bakiyeyi birbirinden koparırdı.
+     */
+    private async assertBalanceEditable(accountId: string): Promise<void> {
+        const [transactions, contributions] = await Promise.all([
+            this.transactionRepository.findByAccount(accountId),
+            this.contributionRepository.findByAccount(accountId, 1)
+        ]);
+
+        if (transactions.length || contributions.length) {
+            throw new BusinessRuleViolationException(
+                'The balance of an account with recorded movements cannot be edited directly',
+                { accountId }
+            );
+        }
     }
 }

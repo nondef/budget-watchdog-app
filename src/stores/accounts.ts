@@ -65,6 +65,8 @@ export const useAccountsStore = defineStore('accounts', () => {
             repository,
             budgetRepository,
             savingGoalRepository,
+            transactionRepository,
+            contributionRepository,
             unitOfWork
         )
         const result = await useCase.execute(input)

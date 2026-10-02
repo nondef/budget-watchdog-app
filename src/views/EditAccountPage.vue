@@ -14,7 +14,6 @@ import {
   IonSelectOption, IonFooter, IonButton,
 } from '@ionic/vue';
 import {
-  lockClosedOutline,
   cashOutline,
   walletOutline,
   cardOutline,
@@ -31,8 +30,9 @@ import { updateAccountSchema } from "@/forms";
 import CurrencyInput from "@/components/CurrencyInput.vue";
 import PickerField from "@/components/PickerField.vue";
 import { getIconByName } from "@/shared/utils";
-import { AccountType, OperationNotAllowedException } from "@/domain";
+import { AccountType, BusinessRuleViolationException, OperationNotAllowedException } from "@/domain";
 import { useToast } from "@/composables/ui/useToast";
+import { useErrorHandler } from "@/composables/ui/useErrorHandler";
 import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCurrencyDisplay } from "@/composables/money/useCurrencyDisplay";
 import { useI18n } from "vue-i18n";
@@ -46,7 +46,14 @@ const accountsStore = useAccountsStore();
 const currencyStore = useCurrenciesStore();
 
 const accountId = route.params.id as string;
-const schema = computed(() => updateAccountSchema());
+
+/**
+ * Hesapta hiç hareket yokken bakiye doğrudan düzeltilebilir (ör. onboarding'de
+ * başlangıç bakiyesi boş geçildiyse). İlk hareketten sonra alan kilitlenir;
+ * aynı kuralı `UpdateAccountUseCase` de zorlar.
+ */
+const balanceEditable = ref(false);
+const schema = computed(() => updateAccountSchema(balanceEditable.value));
 
 const { handleSubmit, errors, defineField, resetForm, isSubmitting } = useForm({
   validationSchema: schema,
@@ -70,6 +77,7 @@ const [selectedIconName] = defineField('selectedIconName');
 const [selectedColor] = defineField('selectedColor');
 
 const toast = useToast();
+const { handle } = useErrorHandler();
 const showIconPicker = ref(false);
 
 const accountTypes: { value: AccountType, icon: string }[] = [
@@ -84,13 +92,35 @@ const selectedCurrency = computed(() =>
     currencyStore.currencies.find(c => c.id === currency.value)
 );
 
+/**
+ * Düzenlenebilir kredi hesabında alan NewAccountPage'deki gibi "mevcut borç"
+ * olarak girilir: formda mutlak değer tutulur, işaret tipten türetilir.
+ * Kilitliyken form bakiyeyi olduğu gibi (işaretiyle) taşır.
+ */
+const isDebtEntry = computed(() => balanceEditable.value && type.value === 'credit');
+
+const signedBalance = computed(() => {
+  const amount = Number(balance.value || 0)
+  return isDebtEntry.value && amount !== 0 ? -amount : amount
+});
+
+const balanceLabel = computed(() =>
+    isDebtEntry.value ? t('accounts.currentDebt') : t('accounts.currentBalance')
+);
+
+const balanceHelper = computed(() => {
+  if (!balanceEditable.value) return t('accounts.balanceLocked')
+  return isDebtEntry.value ? t('accounts.currentDebtHelper') : t('accounts.balanceEditableHelper')
+});
+
 const previewBalance = computed(() => {
   const symbol = selectedCurrency.value?.symbol || '₺'
-  const amount = Number(balance.value || 0).toLocaleString('tr-TR', {
+  const value = signedBalance.value
+  const amount = Math.abs(value).toLocaleString('tr-TR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
-  return `${symbol}${amount}`
+  return `${value < 0 ? '-' : ''}${symbol}${amount}`
 });
 
 const previewType = computed(() =>
@@ -108,6 +138,8 @@ const submitAccount = handleSubmit(async (values) => {
       },
       notes: values.details,
       type: values.type as AccountType,
+      // Kilitliyken gönderilmez; use-case bakiyeye hiç dokunmaz.
+      ...(balanceEditable.value && { balance: signedBalance.value }),
     });
 
     goBackOrFallback('/settings/accounts')
@@ -115,9 +147,13 @@ const submitAccount = handleSubmit(async (values) => {
     // Borçlu bir kredi hesabının tipi değiştirilemez; generic "güncellenemedi"
     // mesajı kullanıcıya nedenini söylemiyordu.
     if (e instanceof OperationNotAllowedException) {
-      toast.error(t('accounts.debtTypeChangeBlocked'));
+      toast.show(t('accounts.debtTypeChangeBlocked'));
+    } else if (e instanceof BusinessRuleViolationException) {
+      // Sayfa açıkken hesaba hareket eklendi: bakiye artık düzenlenemez.
+      balanceEditable.value = false;
+      toast.show(t('accounts.balanceLocked'));
     } else {
-      toast.error(t('accounts.updateError'));
+      handle(e, { context: 'EditAccount', fallback: t('accounts.updateError') });
     }
   }
 });
@@ -137,10 +173,21 @@ onMounted(async () => {
     const account = await accountsStore.getAccountById(accountId);
 
     if (!account) {
-      toast.error(t('accounts.notFound'));
+      toast.show(t('accounts.notFound'));
       ionRouter.navigate('/settings/accounts', 'back', 'replace')
       return;
     }
+
+    // Hareket sayısı okunamazsa alan kilitli kalır; düzenlemenin geri kalanı
+    // bundan etkilenmemeli.
+    let editable = false;
+    try {
+      const detail = await accountsStore.getAccountDetail(accountId, 1);
+      editable = detail.totals.movementCount === 0;
+    } catch {
+      editable = false;
+    }
+    balanceEditable.value = editable;
 
     resetForm({
       values: {
@@ -149,12 +196,12 @@ onMounted(async () => {
         type: account.type,
         selectedIconName: account.icon.name,
         selectedColor: account.icon.color,
-        balance: account.balance.amount,
+        balance: editable ? Math.abs(account.balance.amount) : account.balance.amount,
         details: account.notes ?? '',
       }
     });
   } catch (e) {
-    toast.error(t('accounts.loadError'));
+    handle(e, { context: 'EditAccount', fallback: t('accounts.loadError') });
   }
 });
 </script>
@@ -233,30 +280,31 @@ onMounted(async () => {
         </ion-select>
 
         <!-- Para birimi (kilitli) — MD3 picker alanı, readonly -->
-        <picker-field :label="$t('accounts.currency')" readonly>
+        <picker-field class="account-locked-field" :label="$t('accounts.currency')" readonly>
           <template #start>
             <span
                 slot="start"
-                class="size-9 rounded-xl flex items-center justify-center shrink-0 bg-surface-sunken"
+                class="account-locked-symbol size-9 rounded-xl flex items-center justify-center shrink-0"
             >
-              <span class="text-[14px] font-bold text-content-muted">{{ selectedCurrency?.symbol || '—' }}</span>
+              <span class="text-[14px] font-bold text-content-faint">{{ selectedCurrency?.symbol || '—' }}</span>
             </span>
           </template>
           {{ selectedCurrency ? `${selectedCurrency.code} — ${currencyName(selectedCurrency)}` : '—' }}
-          <template #end>
-            <ion-icon slot="end" :icon="lockClosedOutline" class="size-[14px] text-content-faint shrink-0" />
-          </template>
         </picker-field>
 
-        <!-- Mevcut bakiye (kilitli) — MD3 filled currency alanı -->
-        <CurrencyInput
-            disabled
-            v-model="balance"
-            :label="$t('accounts.currentBalance')"
-            :currency-code="selectedCurrency?.code || 'TRY'"
-            :symbol="selectedCurrency?.symbol"
-            :minor-unit="selectedCurrency?.minorUnit"
-        />
+        <!-- Mevcut bakiye — hesapta hareket varsa kilitli -->
+        <div :class="{ 'account-locked-field': !balanceEditable }">
+          <CurrencyInput
+              :disabled="!balanceEditable"
+              v-model="balance"
+              :label="balanceLabel"
+              :currency-code="selectedCurrency?.code || 'TRY'"
+              :symbol="selectedCurrency?.symbol"
+              :minor-unit="selectedCurrency?.minorUnit"
+              :helper-text="balanceHelper"
+              :error-text="errors.balance"
+          />
+        </div>
 
         <!-- Not — MD3 filled textarea -->
         <ion-textarea
@@ -295,3 +343,34 @@ onMounted(async () => {
     />
   </ion-page>
 </template>
+
+<style scoped>
+/* Kilitli değerler iki temada da okunur; pasiflik opaklık yerine yüzeyle belirtilir. */
+.account-locked-field :deep(ion-item.md3-picker),
+.account-locked-field :deep(ion-input.input-fill-solid) {
+  --background: var(--c-surface-sunken) !important;
+  --color: var(--c-content-faint) !important;
+  --background-hover: var(--c-surface-sunken) !important;
+  --background-focused: var(--c-surface-sunken) !important;
+  --background-activated: var(--c-surface-sunken) !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.account-locked-field :deep(ion-item.md3-picker)::part(native),
+.account-locked-field :deep(ion-input.input-fill-solid .input-wrapper) {
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+.account-locked-field :deep(.md3-picker__label),
+.account-locked-field :deep(.md3-picker__value),
+.account-locked-field :deep(.label-text-wrapper),
+.account-locked-field :deep(.currency-suffix) {
+  color: var(--c-content-faint);
+}
+
+.account-locked-symbol {
+  background: var(--c-surface);
+}
+
+</style>

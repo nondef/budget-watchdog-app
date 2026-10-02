@@ -227,6 +227,8 @@ describe('Account use-cases', () => {
             } as any,
             { async findByAccount() { return []; } } as any,
             { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
             immediateUow
         );
 
@@ -242,6 +244,8 @@ describe('Account use-cases', () => {
         const entity = account(); // 100 bakiye, aktif
         const useCase = new UpdateAccountUseCase(
             { async findById() { return entity; }, async save() {} } as any,
+            { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
             { async findByAccount() { return []; } } as any,
             { async findByAccount() { return []; } } as any,
             immediateUow
@@ -267,12 +271,73 @@ describe('Account use-cases', () => {
             { async findById() { return entity; }, async save() { saved = true; } } as any,
             { async findByAccount() { return []; } } as any,
             { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
             immediateUow
         );
 
         const result = await useCase.execute({ id: entity.id, isActive: false });
         expect(result.isActive).toBe(false);
         expect(saved).toBe(true);
+    });
+
+    function updateUseCase(entity: Account, movements: { transactions?: unknown[]; contributions?: unknown[] } = {}) {
+        return new UpdateAccountUseCase(
+            { async findById() { return entity; }, async save() {} } as any,
+            { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return []; } } as any,
+            { async findByAccount() { return movements.transactions ?? []; } } as any,
+            { async findByAccount() { return movements.contributions ?? []; } } as any,
+            immediateUow
+        );
+    }
+
+    it('UpdateAccount hareketi olmayan hesabın bakiyesini düzeltir', async () => {
+        const entity = account(); // 100 bakiye
+        const result = await updateUseCase(entity).execute({ id: entity.id, balance: 250.5 });
+
+        expect(result.balance.amount).toBe(250.5);
+    });
+
+    it('UpdateAccount işlemi olan hesabın bakiyesini değiştirmez', async () => {
+        const entity = account();
+
+        await expect(updateUseCase(entity, { transactions: [{}] }).execute({ id: entity.id, balance: 250 }))
+            .rejects.toThrowError(expect.objectContaining({
+                code: DomainErrorCode.BUSINESS_RULE_VIOLATION,
+            }));
+        expect(entity.balance.amount).toBe(100);
+    });
+
+    it('UpdateAccount birikim hareketi olan hesabın bakiyesini değiştirmez', async () => {
+        const entity = account();
+
+        await expect(updateUseCase(entity, { contributions: [{}] }).execute({ id: entity.id, balance: 250 }))
+            .rejects.toThrowError(expect.objectContaining({
+                code: DomainErrorCode.BUSINESS_RULE_VIOLATION,
+            }));
+        expect(entity.balance.amount).toBe(100);
+    });
+
+    it('UpdateAccount aynı bakiye gönderilince hareketli hesapta da diğer alanları kaydeder', async () => {
+        const entity = account();
+        const result = await updateUseCase(entity, { transactions: [{}] })
+            .execute({ id: entity.id, name: 'Yeni', balance: 100 });
+
+        expect(result.name).toBe('Yeni');
+    });
+
+    it('UpdateAccount eksi bakiyeyi yalnızca kredi tipinde kabul eder', async () => {
+        const entity = account();
+
+        await expect(updateUseCase(entity).execute({ id: entity.id, balance: -50 }))
+            .rejects.toThrowError(expect.objectContaining({
+                code: DomainErrorCode.NEGATIVE_AMOUNT,
+            }));
+
+        const result = await updateUseCase(entity).execute({ id: entity.id, type: 'credit', balance: -50 });
+        expect(result.type).toBe('credit');
+        expect(result.balance.amount).toBe(-50);
     });
 
     it('GetAccount entity bulunmadığında null döner', async () => {

@@ -35,11 +35,23 @@ export const createAccountSchema = (validateCurrencies: string[]) => {
     })
 }
 
-export const updateAccountSchema = () => {
+/**
+ * Para birimi oluşturulduktan sonra düzenlenmez (kasıtlı). Bakiye yalnızca
+ * hesapta hiç hareket yokken düzenlenir; kilitliyken şemaya girmez, çünkü
+ * formdaki değer o zaman eksi (kredi borcu) olabilir.
+ */
+export const updateAccountSchema = (balanceEditable = false) => {
     return yup.object({
         cardName: cardNameField(),
         type: typeField(),
-        // currency & balance: hesap oluşturulduktan sonra düzenlenmiyor (kasıtlı)
+        ...(balanceEditable && {
+            balance: yup
+                .number()
+                .transform(emptyToUndefined)
+                .required()
+                .min(0)
+                .max(MAX_AMOUNT),
+        }),
         details: detailsField(),
     })
 }
