@@ -28,6 +28,7 @@ import TransferAccountFlow from "@/components/TransferAccountFlow.vue";
 import ErrorChip from "@/components/ErrorChip.vue";
 import PickerField from "@/components/PickerField.vue";
 import CategoryPickerModal from "@/components/CategoryPickerModal.vue";
+import { translateCategoryName } from "@/composables/features/useCategoryName";
 import CollapseTransition from "@/components/CollapseTransition.vue";
 import AnimatedHeight from "@/components/AnimatedHeight.vue";
 import { getIconByName } from "@/shared/utils";
@@ -277,7 +278,7 @@ const submitTransaction = handleSubmit(async (values) => {
     // konmadığı için değişiklik kaydedilmiş görünüp sessizce kayboluyordu.
     const input: UpdateTransactionInput = {
       id: transactionId,
-      title: values.title?.trim() || selectedCategory.value?.name || t('transactions.defaultUpdateTitle'),
+      title: values.title?.trim() || translateCategoryName(selectedCategory.value?.name) || t('transactions.defaultUpdateTitle'),
       amount: values.amount!,
       toAmount: isCrossCurrencyTransfer.value ? Number(values.targetAmount) : undefined,
       description: values.description?.trim() || undefined,
@@ -496,7 +497,7 @@ onMounted(async () => {
                 <ion-icon :icon="selectedCategory ? getIconByName(selectedCategory.icon.name) : pricetagOutline" class="size-5"/>
               </div>
             </template>
-            {{ selectedCategory?.name || 'Kategori seç' }}
+            {{ translateCategoryName(selectedCategory?.name) || $t('transactions.selectCategory') }}
           </picker-field>
         </collapse-transition>
 
