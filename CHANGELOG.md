@@ -5,6 +5,46 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-10-02
+
+### Added
+
+- The balance of an account with no activity can now be corrected from the
+  edit screen, for example when the starting balance was skipped during
+  setup. Once the account has transactions the field is locked, and the
+  screen explains why.
+- Transaction rows show the category under the title and the amount in your
+  base currency when the transaction uses a different one.
+
+### Changed
+
+- Messages now appear as Android-style snackbars at the bottom of the screen,
+  in the same style everywhere.
+- The privacy policy and its in-app summary were rewritten to describe
+  exactly what is stored, when the internet is used, how backups and
+  feedback work, and how to contact the developer.
+- Date and time pickers have compact Cancel and Confirm buttons, with the
+  confirm action highlighted.
+- Delete buttons use the same solid error colour on every screen.
+- The date range filter on Transactions uses separate start and end fields.
+
+### Fixed
+
+- "No transactions" was briefly shown on the Transactions screen before the
+  list had loaded.
+- Account and category fields on the new budget and new transaction screens
+  showed a "required" error as soon as the page opened.
+- The category name on the edit transaction screen was always shown in
+  Turkish.
+- The "Personal care" category showed no icon.
+- "Once" and "daily" budgets were labelled with the wrong budget type.
+- Unexpected errors on several screens were shown but not written to the
+  log.
+
+### Removed
+
+- The @capacitor/toast plugin.
+
 ## [1.2.0] — 2026-09-30
 
 ### Added
@@ -96,5 +136,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unreachable components, services and exception classes left over from the
   removed account flow, along with their locale entries.
 
+[1.3.0]: https://github.com/nondef/budget-watchdog-app/releases/tag/v1.3.0
 [1.2.0]: https://github.com/nondef/budget-watchdog-app/releases/tag/v1.2.0
 [1.1.0]: https://github.com/nondef/budget-watchdog-app/releases/tag/v1.1.0
