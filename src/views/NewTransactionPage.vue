@@ -75,6 +75,8 @@ const { errors, setFieldValue, values, handleSubmit, resetForm, defineField, isS
 
 const [title, titleAttr] = defineField('title')
 const [amount] = defineField('amount')
+// Register the picker field so silent mount validation does not expose its errors.
+const [categoryId] = defineField('categoryId')
 const [description, descriptionAttr] = defineField('description')
 const [type] = defineField('type')
 const [accountId] = defineField('accountId')
@@ -195,7 +197,7 @@ watch(() => values.type, (newType, oldType) => {
 
 // Modal tek/çoklu seçimi aynı olayla yayıyor; burada tek seçim kullanılıyor.
 const selectCategory = (payload: string | string[]) => {
-  setFieldValue('categoryId', Array.isArray(payload) ? payload[0] ?? '' : payload)
+  categoryId.value = Array.isArray(payload) ? payload[0] ?? '' : payload
 }
 
 const createTransactionDate = (): Date => {
@@ -479,10 +481,9 @@ onMounted(async () => {
             <template #start>
               <div
                   slot="start"
-                  class="size-9 rounded-xl flex items-center justify-center text-white shrink-0"
-                  :class="selectedCategory?.icon.color || 'bg-surface-strong'"
+                  class="size-9 rounded-xl flex items-center justify-center bg-surface-strong shrink-0"
               >
-                <ion-icon :icon="selectedCategory ? getIconByName(selectedCategory.icon.name) : pricetagOutline" class="size-5"/>
+                <ion-icon :icon="selectedCategory ? getIconByName(selectedCategory.icon.name) : pricetagOutline" class="size-5 text-content"/>
               </div>
             </template>
             {{ translateCategoryName(selectedCategory?.name) || $t('transactions.selectCategory') }}
@@ -536,14 +537,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Tutar kartı validation hatası: border hafifçe hata rengine döner,
+/* Tutar kartı validation hatası: ortak alanlarla aynı 1px hata halkası,
    kaydetme denemesinde kart sağa sola sallanır. */
 .amount-card {
-  transition: border-color 150ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .amount-card.amount-card-error {
-  border-color: color-mix(in srgb, var(--c-error) 60%, var(--c-line));
+  border-color: var(--c-error);
 }
 
 .amount-card-shake {

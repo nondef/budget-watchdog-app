@@ -38,7 +38,7 @@ import { AccountDTO, CategoryDTO } from "@/application";
 import IconPickerModal from "@/components/IconPickerModal.vue";
 import BudgetTypeSegment from "@/components/BudgetTypeSegment.vue";
 import DateField from "@/components/DateField.vue";
-import { useToast } from "@/composables/ui/useToast";
+import { useErrorHandler } from "@/composables/ui/useErrorHandler";
 import { guardSubmit } from "@/composables/ui/guard-submit";
 import { useCategoryName } from "@/composables/features/useCategoryName";
 import { getIconByName } from "@/shared/utils";
@@ -54,7 +54,7 @@ import AnimatedHeight from "@/components/AnimatedHeight.vue";
 import SwapText from "@/components/SwapText.vue";
 
 const { goBackOrFallback } = useAppNavigation()
-const toast = useToast()
+const { handle } = useErrorHandler()
 const { t } = useI18n()
 const budgetStore = useBudgetStore();
 const accountsStore = useAccountsStore();
@@ -90,6 +90,8 @@ const [type] = defineField('type')
 const [startDate] = defineField('startDate')
 const [endDate] = defineField('endDate')
 const [categoryIds] = defineField('category')
+// Register the account picker so silent mount validation keeps its error hidden.
+const [accountId] = defineField('account')
 
 const showIconPicker = ref(false)
 const showCategoryPicker = ref(false)
@@ -153,7 +155,7 @@ const submitBudget = handleSubmit(async (values) => {
 
     goBackOrFallback('/settings/budget-goals')
   } catch (e) {
-    toast.error(t('budgets.addError'))
+    handle(e, { context: 'NewBudget', fallback: t('budgets.addError') })
   }
 })
 
@@ -166,7 +168,7 @@ const handleIconPicker = (payload: { iconName: string, color: string }) => {
 
 const selectAccount = (account: AccountDTO) => {
   selectedAccount.value = account
-  setFieldValue('account', account.id)
+  accountId.value = account.id
   showAccountPicker.value = false
 }
 
