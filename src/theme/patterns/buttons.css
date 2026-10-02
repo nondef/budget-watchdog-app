@@ -85,13 +85,15 @@ ion-button.month-button {
   --padding-end: 0;
 }
 
-/* Detay sayfalarının altındaki çerçeveli "Sil" butonu. */
+/* Detay sayfalarının altındaki dolu "Sil" butonu. */
 .delete-button {
-  --background: transparent;
-  --background-activated: rgba(244, 63, 94, 0.12);
-  --background-hover: rgba(244, 63, 94, 0.08);
-  --color: theme('colors.rose.500');
-  --border-color: rgba(244, 63, 94, 0.45);
+  --background: var(--c-error);
+  --background-activated: color-mix(in srgb, var(--c-error), var(--c-on-error) 10%);
+  --background-focused: color-mix(in srgb, var(--c-error), var(--c-on-error) 10%);
+  --background-hover: color-mix(in srgb, var(--c-error), var(--c-on-error) 8%);
+  --color: var(--c-on-error);
+  --ripple-color: var(--c-on-error);
+  --border-width: 0;
   --border-radius: 1rem;
   --box-shadow: none;
   height: 52px;
@@ -102,9 +104,12 @@ ion-button.month-button {
   margin: 0;
 }
 
-html.ion-palette-dark .delete-button {
-  --background-activated: rgba(251, 113, 133, 0.16);
-  --background-hover: rgba(251, 113, 133, 0.12);
-  --color: theme('colors.rose.400');
-  --border-color: rgba(251, 113, 133, 0.45);
+/* Native butonlarda da aynı Material 3 error / on-error rolleri. */
+button.destructive-button:not(:disabled) {
+  background-color: var(--c-error);
+  color: var(--c-on-error);
+}
+
+button.destructive-button:not(:disabled):active {
+  background-color: color-mix(in srgb, var(--c-error), var(--c-on-error) 10%);
 }

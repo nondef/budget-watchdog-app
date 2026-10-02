@@ -202,7 +202,7 @@ const deleteGoal = async () => {
           isSubmitting.value = true;
           try {
             await savingGoalStore.deleteGoal(deletingId);
-            toast.success(t('savingGoals.deletedSuccess'));
+            toast.show(t('savingGoals.deletedSuccess'));
             goBackOrFallback('/settings/savings');
           } catch (err) {
             handle(err, { context: 'ShowSavingGoal', fallback: t('savingGoals.errors.delete') });
@@ -520,7 +520,7 @@ watch(goalId, () => {
               v-if="goal.savedAmount.amount > 0"
               type="button"
               :disabled="isSubmitting"
-              class="flex-1 h-12 rounded-2xl border-2 border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[14px] font-semibold flex items-center justify-center gap-1.5 active:bg-rose-50 dark:active:bg-rose-500/20 transition"
+              class="destructive-button flex-1 h-12 rounded-2xl text-[14px] font-semibold flex items-center justify-center gap-1.5 transition"
               @click="isRemoveMoneyModalOpen = true"
           >
             <ion-icon :icon="removeOutline" class="size-[16px]"/>
@@ -620,7 +620,7 @@ watch(goalId, () => {
           />
           <button
               type="button"
-              class="w-full h-12 rounded-2xl bg-rose-600 text-white text-[15px] font-semibold mt-6 active:bg-rose-700 disabled:bg-slate-300 transition"
+              class="destructive-button w-full h-12 rounded-2xl text-[15px] font-semibold mt-6 disabled:bg-slate-300 transition"
               :disabled="isSubmitting || !Number.isFinite(removeAmount) || removeAmount <= 0 || removeAmount > (goal?.savedAmount.amount || 0)"
               @click="removeMoney"
           >

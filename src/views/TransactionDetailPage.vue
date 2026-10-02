@@ -147,7 +147,7 @@ const deleteTransaction = async () => {
 
   try {
     await transactionStore.deleteTransaction(transaction.value.id);
-    toast.success(t("transactions.deletedSuccess"));
+    toast.show(t("transactions.deletedSuccess"));
     goBackOrFallback("/tabs/transactions");
   } catch (err) {
     handle(err, {
@@ -329,7 +329,7 @@ onIonViewWillEnter(async () => {
           </ion-button>
           <ion-button
               expand="block"
-              fill="outline"
+              fill="solid"
               class="delete-button flex-1"
               @click="deleteTransaction"
           >
