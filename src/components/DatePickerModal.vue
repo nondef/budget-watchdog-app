@@ -90,11 +90,11 @@ const onDismissed = () => {
           @ion-render="paintWeekendHeaders"
       />
 
-      <div class="grid grid-cols-2 items-center pt-1" role="group">
-        <ion-button fill="clear" class="datetime-picker-action" @click="cancel">
+      <div class="flex items-center justify-end gap-2 pt-2" role="group">
+        <ion-button fill="solid" class="datetime-picker-action" @click="cancel">
           {{ t('common.cancel') }}
         </ion-button>
-        <ion-button fill="clear" class="datetime-picker-action" @click="confirm">
+        <ion-button fill="solid" class="datetime-picker-action datetime-picker-action--confirm" @click="confirm">
           {{ t('common.done') }}
         </ion-button>
       </div>

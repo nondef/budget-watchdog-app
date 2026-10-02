@@ -88,16 +88,35 @@ ion-modal.datetime-picker-modal ion-datetime::part(wheel-item) {
 }
 
 ion-modal.datetime-picker-modal .datetime-picker-action {
-  min-height: 52px;
+  height: 44px;
+  min-height: 44px;
+  min-width: 88px;
+  flex-shrink: 0;
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   text-transform: none;
   --color: var(--c-content);
-  --border-radius: 16px;
+  --background: var(--c-surface);
+  --background-activated: var(--c-surface-strong);
+  --background-focused: var(--c-surface-strong);
+  --background-hover: var(--c-surface-strong);
+  --border-color: var(--c-line-strong);
+  --border-style: solid;
+  --border-width: 1px;
+  --border-radius: 12px;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --box-shadow: none;
   --ripple-color: var(--c-content-muted);
 }
 
-ion-modal.datetime-picker-modal .datetime-picker-action + .datetime-picker-action {
-  border-left: 1px solid var(--c-line);
+ion-modal.datetime-picker-modal .datetime-picker-action--confirm {
+  --background: var(--c-inverse-surface);
+  --background-activated: color-mix(in srgb, var(--c-inverse-surface), var(--c-inverse-on-surface) 10%);
+  --background-focused: color-mix(in srgb, var(--c-inverse-surface), var(--c-inverse-on-surface) 10%);
+  --background-hover: color-mix(in srgb, var(--c-inverse-surface), var(--c-inverse-on-surface) 8%);
+  --color: var(--c-inverse-on-surface);
+  --border-width: 0;
+  --ripple-color: var(--c-inverse-on-surface);
 }

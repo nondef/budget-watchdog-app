@@ -59,9 +59,9 @@ const onTimeConfirm = (value: string) => {
     <template #start>
       <div
           slot="start"
-          class="size-9 shrink-0 flex items-center justify-center rounded-xl bg-surface-sunken"
+          class="size-9 shrink-0 flex items-center justify-center rounded-xl bg-surface-strong"
       >
-        <ion-icon :icon="calendarOutline" class="size-[16px] text-content-muted"/>
+        <ion-icon :icon="calendarOutline" class="size-[16px] text-content"/>
       </div>
     </template>
     {{ date }} · {{ time }}
