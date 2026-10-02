@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:unit": "vitest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "bundle:check": "node scripts/check-android-bundle-config.mjs",
+    "bundle:android": "npm run build && npx cap sync android && npm run bundle:check && cd android && gradlew bundleRelease"
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
